@@ -5,6 +5,8 @@ then
   exit 1
 fi
 
+source ~/Documents/bash/bash-wp/wp-helper.sh
+
 function ignorePage(){
   read -p "Enter the page ID to ignore: " page_id
   line=$(awk '/\$ids/{print NR; exit}' inc/func.php)
@@ -15,11 +17,11 @@ select action in "Show pages" "Ignore page" "Exit"
 do
   case $action in 
     "Show pages")
-      wp post list --post_type=page
+      wpShowPages
       echo "show pages"
       ;;
     "Ignore page")
-      wp post list --post_type=page
+      wpShowPages
       ignorePage
       ;;
     "Exit")
