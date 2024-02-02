@@ -84,14 +84,55 @@ function downloadBackup(){
   wp rewrite flush
 }
 
+function deleteBackup(){
+
+  # Set the directory path
+  cd ../../ai1wm-backups/
+  dir=$(pwd)
+  # echo "Directory: $dir"
+
+  # Get the list of files in the directory
+  files=$(ls -t "$dir")
+
+
+  # Create an array for dialog to handle multi-select
+  options=()
+  for file in $files; do
+    # echo "File: $file"
+    if [[ $file == *.wpress ]]; then
+      echo "File name: $file_name"
+      file_name=$(basename $file)
+      options+=( "$file_name" "" off )
+    else
+      continue
+    fi
+  done
+
+
+  # Use dialog to show a checklist
+  selected_files=$(dialog --stdout --checklist "Select files to process:" 0 0 0 "${options[@]}")
+
+  # Check if the user pressed Cancel
+  if [ $? -eq 1 ]; then
+    echo "Selection canceled."
+    exit 1
+  fi
+
+  # Process the selected files
+  for selected_file in $selected_files; do
+    rm -f $selected_file
+  done
+}
+
 COLUMNS=1
-select choice in  "List" "Make Backup" "Download Backup" "Restore from Downloads" "Restore Backup" "Exit"; do
+select choice in  "List" "Make Backup" "Download Backup" "Restore from Downloads" "Restore Backup" "Delete Backup" "Exit"; do
   case $choice in
     "List" ) listBackup;;
     "Make Backup" ) makeBackup;;
     "Download Backup" ) downloadBackup;;
     "Restore from Downloads" ) restoreBackupFromDownloads;; 
     "Restore Backup" ) restoreBackup;;
+    "Delete Backup" ) deleteBackup;;
     "Exit" ) exit;;
   esac
 done
