@@ -23,8 +23,7 @@ select action in "Install Package" "Install all" "Uninstall" "Freeze" "Exit"; do
       pip freeze > requirements.txt
       ;;
     "Exit")
-      break
-      exit
+      exit 0
       ;;
     *)
       echo "Invalid option"
