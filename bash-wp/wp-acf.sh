@@ -49,6 +49,7 @@ if [[ ! -d advanced-custom-fields-wpcli ]]; then
   wp plugin activate advanced-custom-fields-wpcli
 else
   echo "${tgreen}ACF plugin already installed${treset}"
+  wp plugin activate advanced-custom-fields-wpcli
 fi
 
 
