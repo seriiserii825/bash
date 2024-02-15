@@ -4,7 +4,7 @@ args=("$@")
 
 date_now=$(date +"%Y-%m-%d %H:%M:%S")
 function gitUpdateAll(){
-  dirs=(~/Documents/Knowledge-base_ ~/xubuntu ~/.password-store ~/.config/nvim ~/i3wm-home ~/i3wm-office ~/Documents/bash ~/Documents/python-info ~/Documents/python-scripts)
+  dirs=(~/Documents/Knowledge-base_ ~/xubuntu ~/.password-store ~/.config/nvim ~/i3wm-home ~/i3wm-office ~/Documents/bash ~/Documents/python-info ~/Documents/python-scripts ~/Documents/chrome-extenstions/tabs-copy)
   for dir in "${dirs[@]}"; do
     echo "=========================================="
     echo "${tblue}Update for $dir${treset}"
