@@ -37,7 +37,7 @@ select action in "nvim" "clipboard" "update" "remove_stagged"
 do
   case $action in
     nvim)
-      $(git log --pretty="%C(Yellow)%h  %C(reset)%ad (%C(Green)%cr%C(reset))%x09 %C(Cyan)%an: %C(reset)%s" --date=short -30 --reverse > log.log)
+      $(git log --pretty="%C(Yellow)%h  %C(reset)%ad (%C(Green)%cr%C(reset))%x09 %C(Cyan)%an: %C(reset)%s" --date=short -100 --reverse > log.log)
       bat log.log
       break
       ;;
