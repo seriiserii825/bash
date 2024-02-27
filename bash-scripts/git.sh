@@ -2,6 +2,8 @@
 
 args=("$@")
 
+dictionary_path="/home/serii/.config/coc/extensions/node_modules/coc-fzf-preview/spell/en.utf-8.add"
+
 date_now=$(date +"%Y-%m-%d %H:%M:%S")
 function gitUpdateAll(){
   dirs=(~/Documents/Knowledge-base_ ~/xubuntu ~/.password-store ~/.config/nvim ~/i3wm-home ~/i3wm-office ~/Documents/bash ~/Documents/python-info ~/Documents/python-scripts ~/Documents/chrome-extenstions/tabs-copy)
