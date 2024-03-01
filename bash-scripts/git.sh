@@ -6,7 +6,7 @@ dictionary_path="/home/serii/.config/coc/extensions/node_modules/coc-fzf-preview
 
 date_now=$(date +"%Y-%m-%d %H:%M:%S")
 function gitUpdateAll(){
-  dirs=(~/Documents/Knowledge-base_ ~/xubuntu ~/.password-store ~/.config/nvim ~/i3wm-home ~/i3wm-office ~/Documents/bash ~/Documents/python-info ~/Documents/python-scripts ~/Documents/chrome-extenstions/tabs-copy)
+  dirs=(~/Documents/Knowledge-base_ ~/xubuntu ~/.password-store ~/.config/nvim ~/i3wm-home ~/i3wm-office ~/Documents/bash ~/Documents/python-info ~/Documents/python-scripts ~/Documents/chrome-extenstions/tabs-copy ~/Documents/chrome-extenstions/autofill)
   for dir in "${dirs[@]}"; do
     echo "=========================================="
     echo "${tblue}Update for $dir${treset}"
