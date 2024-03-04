@@ -13,7 +13,7 @@ fi
 clipboard=$(xclip -o -selection clipboard)
 
 
-select lang in "en" "it" "ru" "ro" "de"
+select lang in "en" "it" "ru" "ro" "de" "fr"
 do
   case $lang in
     "en")
@@ -34,6 +34,10 @@ do
       ;;
     "de")
       trans -b :de "$clipboard"  | tr -d '\n' | xsel -b -i 
+      break
+      ;;
+    "fr")
+      trans -b :fr "$clipboard"  | tr -d '\n' | xsel -b -i 
       break
       ;;
     *)
