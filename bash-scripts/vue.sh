@@ -157,7 +157,7 @@ function createHook(){
     fi
     touch "$file_path"
     cat <<TEST >> "$file_path"
-    export function $hook_name() {
+    export default function $hook_name() {
     }
 TEST
 
