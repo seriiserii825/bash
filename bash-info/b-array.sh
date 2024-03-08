@@ -10,6 +10,15 @@ add_object_to_array() {
   texts+=("$2")
 }
 
+# sum array
+local all_plugins=("${local_plugins[@]}" "${server_plugins[@]}")
+
+# diff 2 arrays
+local all_plugins=("${local_plugins[@]}" "${server_plugins[@]}")
+local installed_plugins=($(getInstalledPlugins))
+local plugins_to_install=($(echo ${all_plugins[@]} ${installed_plugins[@]} | tr ' ' '\n' | sort | uniq -u))
+
+
 # check in array
 [[ ${result[*]} =~ "All" ]] && echo "${all_choices[@]}" || echo "${result[@]}"
 
