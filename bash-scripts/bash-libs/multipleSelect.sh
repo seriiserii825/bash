@@ -21,10 +21,6 @@ function multipleSelect() {
       # echo "Choice #$(( ++i )): ${choices[choice-1]} ($choice)"
       result+=("${choices[choice-1]}")
     done
-    # All choices are valid, exit the prompt.
-
-    # inarray=$(echo ${result[@]} | grep -o "All" | wc -w)   
-    # echo "inarray: $inarray"
 
     [[ ${result[*]} =~ "All" ]] && echo "${all_choices[@]}" || echo "${result[@]}"
 

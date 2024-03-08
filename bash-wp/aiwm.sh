@@ -91,17 +91,17 @@ function deleteBackup(){
   for file in $(ls -t $backup_dir_path | grep '\.wpress'); do
     wpress_files+=($file)
   done
-  printArray "${wpress_files[@]}"
-  # echo "Wpress files: ${wpress_files[@]}"
+  # printArray "${wpress_files[@]}"
 
   selected_files=($(multipleSelect "${wpress_files[@]}"))
-  printf "%s\n" "${selected_files[@]}"
+
+  # printArray "${selected_files[@]}"
 
   # Process the selected files
-  # for selected_file in $selected_files[@]; do
-  #   echo "Selected file: $selected_file"
-  #   # rm -f $selected_file
-  # done
+  for selected_file in ${selected_files[@]}; do
+    # echo "Selected file: $selected_file"
+    rm -f $backup_dir_path/$selected_file
+  done
 }
 
 COLUMNS=1
