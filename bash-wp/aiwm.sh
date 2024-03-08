@@ -1,5 +1,6 @@
 #! /bin/bash 
 source /home/serii/Documents/bash/bash-scripts/bash-libs/multipleSelect.sh
+source /home/serii/Documents/bash/bash-scripts/bash-libs/printArray.sh
 # check if don't exists file front-page.php
 if [ ! -f "front-page.php" ]; then
   echo "${tmagenta}File front-page.php not found!${treset}"
@@ -90,7 +91,8 @@ function deleteBackup(){
   for file in $(ls -t $backup_dir_path | grep '\.wpress'); do
     wpress_files+=($file)
   done
-  echo "Wpress files: ${wpress_files[@]}"
+  printArray "${wpress_files[@]}"
+  # echo "Wpress files: ${wpress_files[@]}"
 
   selected_files=($(multipleSelect "${wpress_files[@]}"))
   printf "%s\n" "${selected_files[@]}"
