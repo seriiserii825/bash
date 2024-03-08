@@ -7,6 +7,7 @@ function multipleSelect() {
   # initialize the counter
   local i=0
   # present numbered choices to user
+  COLUMNS=1
   select dummy in "${choices[@]}"; do 
     # Parse ,-separated numbers entered into an array.
     # -r prevents backslash escapes from being interpreted.

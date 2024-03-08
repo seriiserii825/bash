@@ -1,37 +1,55 @@
-#! /bin/bash 
-
+#! /bin/bash  
+source /home/serii/Documents/bash/bash-scripts/bash-libs/printArray.sh
+source /home/serii/Documents/bash/bash-scripts/bash-libs/multipleSelect.sh
 # check if don't exists file front-page.php
 if [ ! -f "front-page.php" ]; then
   echo "${tmagenta}File front-page.php not found!${treset}"
   exit 1
 fi 
 
+currrent_path=$(pwd)
+# echo "Current path: $currrent_path"
+plugin_dir="$(dirname "$(dirname "$currrent_path")")/plugins/*"
 
 local_plugins=( 
-  "advanced-custom-fields-pro-6_0_6.zip"
+  "advanced-custom-fields-pro-6_0_6.zip",
+  "all-in-one-wp-migration-7-79.zip",
+  "seo-by-rank-math.zip",
+  "wpglobus.zip",
+  "wpglobus-plus.zip",
+  "advanced-bulk-edit-v1.3.zip",
+  "all-in-one-wp-migration-7-79.zip"
 )
 
 server_plugins=(
-  "classic-editor"
-  "tinymce-advanced"
-  "stops-core-theme-and-plugin-updates"
-  "safe-svg"
+  "classic-editor",
+  "tinymce-advanced",
+  "stops-core-theme-and-plugin-updates",
+  "safe-svg",
+  "contact-form-7",
+  "contact-form-7-honeypot",
+  "wp-mail-smtp",
+  "cookie-notice",
+  "wps-hide-login",
+  "seo-by-rank-math",
+  "wp-pagenavi",
+  "error-log-monitor",
+  "query-monitor",
+  "post-duplicator",
+  "woocommerce",
+  "easy-woocommerce-auto-sku-generator",
+  "wc-fields-factory",
+  "webp-express",
+  "3d-flipbook-dflip-lite",
+  "flow-flow-social-streams",
+  "add-to-any",
+  "woo-ajax-mini-cart",
+  "wp-smushit",
 )
 
 function getInstalledPlugins(){
-  all_plugins=()
-  cd ../../plugins
-  plugins=( $(ls -d */) )
-  if [[ ${#plugins[@]} -eq 0 ]]; then
-    echo "${tmagenta}No plugins installed!${treset}"
-    exit 1
-  fi
-  for plugin in "${plugins[@]}"
-  do 
-    plugin_name=${plugin%?}
-    all_plugins+=($plugin_name)
-  done
-  echo "${all_plugins[@]}"
+  local files=($(find $plugin_dir -maxdepth 0 -type d -exec basename {} \;))
+  echo "${files[@]}"
 }
 
 
@@ -49,62 +67,22 @@ function installPlugins(){
   done
 }
 
-function installOne(){
-  local local_plugins=($1 "Exit")
-  local server_plugins=($2 "Exit")
-  PS3='Please select local plugin: '
-  COLUMNS=1
-  select plugin in "${local_plugins[@]}"
-  do
-    if [[ $plugin == "Exit" ]]; then
-      break
-    fi
-    wp plugin install ~/Documents/plugins-wp/$plugin --activate
-  done
-
-  PS3='Please select server plugin: '
-  COLUMNS=1
-  select plugin in "${server_plugins[@]}"
-  do
-    if [[ $plugin == "Exit" ]]; then
-      break
-    fi
-    wp plugin install $plugin --activate
-  done
-}
-
-function uninstallAll(){
-  local plugins=$(getInstalledPlugins)
-  for plugin in "${plugins[@]}"
+function uninstallPlugins(){
+  local plugins=($(getInstalledPlugins))
+  selected_plugins=($(multipleSelect "${plugins[@]}"))
+  for plugin in "${selected_plugins[@]}"
   do 
     wp plugin deactivate $plugin
     wp plugin uninstall $plugin
   done
 }
 
-function uninstallOne(){
-  local plugins=$(getInstalledPlugins)
-  echo "${plugins[@]}"
-  PS3='Please select local plugin: '
-  COLUMNS=1
-  select plugin in "${plugins[@]}"
-  do
-    if [[ $plugin == "Exit" ]]; then
-      break
-    fi
-    wp plugin deactivate $plugin
-    wp plugin uninstall $plugin
-  done
-}
-
-select action in "List" "InstallOne" "InstallAll" "UninstallOne" "UninstallAll" "Exit"
+select action in "List" "Instal" "Uninstall" "Exit"
 do
   case $action in
     "List" ) wp plugin list ;;
-    "InstallOne" ) installOne "${local_plugins[*]}" "${server_plugins[*]}" ;;
-    "InstallAll" ) installPlugins "${local_plugins[*]}" "${server_plugins[*]}" ;;
-    "UninstallOne") uninstallOne ;;
-    "UninstallAll") uninstallAll ;;
+    "Install" ) installPlugins "${local_plugins[*]}" "${server_plugins[*]}" ;;
+    "Uninstall") uninstallPlugins;;
     "Exit" ) exit;;
   esac
 done
