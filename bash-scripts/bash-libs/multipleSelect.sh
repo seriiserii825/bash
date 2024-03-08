@@ -1,0 +1,27 @@
+function multipleSelect() {
+  result=()
+  # Usage: multipleSelect choice1 choice2 ...
+  local choices=("$@")
+  choices+=("All")
+  # initialize the counter
+  local i=0
+  # present numbered choices to user
+  select dummy in "${choices[@]}"; do 
+    # Parse ,-separated numbers entered into an array.
+    # -r prevents backslash escapes from being interpreted.
+    # -a assigns the words read to sequential indices of the array variable.
+    # Variable $REPLY contains whatever the user entered.
+    IFS=', ' read -ra selChoices <<<"$REPLY"
+    # Loop over all numbers entered.
+    for choice in "${selChoices[@]}"; do
+      # Validate the number entered.
+      (( choice >= 1 && choice <= ${#choices[@]} )) || { echo "Invalid choice: $choice. Try again." >&2; continue 2; }
+      # If valid, echo the choice and its number.
+      # echo "Choice #$(( ++i )): ${choices[choice-1]} ($choice)"
+      result+=("${choices[choice-1]}")
+    done
+    # All choices are valid, exit the prompt.
+    echo "${result[@]}"
+    break
+  done
+}

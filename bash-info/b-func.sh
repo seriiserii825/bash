@@ -1,14 +1,18 @@
 
-# Define a function that returns an array
-function return_array() {
-    local my_array=("apple" "banana" "cherry")
-    echo "${my_array[@]}"
+function parseArray {
+  result=()
+  array=("$@")
+
+  for data in "${array[@]}"
+  do
+    if [[ $data == "value" ]]; then
+      result+=("value")
+    fi
+  done
+
+  echo "${result[@]}"
 }
 
-# Call the function and capture the result in a variable
-result=($(return_array))
+array=("value" "value1")
 
-# Print the elements of the returned array
-for element in "${result[@]}"; do
-    echo "$element"
-done
+parseArray "${array[@]}"
