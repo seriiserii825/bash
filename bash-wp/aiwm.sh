@@ -1,10 +1,16 @@
-#! /bin/bash
-
+#! /bin/bash 
+source /home/serii/Documents/bash/bash-scripts/bash-libs/multipleSelect.sh
 # check if don't exists file front-page.php
 if [ ! -f "front-page.php" ]; then
   echo "${tmagenta}File front-page.php not found!${treset}"
   exit 1
 fi 
+
+currrent_path=$(pwd)
+# echo "Current path: $currrent_path"
+backup_dir_path="$(dirname "$(dirname "$currrent_path")")/ai1wm-backups"
+# echo "Backup dir path: $backup_dir_path"
+# backups_path="../../ai1wm-backups"
 
 if ! wp plugin is-installed all-in-one-wp-migration; then
   echo "${tmagenta}Plugin All-in-One WP Migration not found!${treset}"
@@ -25,9 +31,7 @@ function listBackup(){
 function restoreBackup(){
   listBackup
 
-  cd ../../ai1wm-backups
-
-  backup_files=$(ls -t | grep '\.wpress')
+  backup_files=$(ls -t $backup_dir_path | grep '\.wpress')
 
   PS3='Please enter your choice: '
   COLUMNS=1
@@ -40,24 +44,25 @@ function restoreBackup(){
 }
 
 function restoreBackupFromDownloads(){
-  current_path=$(pwd)
-  cd ../../ai1wm-backups
-  backup_path=$(pwd)
-  cd ~/Downloads
-  file=$(fzf)
-  cp $file $backup_path
-  cd $current_path
-  restoreBackup
+  PS3='Please enter your choice: '
+  select backup_file in $(ls -t ~/Downloads | grep '\.wpress')
+  do
+    echo "Selected file: $backup_file"
+    cp ~/Downloads/$backup_file $backup_dir_path
+    wp ai1wm restore $backup_file
+    wp rewrite flush
+    exit 0
+  done
+  # cp $selected_files[0] $backup_dir_path
+  # wp ai1wm restore $selected_file
+  # wp rewrite flush
 }
 
 function makeBackup(){
-  cd ../../ai1wm-backups
-
-  current_files=$(ls | grep '\.wpress')
-  echo "Current files: $current_files"
   wp ai1wm backup
-  last_file=$(ls -t | head -n1)
-  cp $last_file /home/serii/Downloads
+  last_file=$(ls -t $backup_dir_path | head -n1)
+  echo "Last file: $last_file"
+  cp "$backup_dir_path/$last_file" /home/serii/Downloads
   echo "${tgreen}Backup created!${treset}"
 }
 
@@ -77,49 +82,23 @@ function downloadBackup(){
     echo "Backup file name is empty!"
     exit 1
   fi
-
-  cd ../../ai1wm-backups
-  wget "$domain_url/wp-content/ai1wm-backups/$backup_file"
+  wget "$domain_url/wp-content/ai1wm-backups/$backup_file" $backup_dir_path
   wp ai1wm restore $backup_file
   wp rewrite flush
 }
 
 function deleteBackup(){
+  wpress_files=()
 
-  # Set the directory path
-  cd ../../ai1wm-backups/
-  dir=$(pwd)
-  # echo "Directory: $dir"
-
-  # Get the list of files in the directory
-  files=$(ls -t "$dir")
-
-
-  # Create an array for dialog to handle multi-select
-  options=()
-  for file in $files; do
-    # echo "File: $file"
-    if [[ $file == *.wpress ]]; then
-      echo "File name: $file_name"
-      file_name=$(basename $file)
-      options+=( "$file_name" "" off )
-    else
-      continue
-    fi
+  for file in $(ls -t $backup_dir_path | grep '\.wpress'); do
+    wpress_files+=($file)
   done
 
-
-  # Use dialog to show a checklist
-  selected_files=$(dialog --stdout --checklist "Select files to process:" 0 0 0 "${options[@]}")
-
-  # Check if the user pressed Cancel
-  if [ $? -eq 1 ]; then
-    echo "Selection canceled."
-    exit 1
-  fi
+  selected_files=($(multipleSelect "${wpress_files[@]}"))
 
   # Process the selected files
   for selected_file in $selected_files; do
+    echo "Selected file: $selected_file"
     rm -f $selected_file
   done
 }
