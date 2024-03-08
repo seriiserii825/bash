@@ -1,8 +1,9 @@
 function multipleSelect() {
   result=()
   # Usage: multipleSelect choice1 choice2 ...
+  local all_choices=("$@")
   local choices=("$@")
-  choices+=("All")
+  choices=("All" "${choices[@]}")
   # initialize the counter
   local i=0
   # present numbered choices to user
@@ -21,7 +22,12 @@ function multipleSelect() {
       result+=("${choices[choice-1]}")
     done
     # All choices are valid, exit the prompt.
-    echo "${result[@]}"
+
+    # inarray=$(echo ${result[@]} | grep -o "All" | wc -w)   
+    # echo "inarray: $inarray"
+
+    [[ ${result[*]} =~ "All" ]] && echo "${all_choices[@]}" || echo "${result[@]}"
+
     break
   done
 }

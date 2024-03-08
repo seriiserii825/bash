@@ -6,9 +6,12 @@ texts=()
 
 # Function to add an object to the arrays
 add_object_to_array() {
-    titles+=("$1")
-    texts+=("$2")
+  titles+=("$1")
+  texts+=("$2")
 }
+
+# check in array
+[[ ${result[*]} =~ "All" ]] && echo "${all_choices[@]}" || echo "${result[@]}"
 
 # Example usage
 add_object_to_array "Title1" "Text1"
@@ -17,7 +20,7 @@ add_object_to_array "Title3" "Text3"
 
 # Print the array elements
 for ((i = 0; i < ${#titles[@]}; i++)); do
-    echo "Title: ${titles[i]}, Text: ${texts[i]}"
+  echo "Title: ${titles[i]}, Text: ${texts[i]}"
 done
 
 ### 

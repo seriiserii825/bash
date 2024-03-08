@@ -53,9 +53,6 @@ function restoreBackupFromDownloads(){
     wp rewrite flush
     exit 0
   done
-  # cp $selected_files[0] $backup_dir_path
-  # wp ai1wm restore $selected_file
-  # wp rewrite flush
 }
 
 function makeBackup(){
@@ -93,14 +90,16 @@ function deleteBackup(){
   for file in $(ls -t $backup_dir_path | grep '\.wpress'); do
     wpress_files+=($file)
   done
+  echo "Wpress files: ${wpress_files[@]}"
 
   selected_files=($(multipleSelect "${wpress_files[@]}"))
+  printf "%s\n" "${selected_files[@]}"
 
   # Process the selected files
-  for selected_file in $selected_files; do
-    echo "Selected file: $selected_file"
-    rm -f $selected_file
-  done
+  # for selected_file in $selected_files[@]; do
+  #   echo "Selected file: $selected_file"
+  #   # rm -f $selected_file
+  # done
 }
 
 COLUMNS=1
