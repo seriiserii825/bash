@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ~/Documents/bash-scripts/extract-text-from-image.sh
+source ~/Documents/bash/bash-scripts/extract-text-from-image.sh
 
 acf_path=~/Downloads/acf.txt
 output_path=~/Downloads/output.txt
