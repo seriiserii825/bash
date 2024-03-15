@@ -28,6 +28,8 @@ local_plugins=(
   "wpglobus"
   "wpglobus-plus"
   "advanced-bulk-edit-v1.3"
+  "admin-columns-pro-5.4.3"
+  "ac-addon-acf-2.6.4"
 )
 
 server_plugins=(
