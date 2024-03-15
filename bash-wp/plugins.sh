@@ -11,6 +11,16 @@ currrent_path=$(pwd)
 # echo "Current path: $currrent_path"
 plugin_dir="$(dirname "$(dirname "$currrent_path")")/plugins/*"
 
+base_plugins=(
+  "advanced-custom-fields-pro-6_0_6"
+  "all-in-one-wp-migration-7-79"
+  "classic-editor"
+  "tinymce-advanced"
+  "stops-core-theme-and-plugin-updates"
+  "safe-svg"
+  "wps-hide-login"
+)
+
 local_plugins=( 
   "advanced-custom-fields-pro-6_0_6"
   "all-in-one-wp-migration-7-79"
@@ -30,7 +40,6 @@ server_plugins=(
   "wp-mail-smtp"
   "cookie-notice"
   "wps-hide-login"
-  "seo-by-rank-math"
   "wp-pagenavi"
   "error-log-monitor"
   "query-monitor"
@@ -49,6 +58,20 @@ server_plugins=(
 function getInstalledPlugins(){
   local files=($(find $plugin_dir -maxdepth 0 -type d -exec basename {} \;))
   echo "${files[@]}"
+}
+
+function installBasePlugins(){
+  local all_plugins=("${base_plugins[@]}")
+  local installed_plugins=($(getInstalledPlugins))
+  local plugins_to_install=($(echo ${all_plugins[@]} ${installed_plugins[@]} | tr ' ' '\n' | sort | uniq -u))
+  for plugin in "${plugins_to_install[@]}"
+  do 
+    if [[ " ${local_plugins[@]} " =~ " ${plugin} " ]]; then
+      wp plugin install ~/Documents/plugins-wp/$plugin.zip --activate
+    else
+      wp plugin install $plugin --activate
+    fi
+  done
 }
 
 
@@ -77,12 +100,14 @@ function uninstallPlugins(){
   done
 }
 
-select action in "List" "Install" "Uninstall" "Exit"
+COLUMNS=1
+select action in  "${tblue}Install Base Plugins${treset}" "${tgreen}List${treset}" "${tyellow}Install${treset}" "${tmagenta}Uninstall${treset}" "${tmagenta}Exit${treset}"
 do
   case $action in
-    "List" ) wp plugin list ;;
-    "Install" ) installPlugins ;;
-    "Uninstall") uninstallPlugins;;
-    "Exit" ) exit;;
+    "${tblue}Install Base Plugins${treset}" ) installBasePlugins ;;
+    "${tgreen}List${treset}" ) wp plugin list ;;
+    "${tyellow}Install${treset}" ) installPlugins ;;
+    "${tmagenta}Uninstall${treset}") uninstallPlugins;;
+    "${tmagenta}Exit${treset}" ) exit;;
   esac
 done
