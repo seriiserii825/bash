@@ -105,14 +105,14 @@ function deleteBackup(){
 }
 
 COLUMNS=1
-select choice in  "List" "Make Backup" "Download Backup" "Restore from Downloads" "Restore Backup" "Delete Backup" "Exit"; do
+select choice in  "${tyellow}List${treset}" "${tgreen}Make Backup${treset}" "${tblue}Download Backup${treset}" "${tblue}Restore from Downloads${treset}" "${tblue}Restore Backup${treset}" "${tmagenta}Delete Backup${treset}" "${tmagenta}Exit${treset}"; do
   case $choice in
-    "List" ) listBackup;;
-    "Make Backup" ) makeBackup;;
-    "Download Backup" ) downloadBackup;;
-    "Restore from Downloads" ) restoreBackupFromDownloads;; 
-    "Restore Backup" ) restoreBackup;;
-    "Delete Backup" ) deleteBackup;;
-    "Exit" ) exit;;
+    "${tyellow}List${treset}" ) listBackup;;
+    "${tgreen}Make Backup${treset}" ) makeBackup;;
+    "${tblue}Download Backup${treset}" ) downloadBackup;;
+    "${tblue}Restore from Downloads${treset}" ) restoreBackupFromDownloads;; 
+    "${tblue}Restore Backup${treset}" ) restoreBackup;;
+    "${tmagenta}Delete Backup${treset}" ) deleteBackup;;
+    "${tmagenta}Exit${treset}" ) exit;;
   esac
 done
