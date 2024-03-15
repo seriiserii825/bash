@@ -3,7 +3,7 @@
 css_file="$(fzf)"
 
 while read -r line; do
-  if [[ $line == *"border:"* || $line == *"border-bottom:"* || $line == *"max-width"* || $line == *"letter-spacing"* || $line == *"linear-gradient"* || $line == *"&"* || $line == *"width: 1px;"* || $line == *"height: 1px;"* ]]; then
+  if [[ $line == *"border:"* || $line == *"border-bottom:"* || $line == *"max-width"* || $line == *"linear-gradient"* || $line == *"&"* || $line == *"width: 1px;"* || $line == *"height: 1px;"* ]]; then
     # echo "$line"
     continue
   else
