@@ -133,7 +133,7 @@ function composerHandle(){
         if [ -z "$package_name" ]; then
           echo "${tmagenta}ERROR! Package name is required. Please try again.${treset}"
         else
-          docker-compose exec php-fpm composer install $package_name
+          docker-compose exec php-fpm composer require $package_name
         fi
         exit 0
         ;;

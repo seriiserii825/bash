@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ~/Documents/bash-scripts/extract-text-from-image.sh
+source /home/serii/Documents/bash/bash-scripts/extract-text-from-image.sh
 
 read -p "Enter the name of the ACF field group: " field_group_name
 
