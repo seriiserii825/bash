@@ -11,7 +11,7 @@ current_lang="en"
 read -p "Enter current language(en, it, ru, ro, de)" current_lang
 
 
-while ./clipnotify;
+while /home/serii/Documents/bash/bash-scripts/clipnotify;
 do
   # SelectedText="$(xsel)"
   # CopiedText="$(xsel -b)"
