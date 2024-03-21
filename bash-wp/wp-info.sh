@@ -13,18 +13,18 @@ function ignorePage(){
   sed -i  "${line} s/];/,${page_id}];/" inc/func.php
 }
 
-select action in "Show pages" "Ignore page" "Exit"
+select action in "${tgreen}Show pages${treset}" "${tblue}Ignore page${treset}" "${tmagenta}Exit${treset}"
 do
   case $action in 
-    "Show pages")
+    "${tgreen}Show pages${treset}")
       wpShowPages
       echo "show pages"
       ;;
-    "Ignore page")
+    "${tblue}Ignore page${treset}")
       wpShowPages
       ignorePage
       ;;
-    "Exit")
+    "${tmagenta}Exit${treset}")
       exit 0
       ;;
   esac
