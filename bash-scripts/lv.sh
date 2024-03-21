@@ -271,8 +271,12 @@ function requestHandler(){
   done
 }
 COLUMNS=8
-select action in "${tgreen}Artisan${treset}" "${tblue}Composer${treset}" "${tyellow}Migration${treset}" "${tgreen}Model${treset}" "${tmagenta}Controller${treset}" "${tgreen}Request${treset}" "${tyellow}Node${treset}" "${tblue}Middleware${treset}" "${tmagenta}View${treset}"; do
+select action in  "${tblue}Routes${treset}" "${tgreen}Artisan${treset}" "${tblue}Composer${treset}" "${tyellow}Migration${treset}" "${tgreen}Model${treset}" "${tmagenta}Controller${treset}" "${tgreen}Request${treset}" "${tyellow}Node${treset}" "${tblue}Middleware${treset}" "${tmagenta}View${treset}"; do
   case $action in
+    "${tblue}Routes${treset}")
+      docker-compose exec php-fpm php artisan route:list
+      exit 0
+      ;;
     "${tgreen}Artisan${treset}")
       artisanHandle
       ;;
