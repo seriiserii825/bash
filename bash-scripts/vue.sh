@@ -6,6 +6,8 @@ store_layout_path="src/layouts/storeLayout.ts"
 inteface_layout_path="src/layouts/intefaceLayout.ts"
 component_layout_path="src/layouts/componentLayout.vue"
 scss_layout_path="src/layouts/scss.vue"
+enum_layout_path="src/layouts/enumLayout.vue"
+view_layout_path="src/layouts/viewLayout.vue"
 
 if [ ! -d "src/layouts" ]
   then
@@ -178,6 +180,72 @@ function createComponentLayout(){
 TEST
 }
 
+function createViewLayout(){
+  touch "$view_layout_path"
+  cat <<TEST >> "$view_layout_path"
+<script setup lang="ts">
+</script>
+
+<template>
+  <div class="default-view">
+
+  </div>
+</template>
+TEST
+}
+
+function createView(){
+  set -x
+  if [ ! -f "$view_layout_path" ]
+    then
+      createViewLayout
+  fi
+  read -p "${tgreen}Give view name, example 'Home': ${treset}" cmp_name
+  file_path="src/views/${cmp_name}View.vue"
+  if [ -f "$file_path" ]
+    then
+      echo "${tred}$file_path already exists${treset}"
+      exit 1
+  fi
+  touch "$file_path"
+  cp "$view_layout_path" "$file_path"
+  sed -i -e "s/default/$cmp_name/g" "$file_path"
+  sed -i -E 's/([a-z])([A-Z])/\1-\L\2/g' $file_path
+  sed -i -e 's/class="\([^"]*\)"/class="\L\1"/g' $file_path
+  echo "${tgreen}src/views/${cmp_name}View.vue was created${treset}"
+  set +x
+}
+
+function createEnumLayout(){
+  touch "$enum_layout_path"
+  cat <<TEST >> "$enum_layout_path"
+export enum E_Default {
+
+}
+TEST
+}
+
+function createEnum(){
+      if [ ! -f "$enum_layout_path" ]
+        then
+          createEnumLayout
+      fi
+      read -p "${tgreen}Give enum name, example 'Filter' will be E_Filter: ${treset}" cmp_name
+      mkdir -p "src/enum"
+      file_path="src/enum/E_$cmp_name.vue"
+      if [ -f "$file_path" ]
+        then
+          echo "${tred}$file_path already exists${treset}"
+          exit 1
+      fi
+      touch "$file_path"
+      cp "$enum_layout_path" "$file_path"
+      sed -i -e "s/Default/$cmp_name/g" "$file_path"
+      sed -i -E 's/([a-z])([A-Z])/\1-\L\2/g' $file_path
+      sed -i -e 's/class="\([^"]*\)"/class="\L\1"/g' $file_path
+      echo "${tgreen}src/enum/E_${cmp_name}.vue was created${treset}"
+}
+
 function createScssLayout(){
   touch "$scss_layout_path"
   cat <<TEST >> "$scss_layout_path"
@@ -218,6 +286,8 @@ function scssCreate(){
 
 
 
+view="${tblue}view${treset}";
+enum="${tgreen}enum${treset}";
 api="${tgreen}api${treset}";
 cmp="${tyellow}cmp${treset}";
 store="${tred}store${treset}";
@@ -226,8 +296,16 @@ hook="${tyellow}hook${treset}";
 scss="${tyellow}scss${treset}";
 
 COLUMNS=1
-select action in $api $cmp $store $interface $hook $scss; do
+select action in $view $enum $api $cmp $store $interface $hook $scss; do
   case $action in 
+    $view)
+      createView
+      exit 0
+      ;;
+    $enum)
+      createEnum
+      exit 0
+      ;;
     $api)
       apiCreate
       exit 0
