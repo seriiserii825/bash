@@ -230,16 +230,6 @@ function middlewareHandler(){
 }
 
 COLUMNS=1
-function viewHandler (){
-  read -p "Enter directory like 'worker': " dir_name
-  read -p "Enter file name like 'index': " file_name
-  mkdir -p resources/views/$dir_name
-  file_path=resources/views/$dir_name/$file_name.blade.php
-  touch $file_path
-  echo ""View" $file_path created successfully"
-}
-
-COLUMNS=1
 function requestHandler(){
    select action in Both Store Update Filter; do
     case $action in
@@ -270,41 +260,48 @@ function requestHandler(){
     esac
   done
 }
+resource="${tgreen}Resource${treset}"
+routes="${tblue}Routes${treset}"
+artisan="${tgreen}Artisan${treset}"
+composer="${tblue}Composer${treset}"
+migration="${tyellow}Migration${treset}"
+model="${tgreen}Model${treset}"
+controller="${tblue}Controller${treset}"
+request="${tmagenta}Request${treset}"
+middleware="${tblue}Middleware${treset}"
 COLUMNS=8
-select action in  "${tblue}Routes${treset}" "${tgreen}Artisan${treset}" "${tblue}Composer${treset}" "${tyellow}Migration${treset}" "${tgreen}Model${treset}" "${tmagenta}Controller${treset}" "${tgreen}Request${treset}" "${tyellow}Node${treset}" "${tblue}Middleware${treset}" "${tmagenta}View${treset}"; do
+select action in  $routes $artisan $composer $migration $model $controller $resource $request $middleware; do
   case $action in
-    "${tblue}Routes${treset}")
+    $routes)
       docker-compose exec php-fpm php artisan route:list
       exit 0
       ;;
-    "${tgreen}Artisan${treset}")
+    $artisan)
       artisanHandle
       ;;
-    "${tblue}Composer${treset}")
+    $composer)
       composerHandle
       ;;
-    "${tyellow}Migration${treset}")
+    $migration)
       migrate
       ;;
-    "${tgreen}Model${treset}")
+    $model)
       model
       ;;
-    "${tgreen}Request${treset}")
+    $request)
       requestHandler
       exit 0
       ;;
-    "${tmagenta}Controller${treset}")
+    $controller)
       controller
       ;;
-    "${tyellow}Node${treset}")
-      nodeHandler
-      ;;
-    "${tblue}Middleware${treset}")
-      middlewareHandler
-      ;;
-    "${tmagenta}View${treset}")
-      viewHandler
+    $resource)
+      read -p "Enter resource name like 'Worker, will be WorkerResource': " resource_name
+      docker-compose exec php-fpm php artisan make:resource "${resource_name}Resource"
       exit 0
+      ;;
+    $middleware)
+      middlewareHandler
       ;;
     *)
       echo "ERROR! Please select between 1..3"
