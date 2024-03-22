@@ -92,6 +92,11 @@ function createStore(){
   read -p "${tgreen}Give store name with lower case, example 'filter': ${treset}" store_name
   read -p "${tgreen}Give function name with camelCase, example 'usePiniaStore': ${treset}" store_func
 
+  if [ ! -d "src/stores" ]
+    then
+      mkdir -p "src/stores"
+  fi
+
   file_path="src/stores/$store_name-store.ts"
   if [ -f "$file_path" ]
     then
