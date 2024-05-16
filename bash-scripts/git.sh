@@ -7,7 +7,7 @@ dictionary_path="/home/serii/.config/coc/extensions/node_modules/coc-fzf-preview
 date_now=$(date +"%Y-%m-%d %H:%M:%S")
 function gitUpdateAll(){
   dirs=(
-    ~/serii/Documents/todo
+    ~/Documents/todo
     ~/Documents/Knowledge-base_
     ~/xubuntu 
     ~/.password-store 
