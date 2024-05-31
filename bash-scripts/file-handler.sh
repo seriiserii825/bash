@@ -1,24 +1,17 @@
 #!/bin/bash
 
-[ ! -d "$1" ] && {
-  printf "error: argument is not a valid directory to monitory.\n"
-  exit 1
-}
+inotifywait -m /home/serii/Downloads -e create -e moved_to |
+  while read dir action file; do
+    if [[ $file == *.jpg ]]; then
+      full_path="$dir""$file"
+      file_weight=$(du -h $full_path)
+      echo $file_weight
+      # notify-send "$(echo $file_weight)"
+      jpegoptim --strip-all --all-progressive -ptm 80 $full_path >> /dev/null
+      file_weight=$(du -h $full_path)
+      echo $file_weight
+      # notify-send "$(echo $file_weight)"
+    fi
+  done
 
-while :; fname="$1/$(inotifywait -q -e modify -e create --format '%f' "$1")"; do
-  if [[ $fname == *.jpg ]]; then
-    width=$(identify -format "%w" "$fname")> /dev/null
-    height=$(identify -format "%h" "$fname")> /dev/null
-    echo "filesize: $width x $height"
-    du -sh "$fname"
 
-    mogrify -resize x900 "$fname" > /dev/null
-    jpegoptim --strip-all --all-progressive -ptm 80 "$fname" > /dev/null
-
-    width=$(identify -format "%w" "$fname")> /dev/null
-    height=$(identify -format "%h" "$fname")> /dev/null
-
-    echo "filesize: $width x $height"
-    du -sh "$fname"
-  fi
-done
