@@ -47,30 +47,14 @@ function clear(){
   viewFile
 }
 
-function start(){
+function startYtDownload(){
   clipboardToFile
   convertToMp3
-}
-
-function moveToDir(){
-  read -p "Enter directory: " directory_name
-  mkdir $directory_name
-  mv $directory/*.mp3 $directory_name
+  rename 's/ /_/g' ~/Downloads/*.mp3
+  id3v2 -D ~/Downloads/*.mp3
 }
 
 echo "${tblue}Start downloading from clipboard?${treset}"
 
-COLUMNS=1
-select action in "Start"; do
-  case $action in
-    "Start")
-      clear
-      start
-      cd $directory
-      break
-      ;;
-    *)
-      echo "ERROR! Please select between 1..3"
-      ;;
-  esac
-done
+clear
+startYtDownload
