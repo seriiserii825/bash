@@ -2,7 +2,7 @@
 
 file_path=$(fzf)
 file_name=$(basename $file_path)
-file_name_without_extension=$(echo $file_name | cut -d'.' -f1)
+file_name_without_extension="icon"
 file_extension=$(echo $file_name | cut -d'.' -f2)
 file_128="$file_name_without_extension-128.$file_extension"
 cp $file_path $file_128
