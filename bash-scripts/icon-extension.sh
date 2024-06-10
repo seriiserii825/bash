@@ -1,4 +1,4 @@
-#! /bin/bash -x
+#! /bin/bash 
 
 file_path=$(fzf)
 file_name=$(basename $file_path)
