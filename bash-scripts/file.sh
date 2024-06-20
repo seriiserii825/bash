@@ -97,19 +97,19 @@ function fromFile(){
         exit 0
         ;;
       *)
-        echo "ERROR! Please select between 1..3"
+        exit 0
         ;;
     esac
   done
 }
 
-select action in "${tgreen}to File${treset}" "${tblue}from File${treset}" "${tmagenta}Quit${treset}"; do
+select action in "${tgreen}Buffer to file${treset}" "${tblue}Select File${treset}" "${tmagenta}Quit${treset}"; do
   case $action in
-    "${tgreen}to File${treset}")
+    "${tgreen}Buffer to file${treset}")
       toFile
       exit 0
       ;;
-    "${tblue}from File${treset}")
+    "${tblue}Select File${treset}")
       fromFile
       exit 0
       ;;
