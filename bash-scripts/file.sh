@@ -97,6 +97,8 @@ function fromFile(){
         exit 0
         ;;
       *)
+        echo "${tmagenta}Goodbye!${treset}"
+        break
         exit 0
         ;;
     esac
