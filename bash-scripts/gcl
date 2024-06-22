@@ -1,0 +1,11 @@
+#!/bin/bash
+
+clipboard=$(xclip -o -selection clipboard)
+
+if [[ $clipboard == *github.com* ]]; then
+    echo $clipboard  
+    git_command="git clone $clipboard"
+    exec $git_command
+  else
+    echo "No bitbucket link in clipboard"
+fi
