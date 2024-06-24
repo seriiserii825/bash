@@ -1,22 +1,19 @@
 #!/bin/bash
 
-select actin in "Encrypt" "Decrypt" "Exit"
-do
-    case $actin in
-        "Encrypt")
-          file_path=$(fzf)
-          read -p "Enter user id:" user_id
-          gpg -e -r $user_id $file_path
-          rm $file_path
-            ;;
-        "Decrypt")
-          file_path=$(fzf)
-          gpg $file_path
-          rm $file_path
-            ;;
-        "Exit")
-          break
-            ;;
-          
-    esac
-done
+# check if exists file  with gpg extension
+if [ -z "$(find . -name "*.gpg")" ]; then
+  zip_path="dist.zip"
+  zip -r dist.zip dist
+  gpg -e -r serii $zip_path
+  rm $zip_path
+  rm -rf dist
+  echo "${tgreen}File dist.zip.gpg created${treset}"
+else
+  file_path="dist.zip.gpg"
+  zip_path="dist.zip"
+  gpg -d $file_path > $zip_path
+  unzip $zip_path
+  rm $zip_path
+  rm $file_path
+  echo "${tgreen}File dist.zip.gpg decrypted${treset}"
+fi
