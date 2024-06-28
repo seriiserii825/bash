@@ -6,6 +6,10 @@ if [[ $clipboard == *github.com* ]]; then
     echo $clipboard  
     git_command="git clone $clipboard"
     exec $git_command
+  elif [[ $clipboard == *bitbucket.org* ]]; then
+    echo $clipboard  
+    git_command="$clipboard"
+    exec $git_command
   else
-    echo "No bitbucket link in clipboard"
+    echo "Clipboard does not contain a git repository"
 fi
