@@ -4,11 +4,11 @@ clipboard=$(xclip -o -selection clipboard)
 
 if [[ $clipboard == *github.com* ]]; then
     echo $clipboard  
-    git_command="git clone $clipboard"
+    git_command="git clone $clipboard --single-branch"
     exec $git_command
   elif [[ $clipboard == *bitbucket.org* ]]; then
     echo $clipboard  
-    git_command="$clipboard"
+    git_command="$clipboard --single-branch"
     exec $git_command
   else
     echo "Clipboard does not contain a git repository"
