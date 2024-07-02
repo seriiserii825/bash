@@ -65,7 +65,7 @@ function fromFile(){
         echo $clipboard > $file_path
         ;;
       "${tblue}OpenInBrowser${treset}")
-        vivaldi $file_path
+        google-chrome-stable $file_path
         ;;
       "${tblue}Multiply${treset}")
         file_name=$( echo $file_path | awk 'BEGIN{FS="/"}{print $NF}' | tr -d '\n' )
