@@ -1,0 +1,28 @@
+#!/bin/bash
+
+select choice in "Install" "Search" "Uninstall" "Exit"
+do
+    case $choice in
+        Install)
+            read -p "Enter package name: " package
+            sudo pacman -S $package
+            break
+            exit 0
+            ;;
+        Search)
+          read -p "Enter package name: " package
+          sudo pacman -Ss $package
+          break
+          exit 0
+          ;;
+        Uninstall)
+          read -p "Enter package name: " package
+          sudo pacman -R $package
+          break
+          exit 0
+            ;;
+        Exit)
+            break
+            ;;
+    esac
+done
