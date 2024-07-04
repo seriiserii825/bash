@@ -1,28 +1,28 @@
 #!/bin/bash
 
-select choice in "Install" "Search" "Uninstall" "Exit"
-do
-    case $choice in
-        Install)
-            read -p "Enter package name: " package
-            sudo pacman -S $package
-            break
-            exit 0
-            ;;
-        Search)
-          read -p "Enter package name: " package
-          sudo pacman -Ss $package
-          break
-          exit 0
-          ;;
-        Uninstall)
-          read -p "Enter package name: " package
-          sudo pacman -R $package
-          break
-          exit 0
-            ;;
-        Exit)
-            break
-            ;;
-    esac
-done
+function menu() {
+  echo "${tgreen}1) Install${treset}"
+  echo "${tblue}2) Search${treset}"
+  echo "${tyellow}3) Uninstall${treset}"
+  echo "${tmagenta}4) Exit${treset}"
+
+  read -p "Choose an option: " option
+  if [ $option -eq 1 ]; then
+    read -p "Enter package name: " package
+    sudo pacman -S $package
+  elif [ $option -eq 2 ]; then
+    read -p "Enter package name: " package
+    sudo pacman -Ss $package
+  elif [ $option -eq 3 ]; then
+    read -p "Enter package name: " package
+    sudo pacman -R $package
+  elif [ $option -eq 4 ]; then
+    exit 0
+  else
+    echo "Invalid option"
+    exit 0
+  fi
+}
+
+menu
+
