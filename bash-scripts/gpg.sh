@@ -1,5 +1,29 @@
 #!/bin/bash
 
+# check if zip is installed
+if ! [ -x "$(command -v zip)" ]; then
+  echo 'Error: zip is not installed.' >&2
+  exit 1
+fi
+
+# check if gpg is installed
+if ! [ -x "$(command -v gpg)" ]; then
+  echo 'Error: gpg is not installed.' >&2
+  exit 1
+fi
+
+# check if unzip is installed
+if ! [ -x "$(command -v unzip)" ]; then
+  echo 'Error: unzip is not installed.' >&2
+  exit 1
+fi
+
+# check if exists dist folder or file with gpg extension
+if [ -z "$(find . -name "dist")" ] && [ -z "$(find . -name "*.gpg")" ]; then
+  echo "${tmagenta}Error: dist folder or gpg file not found.${treset}"
+  exit 1
+fi
+
 # check if exists file  with gpg extension
 if [ -z "$(find . -name "*.gpg")" ]; then
   zip_path="dist.zip"
