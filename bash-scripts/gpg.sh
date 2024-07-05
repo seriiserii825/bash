@@ -2,6 +2,9 @@
 
 # check if exists file  with gpg extension
 if [ -z "$(find . -name "*.gpg")" ]; then
+  if [ ! -z "$(find dist -name "venv" -type d)" ]; then
+    rm -rf dist/venv
+  fi
   zip_path="dist.zip"
   zip -r dist.zip dist
   gpg -e -r serii $zip_path
