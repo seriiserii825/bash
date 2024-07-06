@@ -42,5 +42,11 @@ else
   unzip $zip_path
   rm $zip_path
   rm $file_path
+  cd dist
+  python3 -m venv venv
+  source venv/bin/activate
+  pip install --upgrade pip
+  source venv/bin/activate
+  pip install -r requirements.txt
   echo "${tgreen}File dist.zip.gpg decrypted${treset}"
 fi
