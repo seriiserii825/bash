@@ -3,6 +3,10 @@
 directory="$HOME/Music/youtube"
 file_path="$HOME/Music/youtube/yt.txt"
 
+if [ ! -d 'Music' ]; then
+  mkdir $HOME/Music
+fi
+
 if [ ! -d "$directory" ]; then
   mkdir $directory
   echo "Directory created at $directory"
