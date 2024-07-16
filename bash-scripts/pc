@@ -4,7 +4,9 @@ function menu() {
   echo "${tgreen}1) Install${treset}"
   echo "${tblue}2) Search${treset}"
   echo "${tyellow}3) Uninstall${treset}"
-  echo "${tmagenta}4) Exit${treset}"
+  echo "${tblue}4) Find throw pacman installed${treset}"
+  echo "${tgreen}5) Find throw yay installed${treset}"
+  echo "${tmagenta}6) Exit${treset}"
 
   read -p "Choose an option: " option
   if [ $option -eq 1 ]; then
@@ -17,6 +19,20 @@ function menu() {
     read -p "Enter package name: " package
     sudo pacman -R $package
   elif [ $option -eq 4 ]; then
+    read -p "Enter package name, or leave empty: " package
+    if [ -z $package ]; then
+      pacman -Qe
+    else
+      pacman -Qs | grep $package
+    fi
+  elif [ $option -eq 5 ]; then
+    read -p "Enter package name, or leave empty: " package
+    if [ -z $package ]; then
+      pacman -Qm
+    else
+      pacman -Qm | grep $package
+    fi
+  elif [ $option -eq 6 ]; then
     exit 0
   else
     echo "Invalid option"
