@@ -12,7 +12,12 @@ function menu(){
   read -p "Choose an option: " option
   if [ $option -eq 1 ]
   then
-    perl-rename 's/\d+/sprintf(\"%03d\", $&)/e'
+    read -p "${tgreen}Enter extension, leave empty for jpg: ${treset}" extension
+    if [ -z "$extension" ]
+    then
+      extension="jpg"
+    fi
+    perl-rename 's/(\d+)/sprintf("%03d", $1)/e' *.$extension
     menu
   elif [ $option -eq 2 ]
   then
@@ -36,13 +41,21 @@ function menu(){
   elif [ $option -eq 4 ]
   then
     read -p "${tgreen}Enter the prefix: ${treset}" prefix
-    read -p "${tblue}Enter extension:${treset}" extension
+    read -p "${tblue}Enter extension, leave empty for jpg:${treset}" extension
+    if [ -z "$extension" ]
+    then
+      extension="jpg"
+    fi
     x=0
     for i in `ls *.$extension`;do mv "$i" $prefix-$[++x].$extension ;done
     menu
   elif [ $option -eq 5 ]
   then
-    read -p "${tgreen}Enter extension: ${treset}" extension
+    read -p "${tgreen}Enter extension, leave empty for jpg: ${treset}" extension
+    if [ -z "$extension" ]
+    then
+      extension="jpg"
+    fi
     read -p "${tblue}Enter prefix: ${treset}" prefix
     for filename in *.$extension; do mv "$filename" "$prefix-${filename}"; done;
   elif [ $option -eq 6 ]
