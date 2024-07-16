@@ -1,50 +1,57 @@
 #! /bin/bash
 
 function changeImage(){
-  COLUMNS=1
-  select size_direction in INFO OPTIMIZE WIDTH HEIGHT FLOP ROTATE EXIT
-  do
-    case $size_direction in
-      INFO)
-        echo -e "${tblue}Resolution of the image${treset}"
-        identify -format "%wx%h\n" $*
-
-        echo -e "${tgreen}Size of the image${treset}"
-        du -sh $*
-        ;;
-      OPTIMIZE)
-        jpegoptim --strip-all --all-progressive -ptm 80 $*
-        break
-        ;;
-      WIDTH)
-        echo "${tblue}Enter the width: ${treset}"
-        read  width
-        mogrify -resize $width"x" $*
-        ;;
-      HEIGHT)
-        echo "${tyellow}Enter the width: ${treset}"
-        read  height
-        mogrify -resize x$height $*
-        ;;
-      FLOP)
-        mogrify -flop $*
-        break
-        ;;
-      ROTATE)
-        echo "${tblue}Enter the angle: ${treset}"
-        read  angle
-        mogrify -rotate $angle $*
-        break
-        ;;
-      EXIT)
-        exit 0
-        ;;
-      *)
-        echo "Invalid option"
-        break
-        ;;
-    esac
-  done
+  echo -e "${tgreen}Select an option${treset}"
+  echo "${tblue}1. Info${treset}"
+  echo "${tyellow}2. Optimize${treset}"
+  echo "${tgreen}3. Width${treset}"
+  echo "${tblue}4. Height${treset}"
+  echo "${tgreen}5. Flop${treset}"
+  echo "${tblue}6. Rotate${treset}"
+  echo "${tmagenta}7. Exit${treset}"
+  read -p "${tgreen}Enter your choice: ${treset}" choice
+  case $choice in
+    1)
+      echo -e "${tblue}Resolution of the image${treset}"
+      identify -format "%wx%h\n" $*
+      echo -e "${tgreen}Size of the image${treset}"
+      du -sh $*
+      changeImage $*
+      ;;
+    2)
+      jpegoptim --strip-all --all-progressive -ptm 80 $*
+      changeImage $*
+      ;;
+    3)
+      echo "${tblue}Enter the width: ${treset}"
+      read  width
+      mogrify -resize $width"x" $*
+      changeImage $*
+      ;;
+    4)
+      echo "${tyellow}Enter the height: ${treset}"
+      read  height
+      mogrify -resize x$height $*
+      changeImage $*
+      ;;
+    5)
+      mogrify -flop $*
+      changeImage $*
+      ;;
+    6)
+      echo "${tblue}Enter the angle: ${treset}"
+      read  angle
+      mogrify -rotate $angle $*
+      changeImage $*
+      ;;
+    7)
+      exit 0
+      ;;
+    *)
+      echo "Invalid option"
+      exit 0
+      ;;
+  esac
 }
 
 COLUMNS=1
