@@ -19,7 +19,15 @@ function changeImage(){
       changeImage $*
       ;;
     2)
-      jpegoptim --strip-all --all-progressive -ptm 80 $*
+      for i in ls $*; do
+        # check if i has ext jpg
+        if [[ $i == *.jpg ]]; then
+          jpegoptim --strip-all --all-progressive -ptm 80 $i
+        elif [[ $i == *.png ]]; then
+          pngquant $i --quality 80-90 --speed 1
+        fi
+      done
+      # jpegoptim --strip-all --all-progressive -ptm 80 $*
       changeImage $*
       ;;
     3)
