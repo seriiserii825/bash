@@ -14,7 +14,7 @@ if [ -f $sftp_config_file_json ]; then
   host=$(jq -r '.remote.host' $sftp_config_file_json)
   user=$(jq -r '.remote.user' $sftp_config_file_json)
   remote_path=$(jq -r '.remote.path' $sftp_config_file_json)
-  modified_files=$(git ls-files --modified)
+  modified_files=$(git ls-files --others --modified --exclude-standard)
   if [ "$all" == "y" ]; then
     for file in $modified_files; do
       echo "${tblue}file: $file${treset}"
