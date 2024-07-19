@@ -27,15 +27,19 @@ if [ -f $sftp_config_file_json ]; then
       echo "${tgreen}full_path: $full_path${treset}"
       rsync -avz -e ssh $file $user@$host:$full_path
     done
-  else
-    for file in $modified_files; do
-      # if file contains main.css
-      if [[ $file == *"main-hash.css"* ]]; then
+    deleted_files=$(git ls-files --deleted)
+    if [ ! -z "$deleted_files" ]; then
+      for file in $deleted_files; do
         echo "${tblue}file: $file${treset}"
         full_path=$remote_path/$file
         echo "${tgreen}full_path: $full_path${treset}"
-        rsync -avz -e ssh $file $user@$host:$full_path
-      elif [[ $file == *"main-hash.js"* ]]; then
+        ssh $user@$host "rm -rf $full_path"
+        echo "${tmagenta}Deleted file: $full_path${treset}"
+      done
+    fi
+  else
+    for file in $modified_files; do
+      if [[ $file == *"main"* ]]; then
         echo "${tblue}file: $file${treset}"
         full_path=$remote_path/$file
         echo "${tgreen}full_path: $full_path${treset}"
