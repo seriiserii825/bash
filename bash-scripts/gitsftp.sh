@@ -30,12 +30,12 @@ if [ -f $sftp_config_file_json ]; then
   else
     for file in $modified_files; do
       # if file contains main.css
-      if [[ $file == *"main.css"* ]]; then
+      if [[ $file == *"main-hash.css"* ]]; then
         echo "${tblue}file: $file${treset}"
         full_path=$remote_path/$file
         echo "${tgreen}full_path: $full_path${treset}"
         rsync -avz -e ssh $file $user@$host:$full_path
-      elif [[ $file == *"main.js"* ]]; then
+      elif [[ $file == *"main-hash.js"* ]]; then
         echo "${tblue}file: $file${treset}"
         full_path=$remote_path/$file
         echo "${tgreen}full_path: $full_path${treset}"
