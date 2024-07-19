@@ -7,6 +7,11 @@ if [ "$1" == "--help" ]; then
   exit 0
 fi
 
+if [ ! -f front-page.php ]; then
+  echo "${tmagenta}Please run this script in the root of the project.${treset}"
+  exit 1
+fi
+
 all=$1
 sftp_config_file_json=".AutoRemoteSync.json"
 if [ -f $sftp_config_file_json ]; then
@@ -39,7 +44,23 @@ if [ -f $sftp_config_file_json ]; then
     done
   fi
 else
-  echo "${tmagenta}File $sftp_config_file_json does not exist.${treset}"
-  echo "${tyellow}Please create a file $sftp_config_file_json with the following content:${treset}"
-  exit 1
+  touch $sftp_config_file_json
+  read -p "Enter remote host: " host
+  read -p "Enter user: " user
+  read -p "Enter remote path: " remote_path
+  if [ -z "$host" ] || [ -z "$user" ] || [ -z "$remote_path" ]; then
+    echo "Please enter all values."
+    exit 1
+  fi
+  cat <<TEST >> "$sftp_config_file_json"
+{
+  "type": "rsync",
+  "remote": {
+    "host": "$host",
+    "user": "$user",
+    "path": "$remote_path"
+  },
+  "verbose": true
+}
+TEST
 fi
