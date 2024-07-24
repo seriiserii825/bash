@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# check if exists .git
+if [ ! -d ".git" ]; then
+  echo "${tmagenta}Error: .git folder not found.${treset}"
+  exit 1
+fi
+
 # check if zip is installed
 if ! [ -x "$(command -v zip)" ]; then
   echo 'Error: zip is not installed.' >&2
