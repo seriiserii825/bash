@@ -1,5 +1,5 @@
 #!/bin/bash
-
+user=$(whoami)
 # check if exists .git
 if [ ! -d ".git" ]; then
   echo "${tmagenta}Error: .git folder not found.${treset}"
@@ -37,7 +37,7 @@ if [ -z "$(find . -name "*.gpg")" ]; then
   fi
   zip_path="dist.zip"
   zip -r dist.zip dist
-  gpg -e -r serii $zip_path
+  gpg -e -r $user $zip_path
   rm $zip_path
   rm -rf dist
   echo "${tgreen}File dist.zip.gpg created${treset}"
