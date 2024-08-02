@@ -47,6 +47,7 @@ function commit(){
     git push
   elif [ "$message" == "6" ]; then
     lazygit
+    commit
   elif [ "$message" == "7" ]; then
     echo "${tgreen}Exiting script${treset}"
     exit 0

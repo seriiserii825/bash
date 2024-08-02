@@ -60,26 +60,65 @@ function toggleProject(){
   fi
 }
 
-read -p "Do you want to encrypt or decrypt the file or project, by default project? (f/p): " option
-if [ "$option" == "f" ]; then
+function oneFile(){
   file_with_fzf=$(find . -type f | fzf)
   if [ -z "$file_with_fzf" ]; then
     echo "${tmagenta}Error: file not found.${treset}"
     exit 1
   fi
 
-  if [ -z "$(find . -name "*.gpg")" ]; then
-    gpg -e -r $user $file_with_fzf
-    rm $file_with_fzf
-    echo "${tgreen}File $file_with_fzf.gpg created${treset}"
-  else
+  file_extension=$(echo $file_with_fzf | awk -F . '{print $NF}')
+
+  if [ $file_extension == "gpg" ]; then
     file_without_gpg=$(echo $file_with_fzf | sed 's/.gpg//')
     gpg -d $file_with_fzf > $file_without_gpg
     rm $file_with_fzf
     echo "${tgreen}File $file_with_fzf decrypted${treset}"
+  else
+    gpg -e -r $user $file_with_fzf
+    rm $file_with_fzf
+    echo "${tgreen}File $file_with_fzf.gpg created${treset}"
   fi
-else
-  toggleProject
-fi
+}
 
+function moreFiles(){
+  read -p "Choose extension file: " extension
+  for file in $(find . -name "*.$extension"); do
+    file_extension=$(echo $file | awk -F . '{print $NF}')
+    if [ $file_extension == "gpg" ]; then
+      file_without_gpg=$(echo $file | sed 's/.gpg//')
+      gpg -d $file > $file_without_gpg
+      rm $file
+      echo "${tgreen}File $file decrypted${treset}"
+    else
+      gpg -e -r $user $file
+      rm $file
+      echo "${tgreen}File $file.gpg created${treset}"
+    fi
+  done
+}
 
+function menu(){
+  echo "${tgreen}1. One file${treset}"
+  echo "${tblue}2. More files${treset}"
+  echo "${tyellow}3. Project${treset}"
+  echo "${tmagenta}4. Exit${treset}"
+
+  read -p "Choose option: " option
+
+  if [ $option == 1 ]; then
+    oneFile
+  elif [ $option == 2 ]; then
+    moreFiles
+  elif [ $option == 3 ]; then
+    toggleProject
+  elif [ $option == 4 ]; then
+    exit 0
+  else
+    echo "${tmagenta}Error: option not found.${treset}"
+    menu
+    exit 1
+  fi
+}
+
+menu
