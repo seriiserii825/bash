@@ -1,6 +1,8 @@
 #!/bin/bash
 
 function commit(){
+  git status
+
   echo "${tgreen}Choose a commit message type:${treset}"
   echo "${tblue}1) feat: A new feature${treset}"
   echo "${tblue}2) upd: An update to an existing feature${treset}"
