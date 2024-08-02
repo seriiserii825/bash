@@ -61,44 +61,49 @@ function toggleProject(){
 }
 
 function oneFile(){
-  file_with_fzf=$(find . -type f | fzf)
-  if [ -z "$file_with_fzf" ]; then
-    echo "${tmagenta}Error: file not found.${treset}"
-    exit 1
-  fi
+  read -p "Encrypt or decrypt file(e/d):"
 
-  file_extension=$(echo $file_with_fzf | awk -F . '{print $NF}')
-
-  if [ $file_extension == "gpg" ]; then
-    file_without_gpg=$(echo $file_with_fzf | sed 's/.gpg//')
-    gpg -d $file_with_fzf > $file_without_gpg
-    rm $file_with_fzf
-    echo "${tgreen}File $file_with_fzf decrypted${treset}"
-  else
+  if [ $REPLY == "e" ]; then
+    file_with_fzf=$(find . -maxdepth 1 -type f | fzf)
     gpg -e -r $user $file_with_fzf
     rm $file_with_fzf
     echo "${tgreen}File $file_with_fzf.gpg created${treset}"
+  elif [ $REPLY == "d" ]; then
+    file_with_fzf=$(find . -name "*.gpg" -maxdepth 1 -type f | fzf)
+      file_without_gpg=$(echo $file_with_fzf | sed 's/.gpg//')
+      gpg -d $file_with_fzf > $file_without_gpg
+      rm $file_with_fzf
+      echo "${tgreen}File $file_with_fzf decrypted${treset}"
+  else
+    echo "${tmagenta}Error: option not found.${treset}"
+    exit 1
   fi
 }
 
 function moreFiles(){
-  read -p "Choose extension file: " extension
-  for file in $(find . -name "*.$extension"); do
-    file_extension=$(echo $file | awk -F . '{print $NF}')
-    if [ $file_extension == "gpg" ]; then
+  read -p "Encrypt or decrypt file(e/d):"
+  if [ $REPLY == "e" ]; then
+    read -p "Choose extension file: " extension
+    for file in $(find .  -maxdepth 1 -name "*.$extension"); do
+      gpg -e -r $user $file
+      rm $file
+      echo "${tgreen}File $file.gpg created${treset}"
+    done
+  elif [ $REPLY == "d" ]; then
+    for file in $(find . -maxdepth 1 -name "*.gpg" -maxdepth 1); do
       file_without_gpg=$(echo $file | sed 's/.gpg//')
       gpg -d $file > $file_without_gpg
       rm $file
       echo "${tgreen}File $file decrypted${treset}"
-    else
-      gpg -e -r $user $file
-      rm $file
-      echo "${tgreen}File $file.gpg created${treset}"
-    fi
-  done
+    done
+  else
+    echo "${tmagenta}Error: option not found.${treset}"
+    exit 1
+  fi
 }
 
 function menu(){
+  ls -la
   echo "${tgreen}1. One file${treset}"
   echo "${tblue}2. More files${treset}"
   echo "${tyellow}3. Project${treset}"
