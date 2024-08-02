@@ -4,13 +4,15 @@ function commit(){
   git status
 
   echo "${tgreen}Choose a commit message type:${treset}"
-  echo "${tblue}1) feat: A new feature${treset}"
-  echo "${tblue}2) upd: An update to an existing feature${treset}"
-  echo "${tyellow}3) bug-fix: A bug fix${treset}"
-  echo "${tyellow}4) fix: A hotfix${treset}"
-  echo "${tgreen}5) core: A change to the core of the project${treset}"
-  echo "${tmagenta}6) exit: Exit the script${treset}"
-
+  echo "------------------------------------------"
+  echo "${tblue}1) feat: (A new feature)${treset}"
+  echo "${tblue}2) upd: (An update to an existing feature)${treset}"
+  echo "${tyellow}3) bug-fix: (A bug fix)${treset}"
+  echo "${tyellow}4) fix: (A hotfix)${treset}"
+  echo "${tgreen}5) core: (An install a new package)${treset}"
+  echo "${tgreen}6) lazygit${treset}"
+  echo "${tmagenta}7) exit: (Exit the script)${treset}"
+  echo "------------------------------------------"
   read -p "${tgreen}What commit message would you like to use? ${treset}" message
 
   if [ "$message" == "1" ]; then
@@ -44,6 +46,8 @@ function commit(){
     git commit -a -m "core: $message"
     git push
   elif [ "$message" == "6" ]; then
+    lazygit
+  elif [ "$message" == "7" ]; then
     echo "${tgreen}Exiting script${treset}"
     exit 0
   else
