@@ -1,5 +1,13 @@
 #!/bin/bash
 # https://github.com/dexpota/kitty-themes
+## Glacier
+## Seti
+## SpaceGray Eighties
+# Bprogrammer
+# Ayu
+### for Radu
+# Source Code X
+# Spiderman
 thheme_file=$(ls ~/.config/kitty/kitty-themes/themes | fzf)
 
 rm ~/.config/kitty/theme.conf
