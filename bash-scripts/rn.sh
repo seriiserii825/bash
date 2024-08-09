@@ -30,12 +30,15 @@ function menu(){
   then
     read -p "${tgreen}Enter the symbol to replace: ${treset}" symbol
     read -p "${tblue}Enter the new symbol: ${treset}" new_symbol
-    perl-rename -v s/$symbol/$new_symbol/g *
+    for I in *; 
+      ## show changed file but don't change
+    do echo "$I" | sed "s/$symbol/$new_symbol/g";done
     sleep 1
     read -p "${tmagenta}Apply changes? (y/n): ${treset}" answer
     if [ $answer == "y" ]
     then
-      perl-rename -n s/$symbol/$new_symbol/g *
+      for I in *; 
+      do mv "$I" `echo "$I" | sed "s/$symbol/$new_symbol/g"`;done
     fi
     menu
   elif [ $option -eq 4 ]
