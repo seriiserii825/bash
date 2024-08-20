@@ -1,5 +1,25 @@
 #! /bin/bash 
 
+function renameSymbol(){
+    read -p "${tgreen}Enter the symbol to replace: ${treset}" symbol
+    if [ -z "$symbol" ]
+    then
+      echo "${tred}Symbol can't be empty${treset}"
+      renameSymbol
+    fi
+    read -p "${tblue}Enter the new symbol: ${treset}" new_symbol
+    for I in *; 
+      ## show changed file but don't change
+    do echo "$I" | sed "s/$symbol/$new_symbol/g";done
+    sleep 1
+    read -p "${tmagenta}Apply changes? (y/n): ${treset}" answer
+    if [ $answer == "y" ]
+    then
+      for I in *; 
+      do mv "$I" `echo "$I" | sed "s/$symbol/$new_symbol/g"`;done
+    fi
+}
+
 function menu(){
   exa -la
   echo "${tblue}1) Rename digits${treset}"
@@ -28,15 +48,7 @@ function menu(){
     menu
   elif [ $option -eq 3 ]
   then
-    read -p "${tgreen}Enter the symbol to replace: ${treset}" symbol
-    read -p "${tblue}Enter the new symbol: ${treset}" new_symbol
-    perl-rename -v s/$symbol/$new_symbol/g *
-    sleep 1
-    read -p "${tmagenta}Apply changes? (y/n): ${treset}" answer
-    if [ $answer == "y" ]
-    then
-      perl-rename -n s/$symbol/$new_symbol/g *
-    fi
+    renameSymbol
     menu
   elif [ $option -eq 4 ]
   then
