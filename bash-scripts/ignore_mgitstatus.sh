@@ -1,7 +1,12 @@
 #!/bin/bash -x
 user=$(whoami)
+clipboard=$(xclip -o)
+file=~/Downloads/ignore_mgitstatus.txt
+touch $file
+echo $clipboard > ~/Downloads/ignore_mgitstatus.txt
+# for each line in file remove ./ from the beginning
+sed -i 's/^\.\///g' ~/Downloads/ignore_mgitstatus.txt
 # choose file from downloads with fzf
-file=$(ls ~/Downloads | fzf)
 # loop throw file
 while IFS= read -r line
 do
@@ -18,3 +23,4 @@ do
   fi
 done < $file
 
+rm $file
