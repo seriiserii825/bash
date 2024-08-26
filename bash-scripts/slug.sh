@@ -14,7 +14,7 @@ do
   lower_clipboard=$(echo $clipboard | tr '[:upper:]' '[:lower:]')
   slug_clipboard=$(echo $lower_clipboard | tr ' ' '-')
   # remove /()[]{}<>?| from slug
-  slug_clipboard=$(echo $slug_clipboard | tr -d '/()[]{}<>?|')
+  slug_clipboard=$(echo $slug_clipboard | tr -d '/()[]{}<>?|’')
   xclip -selection clipboard -t text/plain -i <<< "$slug_clipboard"
   notify-send "$(echo -e "$slug_clipboard")" 
 done
