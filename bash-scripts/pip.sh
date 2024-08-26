@@ -1,36 +1,64 @@
 #! /bin/bash
-COLUMNS=1
-select action in   "${tgreen}List${treset}" "${tblue}Init${treset}" "${tgreen}Activate${treset}" "${tmagenta}Deactivate${treset}" "${tblue}Install Package${treset}" "${tblue}Install all${treset}" "${tmagenta}Uninstall${treset}"  "${tmagenta}Exit${treset}"; do
-  case $action in
-    "${tgreen}List${treset}")
-      python3 -m pip freeze
-      ;;
-    "${tblue}Init${treset}")
-      current_dir=$(pwd)
-      python3 -m venv venv
-      source venv/bin/activate
-      python3 -m pip install --upgrade pip
-      ;;
-    "${tgreen}Activate${treset}")
-      source venv/bin/activate
-      ;;
-    "${tmagenta}Deactivate${treset}")
+
+function init(){
+  current_dir=$(pwd)
+  python3 -m venv venv
+  source venv/bin/activate
+  python3 -m pip install --upgrade pip
+}
+
+function activate(){
+  source venv/bin/activate
+}
+
+function initIfNotExists(){
+  if [ ! -d "venv" ]; then
+    init
+  else
+    activate
+  fi
+}
+
+function menu(){
+  echo "${tgreen}1. List${treset}"
+  echo "${tblue}2. Install Package${treset}"
+  echo "${tblue}3. Install all${treset}"
+  echo "${tmagenta}4. Uninstall${treset}"
+  echo "${tmagenta}5. Exit${treset}"
+
+  read -p "Enter the option: " option
+  case $option in
+    1)
+      initIfNotExists
+      bat requirements.txt
       deactivate
+      menu
       ;;
-    "${tblue}Install Package${treset}")
+    2)
       read -p "Enter the package name: " package_name
+      initIfNotExists
       python3 -m pip install $package_name
       python3 -m pip freeze > requirements.txt
+      deactivate
+      menu
       ;;
-    "${tblue}Install all${treset}")
+    3)
+      initIfNotExists
       python3 -m pip install -r requirements.txt
+      deactivate
+      menu
       ;;
-    "${tmagenta}Uninstall${treset}")
-      read -p "Enter the package name: " package_name
+    4)
+      initIfNotExists
+      # package name from file requirements.txt with fzf
+      package_name=$(cat requirements.txt | fzf)
+      package_name=$(echo $package_name | cut -d'=' -f1)
       python3 -m pip uninstall $package_name
       python3 -m pip freeze > requirements.txt
+      deactivate
+      menu
       ;;
-    "${tmagenta}Exit${treset}")
+    5)
       exit 0
       ;;
     *)
@@ -38,7 +66,6 @@ select action in   "${tgreen}List${treset}" "${tblue}Init${treset}" "${tgreen}Ac
       exit 0
       ;;
   esac
-done
+}
 
-read -p "Enter the package name: " package_name
-
+menu
