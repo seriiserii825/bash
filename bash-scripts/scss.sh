@@ -57,6 +57,7 @@ do
   # replace
   sed -i 's/Montserrat/var(--font-3)/g' $scss_file
   sed -i 's/var(--Blue-Darkest, #[0-9A-Fa-f]\{6\});/var(--accent-darkest);/g' $scss_file
+  sed -i 's/var(--White, #fff);/#fff;/g' $scss_file
 
 
 
@@ -70,7 +71,7 @@ do
   echo $line_with_background >> $scss_file
 
   bat $scss_file
-  xclip -selection clipboard -i $scss_file
+  xclip -sel clip < $scss_file
   clipboard=$(xclip -o -selection clipboard)
   notify-send "$(echo -e "$clipboard")" 
   rm $scss_file
