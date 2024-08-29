@@ -1,4 +1,29 @@
 #!/bin/bash
+
+if [[ ! -f front-page.php ]]; then
+  echo "${tmagenta}Go to the root of the project${treset}"
+  exit 1
+fi
+
+script_path=$(dirname "$0")
+projects_dir="$script_path/wp-projects"
+current_dir_name=${PWD##*/}
+variable_file_path="$projects_dir/$current_dir_name.sh"
+
+## check if in projects_dir exists file current_dir_name.php
+if [[ ! -f $variable_file_path ]]; then
+  echo "${tmagenta}File $current_dir_name.php not found in $projects_dir${treset}"
+  touch $variable_file_path
+  echo "${tmagenta}Add scss variables in $variable_file_path${treset}"
+  exit 1
+fi
+
+## if $variable_file_path is empty
+if [ ! -s $variable_file_path ]; then
+  echo "${tmagenta}File $variable_file_path is empty${treset}"
+  exit 1
+fi
+
 function convertToRem(){
   scss_file=$1
   while read -r line; do
@@ -33,20 +58,37 @@ function convertToRem(){
 }
 
 function scssHandler(){
-  # sleep 1
+  variable_file_path=$1
   clipboard=$(xclip -o -selection clipboard)
   scss_file=~/Downloads/scss.scss
   touch $scss_file
+  # remove lines
   echo "$clipboard" > $scss_file
   sed -i '/Clash Display/d' $scss_file
   sed -i '/font-style: normal/d' $scss_file
   sed -i '/line-height: normal/d' $scss_file
   # replace
-  sed -i 's/Montserrat/var(--font-3)/g' $scss_file
-  sed -i 's/var(--Blue-Darkest, #[0-9A-Fa-f]\{6\});/var(--accent-darkest);/g' $scss_file
-  sed -i 's/var(--Violet-Dark, #[0-9A-Fa-f]\{6\});/var(--accent);/g' $scss_file
-  sed -i 's/var(--White, #FFF);/#fff;/g' $scss_file
-
+  while read -r line; do
+    echo "$line"
+    # if line is not empty
+    if [ -z "$line" ]; then
+      continue
+    fi
+    first=$(echo $line | cut -d, -f1)
+    second=$(echo $line | cut -d, -f2)
+    # if first starts with --
+    if [[ $first == *"--"* ]]; then
+      colors=(--White)
+      # if first in colors
+      if [[ " ${colors[@]} " =~ " ${first} " ]]; then
+        sed -i "s/var($first, #[0-9A-Fa-f]\{6\});/$second/g" $scss_file
+      else
+        sed -i "s/var($first, #[0-9A-Fa-f]\{6\});/var($second);/g" $scss_file
+      fi
+    else
+      sed -i "s/$first/var($second)/g" $scss_file
+    fi
+  done < "$variable_file_path"
   # line-height line if it's not normal, convert to fraction, divide line-height by font-size
   line_height=$(grep "line-height" $scss_file)
   if [[ $line_height != *"normal"* ]]; then
@@ -95,12 +137,11 @@ function scssHandler(){
   rm $scss_file
 }
 
-
 while /home/serii/Documents/bash/bash-scripts/clipnotify;
 do
   clipboard=$(xclip -o -selection clipboard)
   # if in clipboard have css rule then run like property: value;
   if [[ $clipboard == *":"* ]]; then
-    scssHandler
+    scssHandler $variable_file_path
   fi
 done
