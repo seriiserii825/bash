@@ -18,26 +18,38 @@ do
   case $lang in
     "en")
       trans -b :en "$clipboard" | tr -d '\n' | xsel -b -i 
+      copied_text=$(xsel -b -o)
+      echo "$copied_text"
       break
       ;;
     "it")
       trans -b :it "$clipboard"  | tr -d '\n' | xsel -b -i 
+      copied_text=$(xsel -b -o)
+      echo "$copied_text"
       break
       ;;
     "ru")
       trans -b :ru "$clipboard"  | tr -d '\n' | xsel -b -i 
+      copied_text=$(xsel -b -o)
+      echo "$copied_text"
       break
       ;;
     "ro")
       trans -b :ro "$clipboard"  | tr -d '\n' | xsel -b -i 
+      copied_text=$(xsel -b -o)
+      echo "$copied_text"
       break
       ;;
     "de")
       trans -b :de "$clipboard"  | tr -d '\n' | xsel -b -i 
+      copied_text=$(xsel -b -o)
+      echo "$copied_text"
       break
       ;;
     "fr")
       trans -b :fr "$clipboard"  | tr -d '\n' | xsel -b -i 
+      copied_text=$(xsel -b -o)
+      echo "$copied_text"
       break
       ;;
     *)
