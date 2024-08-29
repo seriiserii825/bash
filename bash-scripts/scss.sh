@@ -69,7 +69,6 @@ function scssHandler(){
   sed -i '/line-height: normal/d' $scss_file
   # replace
   while read -r line; do
-    echo "$line"
     # if line is not empty
     if [ -z "$line" ]; then
       continue
@@ -81,7 +80,9 @@ function scssHandler(){
       colors=(--White)
       # if first in colors
       if [[ " ${colors[@]} " =~ " ${first} " ]]; then
-        sed -i "s/var($first, #[0-9A-Fa-f]\{6\});/$second/g" $scss_file
+        echo "first:$first"
+        echo "second:$second"
+        sed -i "s/var($first, #[0-9A-Fa-f]\{6\});/$second;/g" $scss_file
       else
         sed -i "s/var($first, #[0-9A-Fa-f]\{6\});/var($second);/g" $scss_file
       fi
@@ -94,16 +95,12 @@ function scssHandler(){
   if [[ $line_height != *"normal"* ]]; then
     # get line-height value from line: line-height: 20px;
     line_height=$(grep -oE "line-height: [0-9]+px;" $scss_file)
-    echo $line_height
     # from line-height: 20px; get 20px
     line_height_value=$(echo $line_height | grep -oE "[0-9]+")
-    echo $line_height_value
     font_size=$(grep -oE "font-size: [0-9]+px;" $scss_file)
     font_size_value=$(echo $font_size | grep -oE "[0-9]+")
-    echo $font_size_value
     #fraction divide line-height by font-size
     fraction=$(awk "BEGIN { printf \"%.2f\", $line_height_value / $font_size_value }")
-    echo $fraction
     sed -i "s/$line_height/line-height: $fraction;/" $scss_file
   fi
 
