@@ -67,29 +67,23 @@ function scssHandler(){
   sed -i '/Clash Display/d' $scss_file
   sed -i '/font-style: normal/d' $scss_file
   sed -i '/line-height: normal/d' $scss_file
+  sed -i 's/var(--White, #FFF);/#fff;/g' $scss_file
+  set -x
   # replace
   while read -r line; do
+    first=$(echo $line | cut -d',' -f1)
+    second=$(echo $line | cut -d',' -f2)
     # if line is not empty
     if [ -z "$line" ]; then
       continue
     fi
-    first=$(echo $line | cut -d, -f1)
-    second=$(echo $line | cut -d, -f2)
-    # if first starts with --
     if [[ $first == *"--"* ]]; then
-      colors=(--White)
-      # if first in colors
-      if [[ " ${colors[@]} " =~ " ${first} " ]]; then
-        echo "first:$first"
-        echo "second:$second"
-        sed -i "s/var($first, #[0-9A-Fa-f]\{6\});/$second;/g" $scss_file
-      else
-        sed -i "s/var($first, #[0-9A-Fa-f]\{6\});/var($second);/g" $scss_file
-      fi
+      sed -i "s/var($first, #[0-9A-Fa-f]\{6\});/var($second);/g" $scss_file
     else
       sed -i "s/$first/var($second)/g" $scss_file
     fi
   done < "$variable_file_path"
+  set +x
   # line-height line if it's not normal, convert to fraction, divide line-height by font-size
   line_height=$(grep "line-height" $scss_file)
   if [[ $line_height != *"normal"* ]]; then
