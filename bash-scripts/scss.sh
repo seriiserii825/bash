@@ -67,8 +67,7 @@ function scssHandler(){
   sed -i '/Clash Display/d' $scss_file
   sed -i '/font-style: normal/d' $scss_file
   sed -i '/line-height: normal/d' $scss_file
-  sed -i 's/var(--White, #FFF);/#fff;/g' $scss_file
-  set -x
+  # sed -i 's/var(--White, #FFF);/#fff;/g' $scss_file
   # replace
   while read -r line; do
     first=$(echo $line | cut -d',' -f1)
@@ -78,12 +77,20 @@ function scssHandler(){
       continue
     fi
     if [[ $first == *"--"* ]]; then
+      # set -x
+      colors=(--White)
+      for color in "${colors[@]}"; do
+        if [[ $first == *"$color"* ]]; then
+          sed -i "s/var($first, #[0-9A-Fa-f]\{6\});/$second;/g" $scss_file
+          continue
+        fi
+      done
       sed -i "s/var($first, #[0-9A-Fa-f]\{6\});/var($second);/g" $scss_file
+      # set +x
     else
       sed -i "s/$first/var($second)/g" $scss_file
     fi
   done < "$variable_file_path"
-  set +x
   # line-height line if it's not normal, convert to fraction, divide line-height by font-size
   line_height=$(grep "line-height" $scss_file)
   if [[ $line_height != *"normal"* ]]; then
@@ -136,3 +143,6 @@ do
     scssHandler $variable_file_path
   fi
 done
+
+# + sed -i 's/var(--White, #[0-9A-Fa-f]\{6\});/ #FFF;/g' /home/serii/Downloads/scss.scss
+# + sed -i 's/var(--Blue-Darkest, #[0-9A-Fa-f]\{6\});/var(--accent-darkest);/g'
