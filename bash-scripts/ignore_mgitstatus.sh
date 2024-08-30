@@ -5,13 +5,14 @@ file=~/Downloads/ignore_mgitstatus.txt
 touch $file
 echo $clipboard > $file
 # after Untracked files add new line
-sed -i 's/Untracked files/Untracked files\n/g' $file
-# remove space at the beginning of the line
+sed -i 's/: Untracked files/\n/g' $file
+sed -i 's/: Needs pull (master)/\n/g' $file
+# delete empty space at the beginning of the line
 sed -i 's/^ //g' $file
+bat $file
 # for each line in file remove ./ from the beginning
 sed -i 's/^\.\///g' $file
-# # for each line remove : Untracked files at the end
-sed -i 's/: Untracked files//g' $file
+bat $file
 cd
 while IFS= read -r line
 do
