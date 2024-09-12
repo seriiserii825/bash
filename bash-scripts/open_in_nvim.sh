@@ -7,8 +7,7 @@ echo "${tblue}2) Find word in all files and another word not in the same file${t
 read -p "Enter your choice: " choice
 
 function findWord(){
-  search_word=$(xsel -b)
-  echo "Searching for word in all files and opening in Neovim"
+  read -p "Enter the word to search: " search_word
   files=$(grep -rl --exclude-dir={__pycache__,venv} "$search_word" *)
 
   # Open all files in a single Neovim instance
