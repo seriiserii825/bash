@@ -8,38 +8,34 @@ sed -i '/yay/d' $file_path
 sed -i '/Downloads/d' $file_path
 
 function gitPush(){
+  modified_files_path=~/Downloads/modified_files.txt
   mod=0
+  line=$1
   # Check for modified files
-  if [ $(git status | grep modified -c) -ne 0 ]
+  if [ $(git status | grep modified -c) -ne 0 > /dev/null ]
   then
-    mod=1
     echo -en "\033[0;31m"
+    echo $line
     echo "Modified files"
     echo -en "\033[0m"
   fi
 
   # Check for untracked files
-  if [ $(git status | grep Untracked -c) -ne 0 ]
+  if [ $(git status | grep Untracked -c) -ne 0 > /dev/null ]
   then
-    mod=1
     echo -en "\033[0;31m"
+    echo $line
     echo "Untracked files"
     echo -en "\033[0m"
   fi
 
   # Check for unpushed changes
-  if [ $(git status | grep 'Your branch is ahead' -c) -ne 0 ]
+  if [ $(git status | grep 'Your branch is ahead' -c) -ne 0 > /dev/null ]
   then
-    mod=1
     echo -en "\033[0;31m"
+    echo $line
     echo "Unpushed commit"
     echo -en "\033[0m"
-  fi
-
-  # Check if everything is peachy keen
-  if [ $mod -eq 0 ]
-  then
-    echo "Nothing to commit"
   fi
 }
 
@@ -60,11 +56,10 @@ read -p "${tblue}Do you want to push or pull? (push/pull) ${treset}" action
 
 while IFS= read -r line
 do
-  echo "Pulling $line"
   cd $line
   cd ..
   if [ $action = "push" ]; then
-    gitPush 
+    gitPush "$line"
   elif [ $action = "pull" ]; then
     gitPull
   else
