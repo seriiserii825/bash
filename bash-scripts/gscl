@@ -1,0 +1,15 @@
+#!/bin/bash
+
+clipboard=$(xclip -o -selection clipboard)
+
+if [[ $clipboard == *github.com* ]]; then
+    echo $clipboard  
+    git_command="git submodule add $clipboard"
+    exec $git_command
+  elif [[ $clipboard == *bitbucket.org* ]]; then
+    echo $clipboard  
+    git_command="$clipboard --single-branch"
+    exec $git_command
+  else
+    echo "Clipboard does not contain a git repository"
+fi

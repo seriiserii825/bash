@@ -3,13 +3,21 @@
 clipboard=$(xclip -o -selection clipboard)
 
 if [[ $clipboard == *github.com* ]]; then
-    echo $clipboard  
-    git_command="git clone $clipboard --single-branch"
-    exec $git_command
-  elif [[ $clipboard == *bitbucket.org* ]]; then
-    echo $clipboard  
-    git_command="$clipboard --single-branch"
-    exec $git_command
-  else
-    echo "Clipboard does not contain a git repository"
+  echo $clipboard  
+  git_command="git clone $clipboard --single-branch"
+  eval $git_command
+  cd $(basename $clipboard .git)
+  if [ -f .gitmodules ]; then
+    git submodule update --init --recursive
+  fi
+elif [[ $clipboard == *bitbucket.org* ]]; then
+  echo $clipboard  
+  git_command="$clipboard --single-branch"
+  eval $git_command
+  cd $(basename $clipboard .git)
+  if [ -f .gitmodules ]; then
+    git submodule update --init --recursive
+  fi
+else
+  echo "Clipboard does not contain a git repository"
 fi
