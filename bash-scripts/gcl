@@ -9,6 +9,7 @@ if [[ $clipboard == *github.com* ]]; then
   cd $(basename $clipboard .git)
   if [ -f .gitmodules ]; then
     git submodule update --init --recursive
+    git submodule foreach 'branch=$(git branch -r | grep -m1 origin/HEAD | sed "s/.*origin\///") && git checkout $branch && git pull origin $branch'
   fi
 elif [[ $clipboard == *bitbucket.org* ]]; then
   echo $clipboard  
@@ -17,6 +18,7 @@ elif [[ $clipboard == *bitbucket.org* ]]; then
   cd $(basename $clipboard .git)
   if [ -f .gitmodules ]; then
     git submodule update --init --recursive
+    git submodule foreach 'branch=$(git branch -r | grep -m1 origin/HEAD | sed "s/.*origin\///") && git checkout $branch && git pull origin $branch'
   fi
 else
   echo "Clipboard does not contain a git repository"
