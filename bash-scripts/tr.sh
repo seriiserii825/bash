@@ -5,10 +5,8 @@
 if ! [ -x "$(command -v trans)" ]
 then
   echo "${tmagenta}trans-shell is not installed. Please install it first.${treset}"
-  sudo apt install gawk
-  wget git.io/trans
-  chmod +x ./trans
-  sudo mv trans /usr/bin/
+  sudo pacman -S gawk
+  sudo pacman -S trans-shell
 fi
 clipboard=$(xclip -o -selection clipboard)
 
