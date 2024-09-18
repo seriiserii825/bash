@@ -68,7 +68,7 @@ function oneFile(){
     gpg -e -r $user $file_with_fzf
     echo "${tgreen}File $file_with_fzf.gpg created${treset}"
   elif [ $REPLY == "d" ]; then
-    file_with_fzf=$(find . -name "*.gpg" -maxdepth 1 -type f | fzf)
+    file_with_fzf=$(find . -maxdepth 1 -name "*.gpg" -type f | fzf)
       file_without_gpg=$(echo $file_with_fzf | sed 's/.gpg//')
       gpg -d $file_with_fzf > $file_without_gpg
       echo "${tgreen}File $file_with_fzf decrypted${treset}"
