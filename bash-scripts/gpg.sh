@@ -66,13 +66,11 @@ function oneFile(){
   if [ $REPLY == "e" ]; then
     file_with_fzf=$(find . -maxdepth 1 -type f | fzf)
     gpg -e -r $user $file_with_fzf
-    rm $file_with_fzf
     echo "${tgreen}File $file_with_fzf.gpg created${treset}"
   elif [ $REPLY == "d" ]; then
     file_with_fzf=$(find . -name "*.gpg" -maxdepth 1 -type f | fzf)
       file_without_gpg=$(echo $file_with_fzf | sed 's/.gpg//')
       gpg -d $file_with_fzf > $file_without_gpg
-      rm $file_with_fzf
       echo "${tgreen}File $file_with_fzf decrypted${treset}"
   else
     echo "${tmagenta}Error: option not found.${treset}"
@@ -86,14 +84,12 @@ function moreFiles(){
     read -p "Choose extension file: " extension
     for file in $(find .  -maxdepth 1 -name "*.$extension"); do
       gpg -e -r $user $file
-      rm $file
       echo "${tgreen}File $file.gpg created${treset}"
     done
   elif [ $REPLY == "d" ]; then
     for file in $(find . -maxdepth 1 -name "*.gpg" -maxdepth 1); do
       file_without_gpg=$(echo $file | sed 's/.gpg//')
       gpg -d $file > $file_without_gpg
-      rm $file
       echo "${tgreen}File $file decrypted${treset}"
     done
   else
