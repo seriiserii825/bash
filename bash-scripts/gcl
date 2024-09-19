@@ -2,6 +2,21 @@
 
 clipboard=$(xclip -o -selection clipboard)
 
+function pipInstall(){
+  if [ ! -d "venv" ]; then
+    python3 -m venv venv
+    source venv/bin/activate
+    python3 -m pip install --upgrade pip
+    python3 -m pip install -r requirements.txt
+    deactivate
+  else
+    source venv/bin/activate
+    python3 -m pip install --upgrade pip
+    python3 -m pip install -r requirements.txt
+    deactivate
+  fi
+}
+
 if [[ $clipboard == *github.com* ]]; then
   echo $clipboard  
   git_command="git clone $clipboard --single-branch"
@@ -11,6 +26,9 @@ if [[ $clipboard == *github.com* ]]; then
     git submodule update --init --recursive
     git submodule foreach 'branch=$(git branch -r | grep -m1 origin/HEAD | sed "s/.*origin\///") && git checkout $branch && git pull origin $branch'
   fi
+  if [ -f requirements.txt ]; then
+    pipInstall
+  fi
 elif [[ $clipboard == *bitbucket.org* ]]; then
   echo $clipboard  
   git_command="$clipboard --single-branch"
@@ -19,6 +37,9 @@ elif [[ $clipboard == *bitbucket.org* ]]; then
   if [ -f .gitmodules ]; then
     git submodule update --init --recursive
     git submodule foreach 'branch=$(git branch -r | grep -m1 origin/HEAD | sed "s/.*origin\///") && git checkout $branch && git pull origin $branch'
+  fi
+  if [ -f requirements.txt ]; then
+    pipInstall
   fi
 else
   echo "Clipboard does not contain a git repository"
