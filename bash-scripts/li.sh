@@ -11,11 +11,9 @@ do
   new_value="<ul>\n"
   while IFS= read -r line
   do
-    new_value+="<li>$line</li>\n"
+    new_value+="<li>$line</li>"
   done < "$output_file"
   new_value+="</ul>"
-  #remove empty lines
-  new_value=$(echo -e "$new_value" | sed '/^\s*$/d')
   echo -n $new_value | xclip -selection clipboard
   notify-send "$(echo -e "$new_value")" 
 
