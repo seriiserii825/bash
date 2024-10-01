@@ -13,26 +13,36 @@ REMOTE_PATH="$REMOTE_PATH/"
 WATCH_FILES=$(jq -r '.watcher.files' "$CONFIG_FILE")
 IGNORE_PATTERNS=$(jq -r '.ignore | join("|")' "$CONFIG_FILE")
 
-# Function to upload a file, preserving directory structure
+# Function to upload a file using rsync with sshpass
 upload_file() {
   local file_path=$1
   local relative_path=${file_path#./}  # Get the relative path from the current directory
-  # echo "Uploading $file_path to $REMOTE_PATH$relative_path"
+  echo "Uploading $file_path to $REMOTE_PATH$relative_path"
   notify-send "Uploading $file_path to $REMOTE_PATH$relative_path"
-  lftp -u "$USERNAME","$PASSWORD" -e "set ssl:verify-certificate no; mkdir -p $REMOTE_PATH$(dirname "$relative_path"); put $file_path -o $REMOTE_PATH$relative_path; bye" "$PROTOCOL://$HOST:$PORT"
+
+  sshpass -p "$PASSWORD" rsync -avz --progress --rsh="sshpass -p $PASSWORD ssh -p $PORT" "$file_path" "$USERNAME@$HOST:$REMOTE_PATH$relative_path"
+}
+
+# Function to delete a file from the remote server using ssh and sshpass
+delete_file() {
+  local file_path=$1
+  local relative_path=${file_path#./}  # Get the relative path from the current directory
+
+  echo "Deleting $file_path from $REMOTE_PATH$relative_path"
+  # notify-send "Deleting $file_path from $REMOTE_PATH$relative_path"
+
+  sshpass -p "$PASSWORD" ssh -p "$PORT" "$USERNAME@$HOST" "rm -f $REMOTE_PATH$relative_path"
 }
 
 # Start watching files with inotify
 inotifywait -m -r -e modify,create,delete --exclude "$IGNORE_PATTERNS" --format "%w%f %e" . | while read file event; do
   if [[ $event == *DELETE* ]]; then
-    local relative_path=${file#./}  # Get the relative path from the current directory
-    # echo "Deleting $file from $REMOTE_PATH$relative_path"
-    # notify-send "Deleting $file from $REMOTE_PATH$relative_path"
-    lftp -u "$USERNAME","$PASSWORD" -e "rm $REMOTE_PATH$relative_path; bye" "$PROTOCOL://$HOST:$PORT"
+    delete_file "$file"
   else
-    # echo "Detected $event on $file"
+    echo "Detected $event on $file"
     # notify-send "Detected $event on $file"
     # Sleep for 2 seconds to wait for compilation to finish
+    # sleep 2
     upload_file "$file"
   fi
 done
