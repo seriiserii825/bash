@@ -22,16 +22,17 @@ IGNORE_PATTERNS=$(jq -r '.ignore | join("|")' "$CONFIG_FILE")
 # echo "Remote Path: $REMOTE_PATH"
 # echo "Ignore Patterns: $IGNORE_PATTERNS"
 
-# Function to upload a file using rsync with sshpass
-upload_file() {
-  local file_path=$1
-  local relative_path=${file_path#./}  # Get the relative path from the current directory
+function uploadAll(){
+  # Function to upload a file using rsync with sshpass
+  upload_file() {
+    local file_path=$1
+    local relative_path=${file_path#./}  # Get the relative path from the current directory
 
-  sshpass -p "$PASSWORD" rsync -avz --progress --rsh="sshpass -p $PASSWORD ssh -p $PORT" "$file_path" "$USERNAME@$HOST:$REMOTE_PATH$relative_path"
+    sshpass -p "$PASSWORD" rsync -avz --progress --rsh="sshpass -p $PASSWORD ssh -p $PORT" "$file_path" "$USERNAME@$HOST:$REMOTE_PATH$relative_path"
 
-  echo "Uploading $file_path to $REMOTE_PATH$relative_path"
-  notify-send "Uploading $file_path to $REMOTE_PATH$relative_path"
-}
+    echo "Uploading $file_path to $REMOTE_PATH$relative_path"
+    notify-send "Uploading $file_path to $REMOTE_PATH$relative_path"
+  }
 
 # Function to delete a file from the remote server using ssh and sshpass
 delete_file() {
@@ -46,13 +47,31 @@ delete_file() {
 
 # Start watching files with inotify
 inotifywait -m -r -e modify,create,delete --exclude "$IGNORE_PATTERNS" --format "%w%f %e" . | while read file event; do
-  if [[ $event == *DELETE* ]]; then
-    delete_file "$file"
-  else
-    echo "Detected $event on $file"
-    # notify-send "Detected $event on $file"
-    # Sleep for 2 seconds to wait for compilation to finish
-    # sleep 2
-    upload_file "$file"
-  fi
+if [[ $event == *DELETE* ]]; then
+  delete_file "$file"
+else
+  echo "Detected $event on $file"
+  upload_file "$file"
+fi
 done
+}
+
+function buildUploadDist(){
+  local dist_path="dist"
+  echo $REMOTE_PATH$dist_path
+  sshpass -p "$PASSWORD" rsync -avz --progress --rsh="sshpass -p $PASSWORD ssh -p $PORT" "$dist_path" "$USERNAME@$HOST:$REMOTE_PATH"
+  echo "Uploading $file_path to $REMOTE_PATH$relative_path"
+  notify-send "Uploading $file_path to $REMOTE_PATH$relative_path"
+}
+
+# check if has argument build
+if [ "$1" == "build" ]; then
+  echo "Building project"
+  yarn build
+  notify-send "Building end"
+  buildUploadDist
+  notify-send "finished upload dist"
+else
+  uploadAll
+fi
+
