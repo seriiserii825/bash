@@ -64,14 +64,24 @@ function buildUploadDist(){
   notify-send "Uploading $file_path to $REMOTE_PATH$relative_path"
 }
 
-# check if has argument build
-if [ "$1" == "build" ]; then
-  echo "Building project"
-  yarn build
-  notify-send "Building end"
+echo "1) Upload all files"
+echo "2) Upload dist folder"
+
+read -p "Enter your choice: " choice
+if [ $choice -eq 2 ]; then
   buildUploadDist
-  notify-send "finished upload dist"
 else
   uploadAll
 fi
 
+# # check if has argument build
+# if [ "$1" == "build" ]; then
+#   echo "Building project"
+#   yarn build
+#   notify-send "Building end"
+#   buildUploadDist
+#   notify-send "finished upload dist"
+# else
+#   uploadAll
+# fi
+#
