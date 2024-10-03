@@ -59,6 +59,8 @@ done
 function buildUploadDist(){
   local dist_path="dist"
   echo $REMOTE_PATH$dist_path
+  #remove dist on server
+  sshpass -p "$PASSWORD" ssh -p "$PORT" "$USERNAME@$HOST" "rm -rf $REMOTE_PATH$dist_path"
   sshpass -p "$PASSWORD" rsync -avz --progress --rsh="sshpass -p $PASSWORD ssh -p $PORT" "$dist_path" "$USERNAME@$HOST:$REMOTE_PATH"
   echo "Uploading $file_path to $REMOTE_PATH$relative_path"
   notify-send "Uploading $file_path to $REMOTE_PATH$relative_path"
