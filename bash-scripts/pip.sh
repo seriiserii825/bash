@@ -38,7 +38,7 @@ function menu(){
       read -p "Enter the package name: " package_name
       initIfNotExists
       python3 -m pip install $package_name
-      python3 -m pip freeze > requirements.txt
+      pip freeze > requirements.txt
       deactivate
       menu
       ;;
@@ -54,7 +54,7 @@ function menu(){
       package_name=$(cat requirements.txt | fzf)
       package_name=$(echo $package_name | cut -d'=' -f1)
       python3 -m pip uninstall $package_name
-      python3 -m pip freeze > requirements.txt
+      pip freeze > requirements.txt
       deactivate
       menu
       ;;
