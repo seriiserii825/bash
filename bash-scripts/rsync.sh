@@ -64,7 +64,7 @@ function buildUploadDist(){
   notify-send "Uploading $file_path to $REMOTE_PATH$relative_path"
 }
 
-echo "1) Upload all files"
+echo "1) Upload all files(type 1 or any key, or press enter)"
 echo "2) Upload dist folder"
 
 read -p "Enter your choice: " choice
