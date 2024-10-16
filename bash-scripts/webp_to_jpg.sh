@@ -13,8 +13,8 @@ if [ "$(magick -version | grep -oP '(?<=Version: ImageMagick )\d+')" -lt 7 ]; th
 fi
 
 # check if web files exist
-if [ ! -f *.webp ]; then
-  echo "No .webp files found in the current directory."
+if [ ! ls *.webp 1> /dev/null 2>&1 ]; then
+  echo 'Error: No .webp files found.' >&2
   exit 1
 fi
 
