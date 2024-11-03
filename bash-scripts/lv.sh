@@ -287,6 +287,7 @@ function requestHandler(){
 }
 resource="${tgreen}Resource${treset}"
 routes="${tblue}Routes${treset}"
+view="${tgreen}View${treset}"
 artisan="${tgreen}Artisan${treset}"
 composer="${tblue}Composer${treset}"
 migration="${tyellow}Migration${treset}"
@@ -295,10 +296,15 @@ controller="${tblue}Controller${treset}"
 request="${tmagenta}Request${treset}"
 middleware="${tblue}Middleware${treset}"
 COLUMNS=8
-select action in  $routes $artisan $composer $migration $model $controller $resource $request $middleware; do
+select action in  $routes $view $artisan $composer $migration $model $controller $resource $request $middleware; do
   case $action in
     $routes)
       docker-compose exec php-fpm php artisan route:list
+      exit 0
+      ;;
+    $view)
+      read -p "Enter view name like 'welcome', or nested with directory like 'home/test': " view_name
+      docker-compose exec php-fpm php artisan make:view $view_name
       exit 0
       ;;
     $artisan)
