@@ -126,9 +126,13 @@ function controller(){
 
 COLUMNS=1
 function composerHandle(){
-  select action in Composer_install Composer_update Composer_dump_autoload Composer_require; do
+  select action in Composer_install Composer_install_package Composer_update Composer_dump_autoload Composer_require; do
     case $action in
       Composer_install)
+        sudo docker-compose exec php-fpm composer install
+        exit 0
+        ;;
+      Composer_install_package)
         read -p "Package name like 'laravel/ui': " package_name
         if [ -z "$package_name" ]; then
           echo "${tmagenta}ERROR! Package name is required. Please try again.${treset}"
