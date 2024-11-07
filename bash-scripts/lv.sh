@@ -46,7 +46,7 @@ function migrate(){
         exit 0
         ;;
       *)
-        echo "ERROR! Please select between 1..3"
+        exit 0
         ;;
     esac
   done
@@ -335,7 +335,7 @@ select action in  $routes $view $artisan $composer $migration $model $controller
       middlewareHandler
       ;;
     *)
-      echo "ERROR! Please select between 1..3"
+      exit 0
       ;;
   esac
 done
