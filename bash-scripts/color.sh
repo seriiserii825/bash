@@ -32,8 +32,31 @@ adjust_brightness() {
 }
 
 # Prompt for color, action, and percentage
-read -p "Enter the hex color (e.g., #ff5733): " hex_color
-read -p "Do you want to lighten or darken the color? (lighten/darken): " action
+# hex_color from clipboard
+
+hex_color=$(xclip -o -selection clipboard)
+
+# Check if the hex color is empty or invalid
+if [[ -z "$hex_color" ]]; then
+    echo "Error: Hex color cannot be empty."
+    exit 1
+fi
+
+if [[ ! $hex_color =~ ^#([A-Fa-f0-9]{6})$ ]]; then
+    echo "Error: Invalid hex color format. Please use #RRGGBB."
+    exit 1
+fi
+
+notify-send "Color" "Hex color: $hex_color"
+
+# read -p "Enter the hex color (e.g., #ff5733): " hex_color
+
+read -p "Do you want to lighten or darken the color? (lighten/darken), use l/h: " action
+if [ "$action" = "l" ]; then
+    action="lighten"
+elif [ "$action" = "h" ]; then
+    action="darken"
+fi
 read -p "Enter the percentage to adjust (e.g., 10 for 10%): " adjustment
 
 # Validate hex color input
@@ -63,6 +86,9 @@ b=$(adjust_brightness $b $adjustment)
 
 # Convert RGB back to hex
 adjusted_color=$(rgb_to_hex $r $g $b)
+# Copy the adjusted color to the clipboard
+echo -n $adjusted_color | xclip -selection clipboard
 
-echo "Original color: $hex_color"
-echo "Adjusted color: $adjusted_color"
+# Display the adjusted color
+notify-send "adjusted_color: $adjusted_color"
+
