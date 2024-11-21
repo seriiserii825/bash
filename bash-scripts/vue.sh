@@ -200,7 +200,6 @@ TEST
 }
 
 function createView(){
-  set -x
   if [ ! -f "$view_layout_path" ]
     then
       createViewLayout
@@ -218,7 +217,6 @@ function createView(){
   sed -i -E 's/([a-z])([A-Z])/\1-\L\2/g' $file_path
   sed -i -e 's/class="\([^"]*\)"/class="\L\1"/g' $file_path
   echo "${tgreen}src/views/${cmp_name}View.vue was created${treset}"
-  set +x
 }
 
 function createEnumLayout(){
