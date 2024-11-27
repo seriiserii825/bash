@@ -318,7 +318,18 @@ select action in $view $enum $api $cmp $store $interface $hook $scss; do
         then
           createComponentLayout
       fi
-      read -p "${tgreen}Give component directory, example 'popups': ${treset}" cmp_dir
+      directories=(ls -d src/components/*/)
+      for i in "${directories[@]}"
+      do
+        echo $i
+      done
+      read -p "${tgreen}Do you want to create or to select one? c/s': ${treset}" choosen
+      if [ "$choosen" == "s" ]
+        then
+          cmp_dir=$(fzf src/components/*/)
+        else
+          read -p "${tgreen}Give directory name, example 'popups': ${treset}" cmp_dir
+      fi
       read -p "${tgreen}Give component name, example 'Home': ${treset}" cmp_name
       mkdir -p "src/components/$cmp_dir"
       file_path="src/components/$cmp_dir/$cmp_name.vue"
