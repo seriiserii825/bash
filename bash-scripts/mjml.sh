@@ -6,10 +6,17 @@ if ! [ -x "$(command -v mjml)" ]; then
   npm install -g mjml
 fi
 
+output_dir="output"
+if [ ! -d "$output_dir" ]; then
+  mkdir $output_dir
+fi
+
 # list throw all mjml files in the projects directory and compile them to html in output directory
 for file in $(find ./projects -name "*.mjml")
 do
-  echo "Compiling $file"
-  mjml $file -o "oputput/$(basename $file .mjml).html"
+  filename=$(basename -- "$file")
+  filename="${filename%.*}"
+  mjml $file -o $output_dir/$filename.html
+  echo "compiled $file to $output_dir/$filename.html"
 done
 
