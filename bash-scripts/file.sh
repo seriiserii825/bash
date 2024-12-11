@@ -12,15 +12,29 @@ function fromFile(){
   abs_path=$( realpath $file_path )
   echo "File path is: $file_path"
   COLUMNS=1
-  select action in "${tmagenta}Delete${treset}" "${tmagenta}DeleteAllExceptThis${treset}" "${tgreen}Rename${treset}" "${tgreen}Read${treset}" "${tblue}CopyName${treset}" "${tblue}CopyPath${treset}" "${tblue}CopyAbsPath${treset}" "${tblue}CopyToDownloads${treset}" "${tblue}FileToBuffer${treset}" "${tblue}BufferToFile${treset}" "${tgreen}Execute${treset}" "${tblue}OpenInBrowser${treset}" "${tblue}Multiply${treset}" "${tblue}Find words${treset}" Quit; do
+  select action in "${tmagenta}Delete${treset}" "${tmagenta}DeleteAllWithPattern${treset}" "${tmagenta}DeleteAllExceptThis${treset}" "${tmagenta}DeleteAllExceptPattern${treset}" "${tgreen}Rename${treset}" "${tgreen}Read${treset}" "${tblue}CopyName${treset}" "${tblue}CopyPath${treset}" "${tblue}CopyAbsPath${treset}" "${tblue}CopyToDownloads${treset}" "${tblue}FileToBuffer${treset}" "${tblue}BufferToFile${treset}" "${tgreen}Execute${treset}" "${tblue}OpenInBrowser${treset}" "${tblue}Multiply${treset}" "${tblue}Find words${treset}" Quit; do
     case $action in
       "${tmagenta}Delete${treset}")
         rm $file_path
         echo "${tgreen}File $file_path was deleted${treset}"
+        ls -la
         ;;
       "${tmagenta}DeleteAllExceptThis${treset}")
-        find -type f -not -name "$file" -delete
+        find . -maxdepth 1 -type f -not -name "$file" -delete
         echo "${tgreen}All files except $file were deleted${treset}"
+        ls -la
+        ;;
+      "${tmagenta}DeleteAllWithPattern${treset}")
+        read -p "Enter pattern to keep: " pattern
+        find . -maxdepth 1 -type f -name "*$pattern*" -exec rm {} +
+        echo "${tgreen}All files with $pattern were deleted${treset}"
+        ls -la
+        ;;
+      "${tmagenta}DeleteAllExceptPattern${treset}")
+        read -p "Enter pattern to keep: " pattern
+        find . -maxdepth 1 -type f ! -name "*$pattern*" -exec rm {} +
+        echo "${tgreen}All files except $pattern were deleted${treset}"
+        ls -la
         ;;
       "${tgreen}Rename${treset}")
         read -p "Enter new file name: " new_file_name
@@ -105,22 +119,4 @@ function fromFile(){
   done
 }
 
-select action in "${tgreen}Buffer to file${treset}" "${tblue}Select File${treset}" "${tmagenta}Quit${treset}"; do
-  case $action in
-    "${tgreen}Buffer to file${treset}")
-      toFile
-      exit 0
-      ;;
-    "${tblue}Select File${treset}")
-      fromFile
-      exit 0
-      ;;
-    "${tmagenta}Quit${treset}")
-      exit 0
-      ;;
-    *)
-      exit 0
-      ;;
-  esac
-done
-
+fromFile
