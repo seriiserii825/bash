@@ -7,6 +7,7 @@ function changeImage(){
   echo "${tgreen}3. Width${treset}"
   echo "${tblue}4. Height${treset}"
   echo "${tgreen}5. Flop${treset}"
+  echo "${tgreen}5.1 Flop current and copy${treset}"
   echo "${tblue}6. Rotate${treset}"
   echo "${tmagenta}7. Exit${treset}"
   read -p "${tgreen}Enter your choice: ${treset}" choice
@@ -44,6 +45,13 @@ function changeImage(){
       ;;
     5)
       mogrify -flop $*
+      changeImage $*
+      ;;
+    5.1)
+      current_file=$*
+      new_file=$(echo $current_file | sed 's/\(.*\)\.\(.*\)/\1-flop.\2/')
+      cp $current_file $new_file
+      mogrify -flop $new_file
       changeImage $*
       ;;
     6)
