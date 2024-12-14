@@ -1,0 +1,29 @@
+#!/bin/bash
+
+
+# Check for running background jobs
+if jobs | grep -q '[0-9]'; then
+    echo "[red]There are background jobs running:"
+    jobs
+    return
+fi
+
+# Check for active screen sessions
+if screen -ls | grep -q '\.server'; then
+    echo "[red]There are active screen sessions:"
+    screen -ls
+    echo "[blue]type kill_server [session_name] to kill the session"
+    return
+fi
+
+# Check if docker containers are running
+if docker ps | grep -q '[0-9]'; then
+    echo "[red]There are active docker containers:"
+    docker ps
+    echo "[blue]type docker_stop_all to stop all containers"
+    return
+fi
+
+# No jobs or screen sessions found, proceed with shutdown
+echo "[green]No background jobs or active screen sessions found. Shutting down..."
+sudo shutdown -h now
