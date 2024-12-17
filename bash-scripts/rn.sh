@@ -1,5 +1,13 @@
 #! /bin/bash 
 
+# if not installed perl-rename
+if ! command -v perl-rename &> /dev/null
+then
+  echo "${tred}perl-rename is not installed${treset}"
+  sudo pacman -S perl-rename
+fi
+
+
 function renameSymbol(){
     read -p "${tgreen}Enter the symbol to replace: ${treset}" symbol
     if [ -z "$symbol" ]
