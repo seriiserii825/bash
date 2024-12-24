@@ -24,7 +24,8 @@ function menu(){
   echo "${tblue}2. Install Package${treset}"
   echo "${tblue}3. Install all${treset}"
   echo "${tmagenta}4. Uninstall${treset}"
-  echo "${tmagenta}5. Exit${treset}"
+  echo "${tmagenta}5. Reinstall all${treset}"
+  echo "${tmagenta}6. Exit${treset}"
 
   read -p "Enter the option: " option
   case $option in
@@ -59,6 +60,13 @@ function menu(){
       menu
       ;;
     5)
+      rm -rf venv
+      initIfNotExists
+      python3 -m pip install -r requirements.txt
+      deactivate
+      menu
+      ;;
+    6)
       exit 0
       ;;
     *)
