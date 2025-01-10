@@ -6,11 +6,11 @@
 
 if grep -q "^source ~/Documents/bash/bash-scripts/zsh_nvm" ~/.zshrc; then
   #comment this string
-  sed -i 's/^source ~\/Documents\/bash\/bash-scripts\/zsh_nvm/#source ~\/Documents\/bash\/bash-scripts\/zsh_nvm/g' ~/xubuntu/zshrc
+  sed -i 's/^source ~\/Documents\/bash\/bash-scripts\/zsh_nvm/#source ~\/Documents\/bash\/bash-scripts\/zsh_nvm/g' ~/xubuntu/.zshrc
   echo "zsh_nvm commented"
   exec zsh
 else
-  sed -i 's/^#source ~\/Documents\/bash\/bash-scripts\/zsh_nvm/source ~\/Documents\/bash\/bash-scripts\/zsh_nvm/g' ~/xubuntu/zshrc
+  sed -i 's/^#source ~\/Documents\/bash\/bash-scripts\/zsh_nvm/source ~\/Documents\/bash\/bash-scripts\/zsh_nvm/g' ~/xubuntu/.zshrc
   echo "zsh_nvm uncommented"
   exec zsh
 fi
