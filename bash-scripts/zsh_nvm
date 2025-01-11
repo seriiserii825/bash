@@ -6,6 +6,13 @@ function setNvmrc(){
   nvm use
 }
 
+function setNpmrc(){
+  touch .npmrc
+  echo "engine-strict=true" > .npmrc
+}
+
+setNpmrc
+
 function nvmrcFromPackageJson() {
   if [ command -v jq >/dev/null 2>&1 ]; then
     echo "${tred}jq not installed${treset}"
