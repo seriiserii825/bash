@@ -1,69 +1,37 @@
-# place this after nvm initialization!
-
-function setNvmrc(){
-  touch .nvmrc
-  echo $1 > .nvmrc
-  nvm use
-}
-
 function setNpmrc(){
-  touch .npmrc
-  echo "engine-strict=true" > .npmrc
+  if [ ! -f .npmrc ]; then
+    touch .npmrc
+    echo "engine-strict=true" > .npmrc
+  fi
 }
 
 setNpmrc
 
-function nvmrcFromPackageJson() {
-  if [ command -v jq >/dev/null 2>&1 ]; then
-    echo "${tred}jq not installed${treset}"
-    sudo apt install jq -y
-    return
-  fi
-  echo "${tred}package.json has node string${treset}"
-  echo "${tred}creating .nvmrc from package.json${treset}"
-  # get node version from package.json
-  node_version=$(jq -r '.engines.node' package.json)
-  echo "node_version: $node_version"
-  new=$(echo $node_version | sed 's/[^0-9\.]//g')
-  setNvmrc $new
-}
-
-function toNvmrcAndPackageJsonFromGulpOrVite(){
-  if [ -f gulpfile.js ]; then
-    package_json=$(cat package.json | jq '. += {"engines" : { "node" : "14.21.3" }}')
-    echo $package_json > package.json
-    setNvmrc 14.21.3
+function getNodeVersionFromPackageJson(){
+  if [ -f package.json ]; then
+    node_version=$(jq -r '.engines.node' package.json)
+    if [ -z "$node_version" ]; then
+      echo "${tred}package.json has no node string${treset}"
+      exit(1)
+    fi
+    new=$(echo $node_version | sed 's/[^0-9.]//g')
+    echo $new
   else
-    package_json=$(cat package.json | jq '. += {"engines" : { "node" : "18.19.0" }}')
-    echo $package_json > package.json
-    setNvmrc 18.19.0
+    # echo "package.json not found"
+    exit(1)
   fi
 }
 
 autoload -U add-zsh-hook
 load-nvmrc() {
   local node_version="$(nvm version)"
-  local nvmrc_path="$(nvm_find_nvmrc)"
-
-  if [ -n "$nvmrc_path" ]; then
-    local nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")")
-
-    if [ "$nvmrc_node_version" = "N/A" ]; then
-      nvm install
-    elif [ "$nvmrc_node_version" != "$node_version" ]; then
-      nvm use
-    fi
-  elif [[ ! -f .nvmrc && -f package.json ]]; then
-    echo "${tmagenta}No .nvmrc file found${treset}"
-    has_node_string=$(grep '"node":' package.json)
-    if [ "$has_node_string" ]; then
-      nvmrcFromPackageJson
-    else
-      toNvmrcAndPackageJsonFromGulpOrVite
-    fi
-  elif [ "$node_version" != "$(nvm version default)" ]; then
-    echo "Reverting to nvm default version"
-    nvm use default
+  node_package=$(getNodeVersionFromPackageJson)
+  echo "node_version: $node_version"
+  echo "node_package: $node_package"
+  if [ "$node_version" != "$node_package" ]; then
+    # check if node version is installed
+    nvm install $node_package
+    nvm use $node_package
   fi
 }
 add-zsh-hook chpwd load-nvmrc
