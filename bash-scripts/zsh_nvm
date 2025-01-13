@@ -12,13 +12,13 @@ function getNodeVersionFromPackageJson(){
     node_version=$(jq -r '.engines.node' package.json)
     if [ -z "$node_version" ]; then
       echo "${tred}package.json has no node string${treset}"
-      exit(1)
+      exit 1
     fi
     new=$(echo $node_version | sed 's/[^0-9.]//g')
     echo $new
   else
     # echo "package.json not found"
-    exit(1)
+    exit 1
   fi
 }
 
