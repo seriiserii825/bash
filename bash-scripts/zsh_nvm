@@ -49,6 +49,7 @@ function load_nvmrc() {
     nvm install "$node_package"
     nvm use "$node_package"
   fi
+  exec zsh
 }
 if [ -f package.json ]; then
   load_nvmrc
