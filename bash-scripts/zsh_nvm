@@ -34,5 +34,8 @@ load-nvmrc() {
     nvm use $node_package
   fi
 }
-add-zsh-hook chpwd load-nvmrc
-load-nvmrc
+
+if [ -f package.json ]; then
+  add-zsh-hook chpwd load-nvmrc
+  load-nvmrc
+fi
