@@ -290,6 +290,7 @@ function requestHandler(){
   done
 }
 resource="${tgreen}Resource${treset}"
+component="${tblue}Component${treset}"
 routes="${tblue}Routes${treset}"
 view="${tgreen}View${treset}"
 artisan="${tgreen}Artisan${treset}"
@@ -300,8 +301,13 @@ controller="${tblue}Controller${treset}"
 request="${tmagenta}Request${treset}"
 middleware="${tblue}Middleware${treset}"
 COLUMNS=8
-select action in  $routes $view $artisan $composer $migration $model $controller $resource $request $middleware; do
+select action in $component $routes $view $artisan $composer $migration $model $controller $resource $request $middleware; do
   case $action in
+    $component)
+      read -p "Enter component name like 'Alert': " component_name
+      docker-compose exec php-fpm php artisan make:component $component_name
+      exit 0
+      ;;
     $routes)
       docker-compose exec php-fpm php artisan route:list
       exit 0
