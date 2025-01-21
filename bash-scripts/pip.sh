@@ -9,6 +9,8 @@ function init(){
 
 function activate(){
   source venv/bin/activate
+  python3 -m ensurepip --upgrade
+  python3 -m pip install --upgrade pip
 }
 
 function initIfNotExists(){
