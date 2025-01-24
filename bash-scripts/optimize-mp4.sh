@@ -32,10 +32,11 @@ function optimizeVideo(){
 
   if [ "$remove_audio" == "y" ]; then
     output_file=$(echo $video_url | sed "s/.mp4/_$quality-no-audio.mp4/g")
-    ffmpeg -i $video_url -vcodec libx265 -crf $quality $output_file
-    # ffmpeg -i $video_url -vcodec libx265 -crf 28 output.mp4
+    ffmpeg -i $video_url -vcodec libx265 -crf $quality -acodec aac $output_file
+    # ffmpeg -i input.mp4 -vcodec libx264 -crf 23 -acodec aac output.mp4
   else
-    ffmpeg -i $video_url -vcodec libx265 -crf $quality $output_file
+    # ffmpeg -i $video_url -vcodec libx265 -crf $quality $output_file
+    ffmpeg -i $video_url -vcodec libx265 -crf $quality -acodec aac $output_file
   fi
 }
 
