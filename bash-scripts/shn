@@ -5,6 +5,8 @@
 if jobs | grep -q '[0-9]'; then
     echo "[red]There are background jobs running:"
     jobs
+    echo "[blue]type kill %1 to kill the job"
+    #press enter to continue
     return
 fi
 
@@ -23,6 +25,9 @@ if docker ps | grep -q '[0-9]'; then
     echo "[blue]type docker_stop_all to stop all containers"
     return
 fi
+
+# wait for user input
+read -p "No background jobs or active screen sessions found. Shut down? [y/n] " -n 1 -r
 
 # No jobs or screen sessions found, proceed with shutdown
 echo "[green]No background jobs or active screen sessions found. Shutting down..."
