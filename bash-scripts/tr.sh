@@ -1,7 +1,5 @@
 #!/bin/bash
-
 # check if trans-shell is installed
-
 if ! [ -x "$(command -v trans)" ]
 then
   echo "${tmagenta}trans-shell is not installed. Please install it first.${treset}"
@@ -9,8 +7,6 @@ then
   sudo pacman -S trans-shell
 fi
 clipboard=$(xclip -o -selection clipboard)
-
-
 select lang in "en" "it" "ru" "ro" "de" "fr"
 do
   case $lang in
@@ -54,4 +50,8 @@ do
       echo "ERROR! Please select between 1..6";;
   esac
 done
-
+echo "language selected: $lang"
+read -p "Write text to translate: " text
+trans -b :$lang "$text" | tr -d '\n' | xsel -b -i
+copied_text=$(xsel -b -o)
+echo "$copied_text"
