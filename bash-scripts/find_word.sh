@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 echo -n "Word to find: "
 read -r WORD
@@ -7,26 +7,22 @@ read -r WORD
 ignore_file=""
 ignore_dir=""
 
-# File ignoring
-echo -n "Do you want to ignore a specific file? (y/n): "
-read -r ASK_IGNORE_FILE
-if [[ "$ASK_IGNORE_FILE" == "y" ]]; then
-    file_path=$(fzf)
-    if [[ -n "$file_path" ]]; then
-        ignore_file="--ignore-file=is:$(basename "$file_path")"
-    fi
-fi
+# # File ignoring
+# echo -n "Do you want to ignore a specific file? (y/n): "
+# read -r ASK_IGNORE_FILE
+# if [[ "$ASK_IGNORE_FILE" == "y" ]]; then
+#     file_path=$(fzf)
+#     if [[ -n "$file_path" ]]; then
+#         ignore_file="--ignore-file=is:$(basename "$file_path")"
+#     fi
+# fi
 
-# Directory ignoring
+# Directory ignoring (modified to find directories with fzf)
 echo -n "Do you want to ignore a directory? (y/n): "
 read -r ASK_IGNORE_DIR
 if [[ "$ASK_IGNORE_DIR" == "y" ]]; then
-    dir_path=$(fzf)
-    # get directory path from dir_path that it's a file path
-    if [[ -f "$dir_path" ]]; then
-        dir_path=$(dirname "$dir_path")
-    fi
-    
+    echo "Select directory to ignore:"
+    dir_path=$(find . -type d 2>/dev/null | fzf --height 40% --reverse)
     if [[ -n "$dir_path" ]]; then
         ignore_dir="--ignore-dir=$(basename "$dir_path")"
     fi
@@ -34,13 +30,9 @@ fi
 
 # Build command
 cmd="ack \"$WORD\""
-if [[ -n "$ignore_file" ]]; then
-    cmd+=" $ignore_file"
-fi
-if [[ -n "$ignore_dir" ]]; then
-    cmd+=" $ignore_dir"
-fi
+[[ -n "$ignore_file" ]] && cmd+=" $ignore_file"
+[[ -n "$ignore_dir" ]] && cmd+=" $ignore_dir"
 
 # Execute
-echo "Running: $cmd"
+echo -e "\nRunning: $cmd"
 eval "$cmd"
