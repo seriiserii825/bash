@@ -1,6 +1,7 @@
 #! /bin/bash
 
-file_path=$( fzf )
+# get svg files only with fzf
+file_path=$( find . -type f -name "*.svg" | fzf )
 
 read -p "Enter w/o(width,optimize): " choose
 
