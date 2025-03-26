@@ -1,6 +1,10 @@
 #!/bin/bash
 
 read -p "Enter port number: " port
-sudo netstat -tulnp | grep ':$port'
-fuser -k $port/tcp && echo 'Terminated' || echo "Nothing was running on the $port"
-# fuser -k $port_number/tcp && echo 'Terminated' || echo "Nothing was running on the $port_number"
+sudo lsof -i:$port
+# kill all the processes running on the port
+
+read -p "Do you want to kill the process running on the port? (y/n): " choice
+if [ $choice == "y" ]; then
+  sudo lsof -t -i tcp:$port -s tcp:listen | sudo xargs kill
+fi
