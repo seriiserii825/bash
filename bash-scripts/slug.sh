@@ -20,8 +20,8 @@ echo "${tmagenta}Press Ctrl+C to stop the script${treset}"
 # done
 #
 #
-while /home/serii/Documents/bash/bash-scripts/clipnotify; do
-  sleep 2
+
+function clipboardHandler() {
   clipboard=$(xclip -o -selection clipboard)
   echo "$clipboard"
   notify-send "$clipboard"
@@ -30,6 +30,17 @@ while /home/serii/Documents/bash/bash-scripts/clipnotify; do
   slug_clipboard=$(echo "$slug_clipboard" | tr -d ':,"')
   # remove '
   slug_clipboard=$(echo "$slug_clipboard" | tr -d "'")
+  # remove newline at the end
+  slug_clipboard=$(echo "$slug_clipboard" | tr -d '\n')
+  # after paste i have newline remove it
+  slug_clipboard=$(echo "$slug_clipboard" | tr -d '\r')
   xclip -selection clipboard -t text/plain -i <<< "$slug_clipboard"
   notify-send "$slug_clipboard"
+}
+
+clipboardHandler
+
+while /home/serii/Documents/bash/bash-scripts/clipnotify; do
+  sleep 2
+  clipboardHandler
 done
