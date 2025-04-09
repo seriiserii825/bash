@@ -26,6 +26,10 @@ while /home/serii/Documents/bash/bash-scripts/clipnotify; do
   echo "$clipboard"
   notify-send "$clipboard"
   slug_clipboard=$(echo "$clipboard" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -d '/()[]{}<>?|’')
+  # remove :,'" from sug
+  slug_clipboard=$(echo "$slug_clipboard" | tr -d ':,"')
+  # remove '
+  slug_clipboard=$(echo "$slug_clipboard" | tr -d "'")
   xclip -selection clipboard -t text/plain -i <<< "$slug_clipboard"
   notify-send "$slug_clipboard"
 done
