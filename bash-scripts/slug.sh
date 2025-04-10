@@ -33,7 +33,7 @@ function clipboardHandler() {
   # remove newline at the end
   slug_clipboard=$(echo "$slug_clipboard" | tr -d '\n')
   # after paste i have newline remove it
-  slug_clipboard=$(echo "$slug_clipboard" | tr -d '\r')
+  slug_clipboard=$(echo "$slug_clipboard" | tr -d '#')
   xclip -selection clipboard -t text/plain -i <<< "$slug_clipboard"
   notify-send "$slug_clipboard"
 }
