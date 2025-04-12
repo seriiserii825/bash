@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # Find icon by argument after calling script
 # Example: ./fontawesome.sh setting
@@ -17,6 +17,9 @@ if [ -z "$icon_name" ]; then
 fi
 
 icon_name=$(echo "$icon_name" | tr '[:upper:]' '[:lower:]')
+
+# Switch to workspace 1 and focus it
+i3-msg workspace 1
 
 # Open browser with search result for the icon
 $chrome_path "https://fontawesome.com/search?q=$icon_name&o=r&ic=free" &
