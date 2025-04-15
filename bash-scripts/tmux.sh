@@ -10,38 +10,38 @@ done < <(tmux list-sessions)
 
 ## check if there are any sessions
 if [ ${#sessions[@]} -eq 0 ]; then
-    echo "No tmux sessions found."
+    echo "${tmagenta}No tmux sessions found.${treset}"
     exit 1
 fi
 
-read -p "Select or create or delete, c/s/d: " choice
+read -p "${tblue}Select or create or delete, c/s/d: ${treset}" choice
 
 if [[ $choice == "c" ]]; then
-    read -p "Enter session name: " session_name
+    read -p "${tgreen}Enter session name: ${treset}" session_name
     tmux new-session -s "$session_name" -d
     tmux attach-session -t "$session_name"
 elif [[ $choice == "s" ]]; then
-    echo "Select a session to attach to:"
+    echo "${tblue}Select a session to attach to:${treset}"
     # select with fzf
     session_name=$(printf '%s\n' "${sessions[@]}" | fzf --height 40% --reverse --inline-info)
     if [ -z "$session_name" ]; then
-        echo "No session selected."
+        echo "${tmagenta}No session selected.${treset}"
         exit 1
     fi
     session_name=$(echo "$session_name" | awk -F: '{print $1}')
     tmux attach-session -t "$session_name"
   elif [[ $choice == "d" ]]; then
-    echo "Select a session to delete:"
+    echo "${tgreen}Select a session to delete:${treset}"
     # select with fzf
     session_name=$(printf '%s\n' "${sessions[@]}" | fzf --height 40% --reverse --inline-info)
     if [ -z "$session_name" ]; then
-        echo "No session selected."
+        echo "${tmagenta}No session selected.${treset}"
         exit 1
     fi
     session_name=$(echo "$session_name" | awk -F: '{print $1}')
     tmux kill-session -t "$session_name"
 else
-    echo "Invalid choice. Please enter 'c' or 's'."
+    echo "${tmagenta}Invalid choice. Please enter 'c' or 's'.${treset}"
 fi
 
 tmux ls
