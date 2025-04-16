@@ -1,5 +1,10 @@
 #!/bin/bash
 
+## check if have ~/.tmux/plugins directory
+if [ ! -d "$HOME/.tmux/plugins" ]; then
+  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+fi
+
 ## list tmux sessions
 tmux list-sessions
 
