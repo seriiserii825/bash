@@ -3,10 +3,10 @@
 ## check if have ~/.tmux/plugins directory
 if [ ! -d "$HOME/.tmux/plugins" ]; then
   git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+else
+  echo "${tgreen}tmux plugins already installed.${treset}"
 fi
 
-## list tmux sessions
-tmux list-sessions
 
 sessions=()
 while IFS= read -r line; do
@@ -16,8 +16,11 @@ done < <(tmux list-sessions)
 ## check if there are any sessions
 if [ ${#sessions[@]} -eq 0 ]; then
     echo "${tmagenta}No tmux sessions found.${treset}"
+    tmux
     exit 1
 fi
+
+tmux list-sessions
 
 read -p "${tblue}Select or create or delete, c/s/d: ${treset}" choice
 

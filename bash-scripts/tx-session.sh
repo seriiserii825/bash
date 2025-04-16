@@ -1,5 +1,23 @@
 #!/bin/bash
 
+if [ ! -d "$HOME/.tmux/plugins" ]; then
+  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+else
+  echo "${tgreen}tmux plugins already installed.${treset}"
+fi
+
+
+sessions=()
+while IFS= read -r line; do
+    sessions+=("$line")
+done < <(tmux list-sessions)
+
+## check if there are any sessions
+if [ ${#sessions[@]} -eq 0 ]; then
+    echo "${tmagenta}No tmux sessions found.${treset}"
+    tmux
+fi
+
 # Get session name from current directory
 SESSION_NAME=$(basename "$PWD")
 
