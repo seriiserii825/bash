@@ -22,13 +22,9 @@ fi
 
 tmux list-sessions
 
-read -p "${tblue}Select or create or delete, c/s/d: ${treset}" choice
+read -p "${tblue}Select or create or delete, s/d: ${treset}" choice
 
-if [[ $choice == "c" ]]; then
-    read -p "${tgreen}Enter session name: ${treset}" session_name
-    tmux new-session -s "$session_name" -d
-    tmux attach-session -t "$session_name"
-elif [[ $choice == "s" ]]; then
+if [[ $choice == "s" ]]; then
     echo "${tblue}Select a session to attach to:${treset}"
     # select with fzf
     session_name=$(printf '%s\n' "${sessions[@]}" | fzf --height 40% --reverse --inline-info)
