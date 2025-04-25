@@ -1,53 +1,43 @@
 #!/bin/bash
 
-read -p "Replace file? (y/n): " replace_file
-if [ $replace_file == "y" ]; then
-  file=$(find . -type f | fzf)
-  file_name_without_extension=$(basename $file | cut -d. -f1)
-  files_with_file_extenstion_inside=$(find . -type f -exec grep -l $file_name_without_extension {} \;)
-
-  result_files=()
-  for file_with_file_extenstion in $files_with_file_extenstion_inside
-  do
-    read -p "file_with_file_extenstion: $file_with_file_extenstion, bat? (y/n):"
-    if [ $bat == "y" ]; then
-      bat $file_with_file_extenstion
-    fi
-    read -p "Add this file to replace list? (y/n): " add_file
-    if [ $add_file == "y" ]; then
-      result_files+=($file_with_file_extenstion)
-    fi
-  done
-  read -p "Enter new word: " new_word
-  for result_file in "${result_files[@]}"
-  do
-    sed -i "s/$file_name_without_extension/$new_word/g" $result_file
-  done
-  exit
-else
-  read -p "Enter a word: " word
-  grep --color=always -Rn . -e $word
-  read -p "Enter new word: " new_word
-  read -p "Enter file_type, by comma: " file_type
-  file_types=()
-  IFS=',' read -r -a file_types <<< "$file_type"
-  for file_type in "${file_types[@]}"
-  do
-    echo "file_type: $file_type"
-    # find . -name "*.$file_type"  -exec sed -i "s/$word/$new_word/g" {} \;
-    find . -type d \( -name node_modules -o -name .git \) -prune -o -name "*.$file_type" -exec sed -i "s/$word/$new_word/g" {} \;
-  done
+read -p "Enter file_extension (e.g., .txt): " file_extension
+# Check if the file extension is empty
+if [[ -z $file_extension ]]; then
+    echo "File extension cannot be empty."
+    exit 1
 fi
 
-# read -p "Enter a word: " word
-# grep --color=always -Rn . -e $word
-# read -p "Enter new word: " new_word
-# read -p "Enter file_type, by comma: " file_type
-# file_types=()
-# IFS=',' read -r -a file_types <<< "$file_type"
-# for file_type in "${file_types[@]}"
-# do
-#     echo "file_type: $file_type"
-#     # find . -name "*.$file_type"  -exec sed -i "s/$word/$new_word/g" {} \;
-#     find . -type d \( -name node_modules -o -name .git \) -prune -o -name "*.$file_type" -exec sed -i "s/$word/$new_word/g" {} \;
-# done
+read -p "Enter search_string: " search_string
+# Check if the search string is empty
+if [[ -z $search_string ]]; then
+    echo "Search string cannot be empty."
+    exit 1
+fi
+read -p "Enter replace_string: " replace_string
+# Check if the replace string is empty
+if [[ -z $replace_string ]]; then
+    echo "Replace string cannot be empty."
+    exit 1
+fi
+read -p "Exclude folder: " exclude_folder
+
+# check if exclude exists
+if [[ -d $exclude_folder ]]; then
+    echo "Excluding folder: $exclude_folder"
+else
+    echo "Folder $exclude_folder does not exist. No folders will be excluded."
+    exclude_folder=""
+fi
+
+# just show files that will be changed
+echo "Files that will be changed:"
+find . -type f -name "*$file_extension" ! -path "./$exclude_folder/*" -exec grep -l "$search_string" {} \;
+# ask for confirmation
+read -p "Do you want to proceed with the replacement? (y/n): " confirm
+if [[ $confirm != "y" ]]; then
+    echo "Aborting."
+    exit 1
+fi
+# find and replace
+find . -type f -name "*$file_extension" ! -path "./$exclude_folder/*" -exec sed -i "s/$search_string/$replace_string/g" {} \;
+
