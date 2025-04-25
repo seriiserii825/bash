@@ -1,5 +1,14 @@
 #!/bin/bash
 
+if [[ "$1" == "--help" || "$1" == "-h" ]]; then
+    echo "Usage: color.sh [--help|-h]"
+    echo "Usage: color.sh hex color in clipboard"
+    echo "This script adjusts the brightness of a hex color."
+    echo "It can lighten or darken the color based on user input."
+    echo "The adjusted color is copied to the clipboard."
+    exit 0
+fi
+
 # Function to convert hex to RGB
 hex_to_rgb() {
     local hex=$1
