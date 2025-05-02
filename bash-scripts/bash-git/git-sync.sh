@@ -13,6 +13,7 @@ excluded_dirs=(
     "*/JetBrains/*"
     "*/IdeaProjects/*"
     "*/.oh-my-zsh/*"
+    "*/advanced-custom-fields-wpcli/*"
 )
 
 # Start building the find command
@@ -38,8 +39,7 @@ read -p "Do you want to see the file? (y/n): " answer
 if [[ "$answer" == "y" ]]; then
   if [[ -f "$file_path" ]]; then
       # bat "$file_path" --paging=always --color=always | less -R
-      # bat "$file_path" --paging=always --color=always
-      script -q -c "bat '$file_path' --color=always" /dev/null | less -R
+      bat "$file_path" --color=always
   else
       echo "File not found: $file_path"
   fi
