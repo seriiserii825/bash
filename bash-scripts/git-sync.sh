@@ -1,0 +1,54 @@
+#!/bin/bash
+
+file_path="$HOME/Downloads/git-repos.txt"
+
+rm -f "$file_path"
+
+excluded_dirs=(
+    "*/autoload/*"
+    "*/.tmux/*"
+    "*/.cache/*"
+    "*/.local/*"
+    "*/snapd/*"
+    "*/JetBrains/*"
+    "*/IdeaProjects/*"
+    "*/.oh-my-zsh/*"
+)
+
+# Start building the find command
+find_cmd="find ~ -type d -name '.git'"
+
+# Append exclusions
+for dir in "${excluded_dirs[@]}"; do
+    find_cmd+=" ! -path $dir"
+done
+
+# Add redirection and sed
+find_cmd+=" 2>/dev/null | sed 's|/\.git||' > $file_path"
+
+# Execute the command
+eval "$find_cmd"
+
+# Show file lines count
+lines_count=$(wc -l < "$file_path")
+echo "Found $lines_count git repositories."
+
+# ask if want to see the file
+read -p "Do you want to see the file? (y/n): " answer
+if [[ "$answer" == "y" ]]; then
+  if [[ -f "$file_path" ]]; then
+      # bat "$file_path" --paging=always --color=always | less -R
+      # bat "$file_path" --paging=always --color=always
+      script -q -c "bat '$file_path' --color=always" /dev/null | less -R
+  else
+      echo "File not found: $file_path"
+  fi
+fi
+
+# Ask if want to see command
+read -p "Do you want to see the command? (y/n): " answer
+if [[ "$answer" == "y" ]]; then
+  echo "Command:"
+  echo "$find_cmd"
+fi
+
