@@ -1,8 +1,17 @@
 #!/bin/bash
 
-# Put code snippet into clipboard
-echo -e '```\n\n```' | xclip -selection clipboard
+# Get clipboard content
+content=$(xclip -selection clipboard -o)
 
-# Simulate Ctrl+V paste
-xdotool key ctrl+v
+# Wrap in triple backticks with proper line breaks
+wrapped=$(cat <<EOF
+\`\`\`
+${content}
+\`\`\`
+EOF
+)
 
+# Copy back to clipboard
+echo "$wrapped" | xclip -selection clipboard -i
+
+echo "Clipboard content wrapped and updated."
