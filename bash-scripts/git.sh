@@ -48,7 +48,7 @@ function removeStagged(){
   rm ~/Downloads/list.txt
 }
 
-select action in "nvim" "clipboard" "update" "remove_stagged"
+select action in "nvim" "clipboard" "update" "remove_stagged" "check_tracked"
 do
   case $action in
     nvim)
@@ -71,8 +71,34 @@ do
       removeStagged
       break
       ;;
+    check_tracked)
+      # Check if the file is in the git index
+      # find file with fzf
+      # file_path=$(git ls-files | fzf --height 40% --reverse --inline-info --preview "bat --color=always {}" --preview-window=up:30%:wrap)
+      file_path=$(fzf)
+      if [ -z "$file_path" ]; then
+        echo "${tmagenta}No file selected${treset}"
+        exit 1
+      fi
+      # Check if the file is in the git index
+      if git ls-files --error-unmatch "$file_path" > /dev/null 2>&1; then
+        echo "${tblue}File is tracked by git${treset}"
+        # ask if want to delete from git
+        read -p "Do you want to delete the file from git? (y/n) " answer
+        if [[ "$answer" != "y" ]]; then
+          echo "${tmagenta}File not deleted from git${treset}"
+          exit 0
+        fi
+        # add to .gitignore and remove from git
+        echo "$file_path" >> .gitignore
+        git rm --cached "$file_path"
+      else
+        echo "${tmagenta}File is not tracked by git${treset}"
+      fi
+      break
+      ;;
     *)
-      echo "Invalid option"
+      echo "${tmagenta}Invalid option${treset}"
       ;;
   esac
 done
