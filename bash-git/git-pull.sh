@@ -10,8 +10,3 @@ function gitPull(){
     git pull
   fi
 }
-
-function gitPull(){
-  pull
-  decryptFiles
-}
