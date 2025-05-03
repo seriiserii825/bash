@@ -16,8 +16,6 @@ function encryptFiles(){
         echo "${tred}Error: $filename not found${treset}"
       fi
     done < ".gpgrc"
-  else
-    echo "${tmagenta}No .gpgrc file found. Exiting...${treset}"
   fi
 }
 
@@ -40,8 +38,6 @@ function decryptFiles(){
         echo "${tred}Error: $filename not found${treset}"
       fi
     done < ".gpgrc"
-  else
-    echo "${tmagenta}No .gpgrc file found. Exiting...${treset}"
   fi
 }
 
