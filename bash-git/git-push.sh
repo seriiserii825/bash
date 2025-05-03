@@ -25,7 +25,6 @@ function gitPush() {
   fi
 
   if [ $# -gt 1 ]; then
-    #message is $2 and greather
     message="$2"
   else
     print -n "${tgreen}Enter a commit message: ${treset}"
