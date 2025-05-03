@@ -1,9 +1,7 @@
 pullAll(){
-  if [[ ! -d "$HOME/.dotfiles" ]]; then
-    mkdir -p ~/.dotfiles
-  fi
-  cp -f ~/Documents/bash/bash-git/git-pull.sh ~/.dotfiles/
-
+  script_dir=$1
+  source "$script_dir/git-push.sh"
+  source "$script_dir/git-pull.sh"
   file_path="$HOME/Downloads/git-repos.txt"
 
   # loop through all lines in file
@@ -25,29 +23,10 @@ pullAll(){
 
     # check for uncommitted changes
     if [[ -n $(git status --porcelain) ]]; then
-      echo "Uncommitted changes in $line:"
-      alacritty -e bash -c "
-        source ~/.dotfiles/git-push.sh && \
-        cd '$line' && \
-        echo 'Running gitPush in: $line' && \
-        gitPush || echo 'gitPush failed!' && \
-        echo && read -p 'Press Enter to continue...' temp
-      "
-      alacritty -e bash -c "
-        source ~/.dotfiles/git-pull.sh && \
-        cd '$line' && \
-        echo 'Running gitPull in: $line' && \
-        gitPull || echo 'gitPull failed!' && \
-        echo && read -p 'Press Enter to continue...' temp
-      "
+      gitPush $script_dir
+      gitPull $script_dir
     else
-      alacritty -e bash -c "
-        source ~/.dotfiles/git-pull.sh && \
-        cd '$line' && \
-        echo 'Running gitPull in: $line' && \
-        gitPull || echo 'gitPull failed!'
-      "
-      echo "No uncommitted changes in $line."
+      gitPull $script_dir
     fi
   done < "$file_path"
 }
