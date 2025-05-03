@@ -1,15 +1,15 @@
 pullAll(){
+  current_dir=$(pwd)
   script_dir=$1
   source "$script_dir/git-push.sh"
   source "$script_dir/git-pull.sh"
   file_path="$HOME/Downloads/git-repos.txt"
 
-  # loop through all lines in file
-  while IFS= read -r line; do
-    # skip empty lines
+  repos=("${(@f)$(< "$file_path")}")
+
+  for line in "${repos[@]}"; do
     [[ -z "$line" ]] && continue
 
-    # check if line is a directory and a Git repo
     if [[ ! -d "$line/.git" ]]; then
       echo "Not a Git repository: $line"
       continue
@@ -28,5 +28,6 @@ pullAll(){
     else
       gitPull $script_dir
     fi
-  done < "$file_path"
+  done
+  cd "$current_dir" || exit 1
 }

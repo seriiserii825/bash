@@ -2,6 +2,7 @@ pushAll(){
   script_dir=$1
   source "$script_dir/git-push.sh"
   file_path="$HOME/Downloads/git-repos.txt"
+  current_dir=$(pwd)
 
   repos=("${(@f)$(< "$file_path")}")
 
@@ -24,4 +25,5 @@ pushAll(){
       gitPush $script_dir
     fi
   done
+  cd "$current_dir" || exit 1
 }
