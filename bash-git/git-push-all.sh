@@ -1,37 +1,31 @@
-function gitPush(){
+pushAll(){
   script_dir=$1
-  source "$script_dir/encrypt.sh"
+  source "$script_dir/git-push.sh"
+  file_path="$HOME/Downloads/git-repos.txt"
 
-  # Check for git changes
-  if [ -z "$(git status --porcelain)" ]; then
-    echo "${tmagenta}No changes to commit. Exiting...${treset}"
-    return 1
-  fi
-  git status
-  # Check if user wants to view changes with lazygit
-  echo -n "${tgreen}Do you want to view changes with lazygit? (y/n): ${treset}"
-  read view_changes
-  if [[ "$view_changes" == "y" ]]; then
-    # Check if lazygit is installed
-    if command -v lazygit &> /dev/null; then
-      echo "${tmagenta}Opening lazygit...${treset}"
-      lazygit
-    else
-      echo "${tred}Error: lazygit is not installed${treset}"
-      return 1
+  # loop through all lines in file
+  while IFS= read -r line; do
+    # skip empty lines
+    [[ -z "$line" ]] && continue
+
+    # check if line is a directory and a Git repo
+    if [[ ! -d "$line/.git" ]]; then
+      echo "Not a Git repository: $line"
+      continue
     fi
-  fi
 
-  # Prompt for commit message
-  read -p "${tgreen}Enter a commit message: ${treset}" message
-  if [ -z "$message" ]; then
-    echo "${tred}Error: No message provided${treset}"
-    return 1
-  fi
+    echo "==============================="
+    echo "Processing repository: $line"
+    echo "==============================="
 
-  # Proceed with commit and push
-  echo "Committing with message: $message"
-  git add .
-  git commit -m "$message"
-  git push
+    cd "$line" || continue
+
+    # check for uncommitted changes
+    if [[ -n $(git status --porcelain) ]]; then
+      echo "Uncommitted changes in $line:"
+      gitPush $script_dir
+    else
+      echo "No uncommitted changes in $line."
+    fi
+  done < "$file_path"
 }
