@@ -23,8 +23,7 @@ function gitPush(){
   fi
 
   # Prompt for commit message
-  echo -n "${tgreen}Enter a commit message: ${treset}"
-  read message
+  read -p "${tgreen}Enter a commit message: ${treset}" message
   if [ -z "$message" ]; then
     echo "${tred}Error: No message provided${treset}"
     return 1
