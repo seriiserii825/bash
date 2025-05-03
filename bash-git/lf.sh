@@ -1,5 +1,5 @@
 lf(){
-  message="$1"
+  message="$*"
   script_dir="$HOME/Documents/bash/bash-git"
   source "$script_dir/git-push.sh"
   source "$script_dir/git-pull.sh"
