@@ -1,5 +1,10 @@
 source "$(dirname "$0")/git-push.sh"
 pushAll(){
+  if [[ ! -d "$HOME/.dotfiles" ]]; then
+    mkdir -p ~/.dotfiles
+  fi
+  cp "~/Documents/bash/bash-git/git-push.sh" ~/.dotfiles/git-push.sh
+
   file_path="$HOME/Downloads/git-repos.txt"
 
   # loop through all lines in file
@@ -22,7 +27,13 @@ pushAll(){
     # check for uncommitted changes
     if [[ -n $(git status --porcelain) ]]; then
       echo "Uncommitted changes in $line:"
-      gitPush
+      alacritty -e bash -c "
+        source ~/.dotfiles/git-push.sh && \
+        cd '$line' && \
+        echo 'Running gitPush in: $line' && \
+        gitPush || echo 'gitPush failed!' && \
+        echo && read -p 'Press Enter to continue...' temp
+      "
     else
       echo "No uncommitted changes in $line."
     fi
