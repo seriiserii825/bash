@@ -1,5 +1,8 @@
 function gitPush() {
   script_dir=$1
+  message="${@:2}"  # Get all arguments starting from the second one
+  echo "message: $message"
+
   source "$script_dir/encrypt.sh"
 
   # Check for git changes
