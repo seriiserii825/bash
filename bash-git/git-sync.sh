@@ -1,8 +1,12 @@
-source "$(dirname "$0")/sync-repos.sh"
-source "$(dirname "$0")/git-push-all.sh"
-source "$(dirname "$0")/git-pull-all.sh"
 function gitSync(){
+  script_dir=$1
+  source "$script_dir/sync-repos.sh"
+  source "$script_dir/git-push-all.sh"
+  source "$script_dir/git-pull-all.sh"
+  source "$script_dir/sync-repos.sh"
+
   syncRepos
+
   menu_items=(
     "Push"
     "Pull"

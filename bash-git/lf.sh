@@ -1,4 +1,4 @@
-gitMenu(){
+lf(){
   script_dir="$HOME/Documents/bash/bash-git"
   source "$script_dir/git-push.sh"
   source "$script_dir/git-pull.sh"
@@ -19,10 +19,10 @@ gitMenu(){
     gitPush $script_dir
   elif [[ "$selected_item" == "Pull" ]]; then
     echo "${tmagenta}Pulling...${treset}"
-    gitPull
+    gitPull $script_dir
   elif [[ "$selected_item" == "Sync" ]]; then
     echo "${tmagenta}Syncing...${treset}"
-    gitSync
+    gitSync $script_dir
   elif [[ "$selected_item" == "Clone" ]]; then
     echo "${tmagenta}Cloning...${treset}"
     gitClone
