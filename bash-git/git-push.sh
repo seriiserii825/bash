@@ -1,4 +1,4 @@
-source "$(dirname "$0")/encrypt.sh"
+source "$HOME/.dotfiles/encrypt.sh"
 
 function push(){
   # check for git changes

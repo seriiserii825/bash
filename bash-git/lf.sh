@@ -1,5 +1,6 @@
 #!/usr/bin/bash 
 
+cp -f ~/Documents/bash/bash-git/encrypt.sh ~/.dotfiles/
 source "$(dirname "$0")/git-push.sh"
 source "$(dirname "$0")/git-pull.sh"
 source "$(dirname "$0")/git-clone.sh"

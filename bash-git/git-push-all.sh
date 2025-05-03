@@ -3,7 +3,7 @@ pushAll(){
   if [[ ! -d "$HOME/.dotfiles" ]]; then
     mkdir -p ~/.dotfiles
   fi
-  cp "~/Documents/bash/bash-git/git-push.sh" ~/.dotfiles/git-push.sh
+  cp -f ~/Documents/bash/bash-git/git-push.sh ~/.dotfiles/
 
   file_path="$HOME/Downloads/git-repos.txt"
 
