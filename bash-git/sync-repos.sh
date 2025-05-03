@@ -41,11 +41,11 @@ makeSync(){
   fi
 
   # Ask if want to see command
-  read -p "Do you want to see the command? (y/n): " answer
-  if [[ "$answer" == "y" ]]; then
-    echo "Command:"
-    echo "$find_cmd"
-  fi
+  # read -p "Do you want to see the command? (y/n): " answer
+  # if [[ "$answer" == "y" ]]; then
+  #   echo "Command:"
+  #   echo "$find_cmd"
+  # fi
 }
 
 syncRepos () {
