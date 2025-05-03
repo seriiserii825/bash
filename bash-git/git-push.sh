@@ -20,7 +20,8 @@ function gitPush(){
       return 1
     fi
   fi
-  # print prompt for message
+  sleep 1
+  # print prompt for message eval
   print -n "${tgreen}Enter a message: ${treset}"
   read message
   if [ -z "$message" ]; then
