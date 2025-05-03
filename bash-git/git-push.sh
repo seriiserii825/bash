@@ -24,8 +24,10 @@ function gitPush() {
     fi
   fi
 
+  # Handle commit message
   if [ $# -gt 1 ]; then
-    message="$*" 
+    shift  # Remove the first argument (script_dir)
+    message="$*"  # Capture all remaining arguments as the message
   else
     print -n "${tgreen}Enter a commit message: ${treset}"
     read message
@@ -34,6 +36,7 @@ function gitPush() {
       return 1
     fi
   fi
+
   git add .
   git commit -m "$message"
   git push
