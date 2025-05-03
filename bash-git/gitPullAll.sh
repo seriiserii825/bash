@@ -11,7 +11,6 @@ pullAll(){
     [[ -z "$line" ]] && continue
 
     if [[ ! -d "$line/.git" ]]; then
-      echo "Not a Git repository: $line"
       continue
     fi
 
