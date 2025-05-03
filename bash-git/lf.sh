@@ -1,6 +1,7 @@
 #!/usr/bin/bash 
 
 source "$(dirname "$0")/git-push.sh"
+source "$(dirname "$0")/git-pull.sh"
 source "$(dirname "$0")/git-clone.sh"
 
 menu_items=(
@@ -17,6 +18,7 @@ if [[ "$selected_item" == "Push" ]]; then
   gitPush 
 elif [[ "$selected_item" == "Pull" ]]; then
   echo "${tmagenta}Pulling...${treset}"
+  gitPull
 elif [[ "$selected_item" == "Sync" ]]; then
   echo "${tmagenta}Syncing...${treset}"
   # # Sync

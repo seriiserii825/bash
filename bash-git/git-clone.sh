@@ -1,3 +1,5 @@
+source "$(dirname "$0")/encrypt.sh"
+
 function gitClone() {
   clipboard=$(xclip -o)
   urls=("github.com" "bitbucket.org" "gitlab.com" "repo clone")
@@ -14,12 +16,14 @@ function gitClone() {
 
       directory=$(basename "$clipboard" .git)
       if [ -d "$directory" ]; then
-        echo "Directory $directory exists."
-        cd "$directory"
+        echo "$directory" > /tmp/git_last_clone_dir
+        cd "$(cat /tmp/git_last_clone_dir)"
       else
         echo "Error: $directory not found"
         return 1
       fi
+
+      decryptFiles
 
       return
     fi
