@@ -1,34 +1,38 @@
-pushAll(){
-  script_dir="$HOME/Documents/bash/bash-git"
-  source "$script_dir/git-push.sh"
+function gitPush(){
+  script_dir=$1
+  source "$script_dir/encrypt.sh"
 
-  file_path="$HOME/Downloads/git-repos.txt"
-
-  # Loop through all lines in file
-  while IFS= read -r line; do
-    # Skip empty lines
-    [[ -z "$line" ]] && continue
-
-    # Check if line is a directory and a Git repo
-    if [[ ! -d "$line/.git" ]]; then
-      echo "Not a Git repository: $line"
-      continue
-    fi
-
-    echo "==============================="
-    echo "Processing repository: $line"
-    echo "==============================="
-
-    cd "$line" || continue
-
-    # Check for uncommitted changes
-    if [[ -n $(git status --porcelain) ]]; then
-      echo "Uncommitted changes in $line:"
-      
-      # Here we call gitPush and ensure it asks for a commit message
-      gitPush $script_dir
+  # Check for git changes
+  if [ -z "$(git status --porcelain)" ]; then
+    echo "${tmagenta}No changes to commit. Exiting...${treset}"
+    return 1
+  fi
+  git status
+  # Check if user wants to view changes with lazygit
+  echo -n "${tgreen}Do you want to view changes with lazygit? (y/n): ${treset}"
+  read view_changes
+  if [[ "$view_changes" == "y" ]]; then
+    # Check if lazygit is installed
+    if command -v lazygit &> /dev/null; then
+      echo "${tmagenta}Opening lazygit...${treset}"
+      lazygit
     else
-      echo "No uncommitted changes in $line."
+      echo "${tred}Error: lazygit is not installed${treset}"
+      return 1
     fi
-  done < "$file_path"
+  fi
+
+  # Prompt for commit message
+  echo -n "${tgreen}Enter a commit message: ${treset}"
+  read message
+  if [ -z "$message" ]; then
+    echo "${tred}Error: No message provided${treset}"
+    return 1
+  fi
+
+  # Proceed with commit and push
+  echo "Committing with message: $message"
+  git add .
+  git commit -m "$message"
+  git push
 }
