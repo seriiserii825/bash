@@ -5,7 +5,6 @@ function gitPush() {
 
   # Check for git changes
   if [ -z "$(git status --porcelain)" ]; then
-    echo "${tmagenta}No changes to commit. Exiting...${treset}"
     return 1
   fi
 

@@ -34,22 +34,12 @@ makeSync(){
   # Show file lines count
   lines_count=$(wc -l < "$file_path")
   echo "Found $lines_count git repositories."
-
-  # Ask if the user wants to see the file
-  print -n "${tgreen}Do you want to see the file? (y/n):  ${treset}"
-  read answer
-  if [[ "$answer" == "y" ]]; then
-    if [[ -f "$file_path" ]]; then
-      bat "$file_path" --color=always
-    else
-      echo "File not found: $file_path"
-    fi
-  fi
 }
 
 syncRepos () {
   echo "Syncing repositories..."
   file_path="$HOME/Downloads/git-repos.txt"
+  pull_path="$HOME/Downloads/git-repos-pull.txt"
 
   if [[ -f "$file_path" ]]; then
     print -n "${tgreen}File already exists. Do you want to delete it? (y/n):  ${treset}"
@@ -64,4 +54,8 @@ syncRepos () {
   else
     makeSync
   fi
+  # from git-repos.txt remove lines that contain "Local Sites" and add other lines to git-repos-pull.txt
+  sed '/Local Sites/d' "$file_path" > "$pull_path"
+  # remove empty lines
+  sed -i '/^$/d' "$pull_path"
 }
