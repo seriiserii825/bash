@@ -4,12 +4,12 @@ pushAll(){
 
   file_path="$HOME/Downloads/git-repos.txt"
 
-  # loop through all lines in file
+  # Loop through all lines in file
   while IFS= read -r line; do
-    # skip empty lines
+    # Skip empty lines
     [[ -z "$line" ]] && continue
 
-    # check if line is a directory and a Git repo
+    # Check if line is a directory and a Git repo
     if [[ ! -d "$line/.git" ]]; then
       echo "Not a Git repository: $line"
       continue
@@ -21,9 +21,11 @@ pushAll(){
 
     cd "$line" || continue
 
-    # check for uncommitted changes
+    # Check for uncommitted changes
     if [[ -n $(git status --porcelain) ]]; then
       echo "Uncommitted changes in $line:"
+      
+      # Here we call gitPush and ensure it asks for a commit message
       gitPush $script_dir
     else
       echo "No uncommitted changes in $line."
