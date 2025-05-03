@@ -26,8 +26,7 @@ function gitPush() {
 
   # Handle commit message
   if [ $# -gt 1 ]; then
-    shift  # Remove the first argument (script_dir)
-    message="$*"  # Capture all remaining arguments as the message
+    message="${@:2}"  # Get all arguments starting from the second one
   else
     print -n "${tgreen}Enter a commit message: ${treset}"
     read message
