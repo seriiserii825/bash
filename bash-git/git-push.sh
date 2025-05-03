@@ -1,6 +1,6 @@
-source "$HOME/.dotfiles/encrypt.sh"
-
-function push(){
+function gitPush(){
+  script_dir=$1
+  source "$script_dir/encrypt.sh"
   # check for git changes
   if [ -z "$(git status --porcelain)" ]; then
     echo "${tmagenta}No changes to commit. Exiting...${treset}"
@@ -8,7 +8,8 @@ function push(){
   fi
   git status
   # check if want to view changes with lazygit
-  read -p "${tgreen}Do you want to view changes with lazygit? (y/n): ${treset}" view_changes
+  print -n "${tgreen}Do you want to view changes with lazygit? (y/n): ${treset}"
+  read view_changes
   if [[ "$view_changes" == "y" ]]; then
     # check if lazygit is installed
     if command -v lazygit &> /dev/null; then
@@ -19,7 +20,9 @@ function push(){
       return 1
     fi
   fi
-  read -p "Enter a message: " message
+  # print prompt for message
+  print -n "${tgreen}Enter a message: ${treset}"
+  read message
   if [ -z "$message" ]; then
     echo "${tred}Error: No message provided${treset}"
     return 1
@@ -28,9 +31,4 @@ function push(){
   git add .
   git commit -m "$message"
   git push
-}
-
-function gitPush(){
-  encryptFiles
-  push
 }

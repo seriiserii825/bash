@@ -16,7 +16,7 @@ gitMenu(){
 
   if [[ "$selected_item" == "Push" ]]; then
     echo "${tmagenta}Pushing...${treset}"
-    gitPush 
+    gitPush $script_dir
   elif [[ "$selected_item" == "Pull" ]]; then
     echo "${tmagenta}Pulling...${treset}"
     gitPull
