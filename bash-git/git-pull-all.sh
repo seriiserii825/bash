@@ -27,6 +27,13 @@ pullAll(){
     if [[ -n $(git status --porcelain) ]]; then
       echo "Uncommitted changes in $line:"
       alacritty -e bash -c "
+        source ~/.dotfiles/git-push.sh && \
+        cd '$line' && \
+        echo 'Running gitPush in: $line' && \
+        gitPush || echo 'gitPush failed!' && \
+        echo && read -p 'Press Enter to continue...' temp
+      "
+      alacritty -e bash -c "
         source ~/.dotfiles/git-pull.sh && \
         cd '$line' && \
         echo 'Running gitPull in: $line' && \
@@ -34,6 +41,12 @@ pullAll(){
         echo && read -p 'Press Enter to continue...' temp
       "
     else
+      alacritty -e bash -c "
+        source ~/.dotfiles/git-pull.sh && \
+        cd '$line' && \
+        echo 'Running gitPull in: $line' && \
+        gitPull || echo 'gitPull failed!'
+      "
       echo "No uncommitted changes in $line."
     fi
   done < "$file_path"
