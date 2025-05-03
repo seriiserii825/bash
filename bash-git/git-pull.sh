@@ -9,4 +9,5 @@ function gitPull(){
   else
     git pull
   fi
+  decryptFiles
 }

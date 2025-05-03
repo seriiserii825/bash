@@ -4,6 +4,7 @@ function gitSync(){
   source "$script_dir/git-push-all.sh"
   source "$script_dir/git-pull-all.sh"
   source "$script_dir/sync-repos.sh"
+  source "$script_dir/getCommits.sh"
 
   syncRepos
 
@@ -22,6 +23,7 @@ function gitSync(){
     pullAll $script_dir
   elif [[ "$selected_item" == "Commits" ]]; then
     echo "${tmagenta}Commits...${treset}"
+    getCommits $script_dir
   else
     echo "${tmagenta}Invalid option selected. Exiting...${treset}"
   fi
