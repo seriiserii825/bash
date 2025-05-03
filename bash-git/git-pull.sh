@@ -1,4 +1,5 @@
 source "$HOME/.dotfiles/encrypt.sh"
+source "$HOME/.dotfiles/git-push.sh"
 
 function pull(){
   # check for git changes

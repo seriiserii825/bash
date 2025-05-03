@@ -1,5 +1,6 @@
 source "$(dirname "$0")/sync-repos.sh"
 source "$(dirname "$0")/git-push-all.sh"
+source "$(dirname "$0")/git-pull-all.sh"
 function gitSync(){
   syncRepos
   menu_items=(
@@ -14,6 +15,7 @@ function gitSync(){
     pushAll
   elif [[ "$selected_item" == "Pull" ]]; then
     echo "${tmagenta}Pulling...${treset}"
+    pullAll
   elif [[ "$selected_item" == "Commits" ]]; then
     echo "${tmagenta}Commits...${treset}"
   else

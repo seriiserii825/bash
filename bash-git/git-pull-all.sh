@@ -1,8 +1,8 @@
-pushAll(){
+pullAll(){
   if [[ ! -d "$HOME/.dotfiles" ]]; then
     mkdir -p ~/.dotfiles
   fi
-  cp -f ~/Documents/bash/bash-git/git-push.sh ~/.dotfiles/
+  cp -f ~/Documents/bash/bash-git/git-pull.sh ~/.dotfiles/
 
   file_path="$HOME/Downloads/git-repos.txt"
 
@@ -27,10 +27,10 @@ pushAll(){
     if [[ -n $(git status --porcelain) ]]; then
       echo "Uncommitted changes in $line:"
       alacritty -e bash -c "
-        source ~/.dotfiles/git-push.sh && \
+        source ~/.dotfiles/git-pull.sh && \
         cd '$line' && \
-        echo 'Running gitPush in: $line' && \
-        gitPush || echo 'gitPush failed!' && \
+        echo 'Running gitPull in: $line' && \
+        gitPull || echo 'gitPull failed!' && \
         echo && read -p 'Press Enter to continue...' temp
       "
     else
