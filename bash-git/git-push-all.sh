@@ -1,4 +1,7 @@
 pushAll(){
+  script_dir="$HOME/Documents/bash/bash-git"
+  source "$script_dir/git-push.sh"
+
   file_path="$HOME/Downloads/git-repos.txt"
 
   # loop through all lines in file
@@ -21,7 +24,7 @@ pushAll(){
     # check for uncommitted changes
     if [[ -n $(git status --porcelain) ]]; then
       echo "Uncommitted changes in $line:"
-      gitPush
+      gitPush $script_dir
     else
       echo "No uncommitted changes in $line."
     fi

@@ -16,10 +16,10 @@ function gitSync(){
   selected_item=$(printf '%s\n' "${menu_items[@]}" | fzf --height 40% --reverse --inline-info --prompt "Select an option: ")
   if [[ "$selected_item" == "Push" ]]; then
     echo "${tmagenta}Pushing...${treset}"
-    pushAll
+    pushAll $script_dir
   elif [[ "$selected_item" == "Pull" ]]; then
     echo "${tmagenta}Pulling...${treset}"
-    pullAll
+    pullAll $script_dir
   elif [[ "$selected_item" == "Commits" ]]; then
     echo "${tmagenta}Commits...${treset}"
   else
