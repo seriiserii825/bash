@@ -1,8 +1,9 @@
-#!/usr/bin/bash -x
+#!/usr/bin/bash 
 
 source "$(dirname "$0")/git-push.sh"
 source "$(dirname "$0")/git-pull.sh"
 source "$(dirname "$0")/git-clone.sh"
+source "$(dirname "$0")/git-sync.sh"
 
 menu_items=(
   "Push"
@@ -21,11 +22,7 @@ elif [[ "$selected_item" == "Pull" ]]; then
   gitPull
 elif [[ "$selected_item" == "Sync" ]]; then
   echo "${tmagenta}Syncing...${treset}"
-  # # Sync
-  # git add .
-  # git commit -m "$message"
-  # git pull --rebase
-  # git push
+  gitSync
 elif [[ "$selected_item" == "Clone" ]]; then
   echo "${tmagenta}Cloning...${treset}"
   gitClone
