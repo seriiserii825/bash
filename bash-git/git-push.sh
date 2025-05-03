@@ -28,7 +28,6 @@ function gitPush() {
   # Handle commit message
   if [ $# -gt 1 ]; then
     message="${@:2}"  # Get all arguments starting from the second one
-    echo "${tmagenta}Using provided commit message: $message${treset}"
   else
     print -n "${tgreen}Enter a commit message: ${treset}"
     read message
@@ -37,7 +36,6 @@ function gitPush() {
       return 1
     fi
   fi
-  echo "${tmagenta}Using commit message: $message${treset}"
 
   git add .
   git commit -m "$message"
