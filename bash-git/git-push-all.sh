@@ -14,9 +14,7 @@ pushAll(){
       continue
     fi
 
-    echo "==============================="
     echo "Processing repository: $line"
-    echo "==============================="
 
     cd "$line" || continue
 
