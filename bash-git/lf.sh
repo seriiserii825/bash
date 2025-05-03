@@ -1,4 +1,4 @@
-#!/usr/bin/bash 
+#!/usr/bin/bash -x
 
 source "$(dirname "$0")/git-push.sh"
 source "$(dirname "$0")/git-pull.sh"
