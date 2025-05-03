@@ -14,10 +14,11 @@ function gitClone() {
         $clipboard
       fi
 
+      set -x
       directory=$(basename "$clipboard" .git)
+      set +x
       if [ -d "$directory" ]; then
-        echo "$directory" > /tmp/git_last_clone_dir
-        cd "$(cat /tmp/git_last_clone_dir)"
+        cd "$directory"
       else
         echo "Error: $directory not found"
         return 1
