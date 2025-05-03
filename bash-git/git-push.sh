@@ -25,7 +25,7 @@ function gitPush() {
   fi
 
   if [ $# -gt 1 ]; then
-    message="$2"
+    message="$*" 
   else
     print -n "${tgreen}Enter a commit message: ${treset}"
     read message
