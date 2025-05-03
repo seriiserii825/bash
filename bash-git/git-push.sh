@@ -24,17 +24,20 @@ function gitPush() {
     fi
   fi
 
-  sleep 1
-  # Prompt for commit message
-  print -n "${tgreen}Enter a commit message: ${treset}"
-  read message
-  if [ -z "$message" ]; then
-    echo "${tred}Error: No message provided${treset}"
-    return 1
+  if [ $# -gt 1 ]; then
+    #message is $2 and greather
+    message="$2"
+  else
+    print -n "${tgreen}Enter a commit message: ${treset}"
+    read message
+    if [ -z "$message" ]; then
+      echo "${tred}Error: No message provided${treset}"
+      return 1
+    fi
   fi
-
-  echo "message: $message"
   git add .
   git commit -m "$message"
   git push
+
+  encryptFiles
 }

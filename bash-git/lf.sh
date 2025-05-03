@@ -1,4 +1,5 @@
 lf(){
+  message="$1"
   script_dir="$HOME/Documents/bash/bash-git"
   source "$script_dir/git-push.sh"
   source "$script_dir/git-pull.sh"
@@ -16,7 +17,7 @@ lf(){
 
   if [[ "$selected_item" == "Push" ]]; then
     echo "${tmagenta}Pushing...${treset}"
-    gitPush $script_dir
+    gitPush $script_dir $message
   elif [[ "$selected_item" == "Pull" ]]; then
     echo "${tmagenta}Pulling...${treset}"
     gitPull $script_dir
