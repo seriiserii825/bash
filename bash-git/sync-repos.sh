@@ -36,6 +36,24 @@ makeSync(){
   echo "Found $lines_count git repositories."
 }
 
+getExcludPullFiles(){
+  exclude_file="$HOME/Documents/bash/bash-git/exclude-pull.txt"
+  if [[ ! -f "$exclude_file" ]]; then
+    echo "${tmagenta}Exclude file not found. Creating it...${treset}"
+    exit 1
+  fi
+
+  files=("${(@f)$(< "$exclude_file")}")
+  exclude_files=()
+  for file in "${files[@]}"; do
+    exclude_files+=("$file")
+  done
+  # remove empty lines
+  exclude_files=("${exclude_files[@]//[$'\t\r\n']}")
+  # return the array
+  echo "${exclude_files[@]}"
+}
+
 syncRepos () {
   echo "Syncing repositories..."
   file_path="$HOME/Downloads/git-repos.txt"
@@ -54,8 +72,13 @@ syncRepos () {
   else
     makeSync
   fi
-  # from git-repos.txt remove lines that contain "Local Sites" and add other lines to git-repos-pull.txt
-  sed '/Local Sites/d' "$file_path" > "$pull_path"
-  # remove empty lines
+  excluded_words=($(getExcludPullFiles))
+  echo "Excluded words: ${excluded_words[@]}"
+  # copy file_path to pull_path
+  cp "$file_path" "$pull_path"
   sed -i '/^$/d' "$pull_path"
+  # from pull_path remove lines that contain the excluded words
+  for word in "${excluded_words[@]}"; do
+    sed -i "/$word/d" "$pull_path"
+  done
 }

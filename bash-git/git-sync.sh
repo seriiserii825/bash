@@ -12,6 +12,8 @@ function gitSync(){
     "Push"
     "Pull"
     "Commits"
+    "View Push file"
+    "View Pull file"
   )
   # choose with fzf
   selected_item=$(printf '%s\n' "${menu_items[@]}" | fzf --height 40% --reverse --inline-info --prompt "Select an option: ")
@@ -24,6 +26,10 @@ function gitSync(){
   elif [[ "$selected_item" == "Commits" ]]; then
     echo "${tmagenta}Commits...${treset}"
     getCommits $script_dir
+  elif [[ "$selected_item" == "View Push file" ]]; then
+    bat "$HOME/Downloads/git-repos.txt" --color=always
+  elif [[ "$selected_item" == "View Pull file" ]]; then
+    bat "$HOME/Downloads/git-repos-pull.txt" --color=always
   else
     echo "${tmagenta}Invalid option selected. Exiting...${treset}"
   fi
