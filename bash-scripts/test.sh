@@ -1,9 +1,7 @@
 #! /bin/bash
-
-host="google.meeet"
-ping -c 1 $host
-if [ $? -eq 0 ]; then
-    echo "$host is reachable"
-else
-    echo "$host is not reachable"
-fi
+name=$USER
+# shor_name=$(cat /etc/passwd | grep $name | awk -F : '{print $5}' | cut -d "" -f1)
+shor_name=$(cat /etc/passwd | grep $name | awk -F : '{print $6}' | cut -d / -f 3)
+# shor_name=$(cat /etc/passwd | grep $name | awk -F : '{print $6}')
+# shor_name=$(cat /etc/passwd | grep $name)
+echo "Hello $shor_name"
