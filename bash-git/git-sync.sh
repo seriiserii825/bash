@@ -1,7 +1,7 @@
 function gitSync(){
   script_dir=$1
   source "$script_dir/sync-repos.sh"
-  source "$script_dir/gitPushAll.sh"
+  source "$script_dir/pushAll.sh"
   source "$script_dir/gitPullAll.sh"
   source "$script_dir/sync-repos.sh"
   source "$script_dir/getCommits.sh"
