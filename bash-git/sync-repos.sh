@@ -56,8 +56,8 @@ getExcludPullFiles(){
 
 syncRepos () {
   echo "Syncing repositories..."
-  file_path="$HOME/Downloads/git-repos.txt"
-  pull_path="$HOME/Downloads/git-repos-pull.txt"
+  file_path="$HOME/Documents/git-repos.txt"
+  pull_path="$HOME/Documents/git-repos-pull.txt"
 
   if [[ -f "$file_path" ]]; then
     print -n "${tgreen}File already exists. Do you want to delete it? (y/n):  ${treset}"

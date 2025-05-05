@@ -1,7 +1,7 @@
 pushAll(){
   script_dir=$1
   source "$script_dir/git-push.sh"
-  file_path="$HOME/Downloads/git-repos.txt"
+  file_path="$HOME/Documents/git-repos.txt"
   current_dir=$(pwd)
 
   repos=("${(@f)$(< "$file_path")}")

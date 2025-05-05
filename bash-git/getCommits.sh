@@ -19,7 +19,7 @@ selectProjectWithFzf(){
 getCommits() {
   script_dir=$1
   source "$script_dir/sync-repos.sh"
-  file_path="$HOME/Downloads/git-repos.txt"
+  file_path="$HOME/Documents/git-repos.txt"
   today_projects=()
   current_dir=$(pwd)
   today_commits=()

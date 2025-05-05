@@ -27,9 +27,9 @@ function gitSync(){
     echo "${tmagenta}Commits...${treset}"
     getCommits $script_dir
   elif [[ "$selected_item" == "View Push file" ]]; then
-    bat "$HOME/Downloads/git-repos.txt" --color=always
+    bat "$HOME/Documents/git-repos.txt" --color=always
   elif [[ "$selected_item" == "View Pull file" ]]; then
-    bat "$HOME/Downloads/git-repos-pull.txt" --color=always
+    bat "$HOME/Documents/git-repos-pull.txt" --color=always
   else
     echo "${tmagenta}Invalid option selected. Exiting...${treset}"
   fi

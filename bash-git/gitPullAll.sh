@@ -3,7 +3,7 @@ pullAll(){
   script_dir=$1
   source "$script_dir/git-push.sh"
   source "$script_dir/git-pull.sh"
-  file_path="$HOME/Downloads/git-repos-pull.txt"
+  file_path="$HOME/Documents/git-repos-pull.txt"
 
   repos=("${(@f)$(< "$file_path")}")
 
