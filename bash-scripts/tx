@@ -22,6 +22,12 @@ fi
 
 tmux list-sessions
 
+read -p "${tmagenta}Do you want to kill all sessions? (y/n): ${treset}" kill_all_sessions
+if [[ $kill_all_sessions == "y" ]]; then
+    tmux kill-server
+    exit 0
+fi
+
 read -p "${tblue}Select or create or delete, s/d: ${treset}" choice
 
 if [[ $choice == "s" ]]; then
@@ -36,14 +42,23 @@ if [[ $choice == "s" ]]; then
     tmux attach-session -t "$session_name"
   elif [[ $choice == "d" ]]; then
     echo "${tgreen}Select a session to delete:${treset}"
-    # select with fzf
-    session_name=$(printf '%s\n' "${sessions[@]}" | fzf --height 40% --reverse --inline-info)
-    if [ -z "$session_name" ]; then
+    # select with fzf multiple sessions
+    sessions=$(printf '%s\n' "${sessions[@]}" | fzf --height 40% --reverse --inline-info --multi)
+    if [ -z "$sessions" ]; then
         echo "${tmagenta}No session selected.${treset}"
         exit 1
     fi
-    session_name=$(echo "$session_name" | awk -F: '{print $1}')
-    tmux kill-session -t "$session_name"
+    for session in $sessions; do
+        session_name=$(echo "$session" | awk -F: '{print $1}')
+        tmux kill-session -t "$session_name"
+    done
+    # session_name=$(printf '%s\n' "${sessions[@]}" | fzf --height 40% --reverse --inline-info)
+    # if [ -z "$session_name" ]; then
+    #     echo "${tmagenta}No session selected.${treset}"
+    #     exit 1
+    # fi
+    # session_name=$(echo "$session_name" | awk -F: '{print $1}')
+    # tmux kill-session -t "$session_name"
 else
     echo "${tmagenta}Invalid choice. Please enter 'c' or 's'.${treset}"
 fi
