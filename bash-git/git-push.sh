@@ -11,7 +11,7 @@ function gitPush() {
   git status
 
   # Check if user wants to view changes with lazygit
-  print -n "${tgreen}Do you want to view changes with lazygit? (y/n): ${treset}"
+  print -n "Do you want to view changes with lazygit? (y/n):"
   read view_changes
   if [[ "$view_changes" == "y" ]]; then
     # Check if lazygit is installed
@@ -23,6 +23,42 @@ function gitPush() {
       return 1
     fi
   fi
+
+  # check type of message
+  type_of_message=(
+    '1. Feature'
+    '2. Upate'
+    '3. Bugfix'
+  )
+
+  for i in "${type_of_message[@]}"; do
+    echo -e "\t${tgreen}$i${treset}"
+  done
+
+  print -n "Select type of message: "
+  read type_of_message
+  message_type=""
+  case $type_of_message in
+    1)
+      message_type="feat:"
+      echo "$message"
+      ;;
+    2)
+      message_type="update:"
+      echo "$message"
+      ;;
+    3)
+      message_type="fix:"
+      echo "$message"
+      ;;
+    *)
+      echo "${tred}Error: Invalid option${treset}"
+      sleep 1
+      exit 1
+      ;;
+  esac
+
+  echo "$message_type"
 
   # Handle commit message
   if [ $# -gt 1 ]; then
