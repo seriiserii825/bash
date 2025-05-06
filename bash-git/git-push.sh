@@ -44,7 +44,7 @@ function gitPush() {
       echo "$message"
       ;;
     2)
-      message_type="update:"
+      message_type="upd:"
       echo "$message"
       ;;
     3)
@@ -74,6 +74,6 @@ function gitPush() {
   encryptFiles
   message="$message_type $message"
   git add .
-  git commit -m "$message"
+  git commit -m "$messa
   git push
 }
