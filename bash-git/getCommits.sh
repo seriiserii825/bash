@@ -8,6 +8,10 @@ selectProjectWithFzf(){
       cd "$selected_project" || exit
       today_commits=$(git log --since="${today_date} 01:00:00" --oneline | sed 's/^[^ ]* //' | tac)
       #today commits to clipboard
+      #from today_commits remove feat: upd: fix:
+      today_commits=$(echo "$today_commits" | sed 's/feat://')
+      today_commits=$(echo "$today_commits" | sed 's/upd://')
+      today_commits=$(echo "$today_commits" | sed 's/fix://')
       echo "$today_commits" | xclip -i -selection clipboard
       notify-send "$today_commits"
       selectProjectWithFzf $today_projects
