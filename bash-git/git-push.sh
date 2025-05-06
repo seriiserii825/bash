@@ -74,6 +74,6 @@ function gitPush() {
   encryptFiles
   message="$message_type $message"
   git add .
-  git commit -m "$messa
+  git commit -m "$message"
   git push
 }
