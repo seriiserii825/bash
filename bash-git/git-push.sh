@@ -41,20 +41,15 @@ function gitPush() {
   case $type_of_message in
     1)
       message_type="feat:"
-      echo "$message"
       ;;
     2)
       message_type="upd:"
-      echo "$message"
       ;;
     3)
       message_type="fix:"
-      echo "$message"
       ;;
     *)
-      echo "${tred}Error: Invalid option${treset}"
-      sleep 1
-      exit 1
+      message_type="feat:"
       ;;
   esac
 
