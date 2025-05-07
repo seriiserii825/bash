@@ -53,8 +53,6 @@ function gitPush() {
       ;;
   esac
 
-  echo "$message_type"
-
   # Handle commit message
   if [ $# -gt 1 ]; then
     message="${@:2}"  # Get all arguments starting from the second one
