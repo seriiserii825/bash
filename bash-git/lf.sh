@@ -23,6 +23,8 @@ lf(){
     "Pull"
     "Sync"
     "Clone"
+    "AllCommits"
+    "Clipboard"
   )
   # choose with fzf
   selected_item=$(printf '%s\n' "${menu_items[@]}" | fzf --height 40% --reverse --inline-info --prompt "Select an option: ")
@@ -44,6 +46,20 @@ lf(){
   elif [[ "$selected_item" == "Clone" ]]; then
     echo "${tmagenta}Cloning...${treset}"
     gitClone
+  elif [[ "$selected_item" == "AllCommits" ]]; then
+    $(git log --pretty="%C(Yellow)%h  %C(reset)%ad (%C(Green)%cr%C(reset))%x09 %C(Cyan)%an: %C(reset)%s" --date=short -100 --reverse > log.log)
+    bat log.log
+    rm log.log
+  elif [[ "$selected_item" == "Clipboard" ]]; then
+    log=$(git log --since="3am" --pretty=tformat:"%s" --reverse > log.log);
+    sed -i 's/feat://' log.log
+    sed -i 's/upd://' log.log
+    sed -i 's/fix://' log.log
+    text=$(cat log.log)
+    cat log.log | xclip -selection clipboard
+    notify-send  "Copied" "$text"
+    rm log.log
+    echo "${tmagenta}Copied to clipboard.${treset}"
   else
     echo "${tmagenta}Invalid option selected. Exiting...${treset}"
   fi
