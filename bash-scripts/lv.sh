@@ -186,36 +186,6 @@ function artisanHandle(){
   done
 }
 
-COLUMNS=1
-function nodeHandler(){
-  select action in NpmInstall NpmUpdate NpmRunDev NpmRunProd NpmRunBuild; do
-    case $action in
-      NpmInstall)
-        docker-compose exec node npm install
-        exit 0
-        ;;
-      NpmUpdate)
-        docker-compose exec node npm update
-        exit 0
-        ;;
-      NpmRunDev)
-        docker-compose exec node npm run dev
-        exit 0
-        ;;
-      NpmRunProd)
-        docker-compose exec node npm run prod
-        exit 0
-        ;;
-      NpmRunBuild)
-        docker-compose exec node npm run build
-        exit 0
-        ;;
-      *)
-        echo "ERROR! Please select between 1..3"
-        ;;
-    esac
-  done
-}
 
 COLUMNS=1
 function middlewareHandler(){
@@ -231,6 +201,39 @@ function middlewareHandler(){
         ;;
     esac
   done 
+}
+
+function nodeHandler(){
+  COLUMNS=1
+  select action in exec install update install_package; do
+    case $action in
+      exec)
+        read -p "Enter command like 'npm run dev': " node_command
+        docker-compose exec node $node_command
+        exit 0
+        ;;
+      install)
+        docker-compose exec node npm install
+        exit 0
+        ;;
+      update)
+        docker-compose exec node npm update
+        exit 0
+        ;;
+      install_package)
+        read -p "Package name like 'laravel/ui': " package_name
+        if [ -z "$package_name" ]; then
+          echo "${tmagenta}ERROR! Package name is required. Please try again.${treset}"
+        else
+          docker-compose exec node npm install $package_name
+        fi
+        exit 0
+        ;;
+      *)
+        echo "ERROR! Please select between 1..3"
+        ;;
+    esac
+  done
 }
 
 function changeRequest(){
@@ -300,8 +303,9 @@ model="${tgreen}Model${treset}"
 controller="${tblue}Controller${treset}"
 request="${tmagenta}Request${treset}"
 middleware="${tblue}Middleware${treset}"
+node="${tblue}Node${treset}"
 COLUMNS=8
-select action in $component $routes $view $artisan $composer $migration $model $controller $resource $request $middleware; do
+select action in $component $routes $view $artisan $composer $migration $model $controller $resource $request $middleware $node; do
   case $action in
     $component)
       read -p "Enter component name like 'Alert': " component_name
@@ -343,6 +347,9 @@ select action in $component $routes $view $artisan $composer $migration $model $
       ;;
     $middleware)
       middlewareHandler
+      ;;
+    $node)
+      nodeHandler
       ;;
     *)
       exit 0
