@@ -4,6 +4,7 @@ lf(){
   source "$script_dir/git-pull.sh"
   source "$script_dir/git-clone.sh"
   source "$script_dir/git-sync.sh"
+  source "$script_dir/openFileInGit.sh"
 
   if [[ $# -eq 1 && $1 == '-h' ]]; then
     echo "Usage: lf [message]"
@@ -25,6 +26,7 @@ lf(){
     "Clone"
     "AllCommits"
     "Clipboard"
+    "OpenFileInGit"
   )
   # choose with fzf
   selected_item=$(printf '%s\n' "${menu_items[@]}" | fzf --height 40% --reverse --inline-info --prompt "Select an option: ")
@@ -60,6 +62,9 @@ lf(){
     notify-send  "Copied" "$text"
     rm log.log
     echo "${tmagenta}Copied to clipboard.${treset}"
+  elif [[ "$selected_item" == "OpenFileInGit" ]]; then
+    echo "${tmagenta}Opening file in git...${treset}"
+    openFileInGit
   else
     echo "${tmagenta}Invalid option selected. Exiting...${treset}"
   fi
