@@ -33,7 +33,12 @@ lf(){
 
   print "Please select an option (1-9): "
   read -r selected_item
-  echo $selected_item
+
+  echo "selected_item: $selected_item"
+  # if nothing was selected by default is 1
+  if [[ -z "$selected_item" ]]; then
+    selected_item=1
+  fi
 
   if [[ "$selected_item" == "1" ]]; then
     echo "${tmagenta}Pushing...${treset}"
