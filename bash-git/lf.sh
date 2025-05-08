@@ -27,8 +27,8 @@ lf(){
     "OpenFileInGit"
     "Pull"
     "Push"
-    "Sync"
     "ResolveConflict"
+    "Sync"
   )
   # choose with fzf
   selected_item=$(printf '%s\n' "${menu_items[@]}" | fzf --height 40% --reverse --inline-info --prompt "Select an option: ")
