@@ -5,6 +5,7 @@ lf(){
   source "$script_dir/git-clone.sh"
   source "$script_dir/git-sync.sh"
   source "$script_dir/openFileInGit.sh"
+  source "$script_dir/resolveConflict.sh"
 
   if [[ $# -eq 1 && $1 == '-h' ]]; then
     echo "Usage: lf [message]"
@@ -20,13 +21,14 @@ lf(){
   fi
 
   menu_items=(
-    "Push"
-    "Pull"
-    "Sync"
-    "Clone"
-    "AllCommits"
     "Clipboard"
+    "Clone"
+    "LogAll"
     "OpenFileInGit"
+    "Pull"
+    "Push"
+    "Sync"
+    "ResolveConflict"
   )
   # choose with fzf
   selected_item=$(printf '%s\n' "${menu_items[@]}" | fzf --height 40% --reverse --inline-info --prompt "Select an option: ")
@@ -48,7 +50,7 @@ lf(){
   elif [[ "$selected_item" == "Clone" ]]; then
     echo "${tmagenta}Cloning...${treset}"
     gitClone
-  elif [[ "$selected_item" == "AllCommits" ]]; then
+  elif [[ "$selected_item" == "LogAll" ]]; then
     $(git log --pretty="%C(Yellow)%h  %C(reset)%ad (%C(Green)%cr%C(reset))%x09 %C(Cyan)%an: %C(reset)%s" --date=short -100 --reverse > log.log)
     bat log.log
     rm log.log
@@ -65,6 +67,9 @@ lf(){
   elif [[ "$selected_item" == "OpenFileInGit" ]]; then
     echo "${tmagenta}Opening file in git...${treset}"
     openFileInGit
+  elif [[ "$selected_item" == "ResolveConflict" ]]; then
+    echo "${tmagenta}Resolving conflict...${treset}"
+    resolveConflict
   else
     echo "${tmagenta}Invalid option selected. Exiting...${treset}"
   fi
