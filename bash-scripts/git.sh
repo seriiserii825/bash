@@ -1,5 +1,8 @@
 #! /bin/bash
 
+script_dir="$HOME/Documents/bash/bash-scripts"
+source "$script_dir/modules/openFileInGit.sh"
+
 args=("$@")
 
 dictionary_path="/home/serii/.config/coc/extensions/node_modules/coc-fzf-preview/spell/en.utf-8.add"
@@ -48,7 +51,8 @@ function removeStagged(){
   rm ~/Downloads/list.txt
 }
 
-select action in "nvim" "clipboard" "update" "remove_stagged" "check_tracked"
+COLUMNS=1
+select action in "nvim" "clipboard" "update" "remove_stagged" "check_tracked" "open_file_in_git" "exit";
 do
   case $action in
     nvim)
@@ -95,6 +99,10 @@ do
       else
         echo "${tmagenta}File is not tracked by git${treset}"
       fi
+      break
+      ;;
+    open_file_in_git)
+      openFileInGit
       break
       ;;
     *)
