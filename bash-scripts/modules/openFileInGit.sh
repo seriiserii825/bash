@@ -28,5 +28,8 @@ openFileInGit(){
     echo "File URL: $file_url"
     #open in browser
     xdg-open $file_url
+  else
+    echo "not github repo"
+    exit 1
   fi
 }
