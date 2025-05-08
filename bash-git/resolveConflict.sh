@@ -53,10 +53,14 @@ done
 
 function resolveAllFiles(){
   defaultOption="ours" # Set the default option here
-  read -p "${tblue}Select an option: 
-  ours
-  theirs
-  by default is ours: ${treset}" choice
+  # read -p "${tblue}Select an option: 
+  # ours
+  # theirs
+  # by default is ours: ${treset}" choice
+
+  print "Select an option, (ours/theirs), by default is ours: "
+  read -r choice
+
   if [ -z "$choice" ]; then
     choice=$defaultOption
     echo "${tblue}Default option selected: $choice ${treset}"
