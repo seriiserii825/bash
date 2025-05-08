@@ -20,20 +20,22 @@ lf(){
     return
   fi
 
-  menu_items=(
-    "Clipboard"
-    "Clone"
-    "LogAll"
-    "OpenFileInGit"
-    "Pull"
-    "Push"
-    "ResolveConflict"
-    "Sync"
-  )
-  # choose with fzf
-  selected_item=$(printf '%s\n' "${menu_items[@]}" | fzf --height 40% --reverse --inline-info --prompt "Select an option: ")
+  echo "${tmagenta}Welcome to the Git CLI!${treset}"
+  echo "${tgreen}1) Push${treset}"
+  echo "${tgreen}2) Pull${treset}"
+  echo "${tgreen}3) Sync${treset}"
+  echo "${tgreen}4) Clone${treset}"
+  echo "${tblue}5) LogAll${treset}"
+  echo "${tblue}6) Clipboard${treset}"
+  echo "${tyellow}7) OpenFileInGit${treset}"
+  echo "${tblue}8) ResolveConflict${treset}"
+  echo "${tmagenta}9) Exit${treset}"
 
-  if [[ "$selected_item" == "Push" ]]; then
+  print "Please select an option (1-9): "
+  read -r selected_item
+  echo $selected_item
+
+  if [[ "$selected_item" == "1" ]]; then
     echo "${tmagenta}Pushing...${treset}"
     message="$*"
     if [[ -z "$message" ]]; then
@@ -41,20 +43,20 @@ lf(){
       return
     fi
     gitPush $script_dir "$message"
-  elif [[ "$selected_item" == "Pull" ]]; then
+  elif [[ "$selected_item" == "2" ]]; then
     echo "${tmagenta}Pulling...${treset}"
     gitPull $script_dir
-  elif [[ "$selected_item" == "Sync" ]]; then
+  elif [[ "$selected_item" == "3" ]]; then
     echo "${tmagenta}Syncing...${treset}"
     gitSync $script_dir
-  elif [[ "$selected_item" == "Clone" ]]; then
+  elif [[ "$selected_item" == "4" ]]; then
     echo "${tmagenta}Cloning...${treset}"
     gitClone
-  elif [[ "$selected_item" == "LogAll" ]]; then
+  elif [[ "$selected_item" == "5" ]]; then
     $(git log --pretty="%C(Yellow)%h  %C(reset)%ad (%C(Green)%cr%C(reset))%x09 %C(Cyan)%an: %C(reset)%s" --date=short -100 --reverse > log.log)
     bat log.log
     rm log.log
-  elif [[ "$selected_item" == "Clipboard" ]]; then
+  elif [[ "$selected_item" == "6" ]]; then
     log=$(git log --since="3am" --pretty=tformat:"%s" --reverse > log.log);
     sed -i 's/feat://' log.log
     sed -i 's/upd://' log.log
@@ -64,12 +66,15 @@ lf(){
     notify-send  "Copied" "$text"
     rm log.log
     echo "${tmagenta}Copied to clipboard.${treset}"
-  elif [[ "$selected_item" == "OpenFileInGit" ]]; then
+  elif [[ "$selected_item" == "7" ]]; then
     echo "${tmagenta}Opening file in git...${treset}"
     openFileInGit
-  elif [[ "$selected_item" == "ResolveConflict" ]]; then
+  elif [[ "$selected_item" == "8" ]]; then
     echo "${tmagenta}Resolving conflict...${treset}"
     resolveConflict
+  elif [[ "$selected_item" == "9" ]]; then
+    echo "${tmagenta}Exiting...${treset}"
+    # exit 0
   else
     echo "${tmagenta}Invalid option selected. Exiting...${treset}"
   fi

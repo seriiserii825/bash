@@ -102,7 +102,7 @@ done
 
 resolveConflict(){
   COLUMNS=1
-  select action in "Find files with conflict" "Resolve all files" "Resolve each file"; do
+  select action in "Find files with conflict" "Resolve all files" "Resolve each file" "Exit"; do
     case $action in
       "Find files with conflict" ) findFilesWithConflict;;
       "Resolve all files" ) 
@@ -111,6 +111,10 @@ resolveConflict(){
         ;;
       "Resolve each file" ) 
         resolveEachFile
+        break
+        ;;
+      "Exit" )
+        echo "Exiting..."
         break
         ;;
       *)
