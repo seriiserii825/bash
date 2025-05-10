@@ -1,5 +1,5 @@
 #!/bin/bash 
-set -x
+# set -x
 
 # check if is installed tailwind-colors-vars with npm
 if ! command -v tailwind-colors &> /dev/null
@@ -26,7 +26,8 @@ echo $selected_line
 color=$(echo "$selected_line" | cut -d':' -f2)
 cleared_color=$(echo "$color" | cut -d';' -f1)
 # copy to clipboard
-echo "$cleared_color" | xclip -selection clipboard
+echo -n "$cleared_color" | xclip -selection clipboard
 notify-send "Color copied to clipboard" "$cleared_color"
+rm "$tailwind_file"
 
 
