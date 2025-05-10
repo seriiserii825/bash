@@ -1,4 +1,5 @@
 checkNode(){
+  # set -x
   file="package.json"
 
   # check if package.json exists
@@ -36,8 +37,7 @@ checkNode(){
 
   # check if current version is equal to node version
   if [[ $current_version == $node_version ]]; then
-    echo "Node version is up to date"
-    return
+    echo "Node version: $current_version"
   else
     export NVM_DIR="$HOME/.config/nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
@@ -62,15 +62,16 @@ checkNode(){
           return
         }
   fi
+  # set +x
 }
 
 yd(){
   checkNode
-  yarn
+  yarn dev
 }
 yyd(){
   checkNode
-  yarn
+  yarn && yarn dev
 }
 
 ybuild(){
@@ -79,5 +80,5 @@ ybuild(){
 }
 yybuild(){
   checkNode
-  yarn build
+  yarn && yarn build
 }
