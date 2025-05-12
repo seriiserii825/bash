@@ -74,11 +74,11 @@ yyd(){
   yarn && yarn dev
 }
 
-ybuild(){
+yb(){
   checkNode
   yarn build
 }
-yybuild(){
+yyb(){
   checkNode
   yarn && yarn build
 }
