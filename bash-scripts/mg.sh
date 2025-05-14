@@ -1,10 +1,18 @@
 #! /bin/bash
 
+function removeSpaces(){
+    perl-rename 's/ /-/g' *
+    perl-rename 's/----/-/g' *
+    perl-rename 's/---/-/g' *
+    perl-rename 's/--/-/g' *
+}
+
 function changeImage(){
   ls -la 
   echo -e "${tgreen}Select an option${treset}"
   echo "${tblue}1. Info${treset}"
   echo "${tyellow}2. Optimize${treset}"
+  echo "${tyellow}2.1 Png to jpg${treset}"
   echo "${tgreen}3. Width${treset}"
   echo "${tblue}4. Height${treset}"
   echo "${tgreen}5. Flop${treset}"
@@ -31,6 +39,9 @@ function changeImage(){
       done
       # jpegoptim --strip-all --all-progressive -ptm 80 $*
       changeImage $*
+      ;;
+    2.1)
+      mogrify -format jpg *.png && rm *.png && jpegoptim --strip-all --all-progressive -ptm 80 *.jpg
       ;;
     3)
       echo "${tblue}Enter the width: ${treset}"
@@ -71,6 +82,7 @@ function changeImage(){
   esac
 }
 
+removeSpaces
 COLUMNS=1
 select which in "one" "all"
 do
