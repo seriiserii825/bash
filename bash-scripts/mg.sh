@@ -41,7 +41,7 @@ function changeImage(){
       changeImage $*
       ;;
     2.1)
-      mogrify -format jpg *.png && rm *.png && jpegoptim --strip-all --all-progressive -ptm 80 *.jpg
+      mogrify -format jpg *.png && rm *.png
       ;;
     3)
       echo "${tblue}Enter the width: ${treset}"
