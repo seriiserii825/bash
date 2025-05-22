@@ -5,15 +5,16 @@ function gitPush() {
 
   # Check for git changes
   if [ -z "$(git status --porcelain)" ]; then
-    echo "No changes to commit."
     return 1
   fi
 
   git status
 
-  # Ask user if they want to view changes with lazygit
-  read -p "Do you want to view changes with lazygit? (y/n): " view_changes
+  # Check if user wants to view changes with lazygit
+  print -n "Do you want to view changes with lazygit? (y/n):"
+  read view_changes
   if [[ "$view_changes" == "y" ]]; then
+    # Check if lazygit is installed
     if command -v lazygit &> /dev/null; then
       echo "${tmagenta}Opening lazygit...${treset}"
       lazygit
@@ -23,13 +24,20 @@ function gitPush() {
     fi
   fi
 
-  # Menu function to select message type
-  function menu() {
-    echo -e "\t${tgreen}1. Feature${treset}"
-    echo -e "\t${tgreen}2. Update${treset}"
-    echo -e "\t${tgreen}3. Bugfix${treset}"
-    
-    read -p "Select type of message (1/2/3): " selection
+  function menu(){
+    # check type of message
+    type_of_message=(
+      '1. Feature'
+      '2. Upate'
+      '3. Bugfix'
+    )
+
+    for i in "${type_of_message[@]}"; do
+      echo -e "\t${tgreen}$i${treset}"
+    done
+
+    print -n "Select type of message: "
+    read selection
 
     if [[ "$selection" =~ ^[1-3]$ ]]; then
       echo "$selection"
@@ -39,29 +47,38 @@ function gitPush() {
     fi
   }
 
-  type_of_message=$(menu)
+  type_of_message = menu()
 
-  case "$type_of_message" in
-    1) message_type="feat:" ;;
-    2) message_type="upd:" ;;
-    3) message_type="fix:" ;;
-    *) message_type="feat:" ;;
+  message_type=""
+  case $type_of_message in
+    1)
+      message_type="feat:"
+      ;;
+    2)
+      message_type="upd:"
+      ;;
+    3)
+      message_type="fix:"
+      ;;
+    *)
+      message_type="feat:"
+      ;;
   esac
 
-  # Commit message handling
+  # Handle commit message
   if [ $# -gt 1 ]; then
-    message="${@:2}"
+    message="${@:2}"  # Get all arguments starting from the second one
   else
-    read -p "${tgreen}Enter a commit message: ${treset}" message
+    print -n "${tgreen}Enter a commit message: ${treset}"
+    read message
     if [ -z "$message" ]; then
       echo "${tred}Error: No message provided${treset}"
       return 1
     fi
   fi
-
   encryptFiles
-  full_message="$message_type $message"
+  message="$message_type $message"
   git add .
-  git commit -m "$full_message"
+  git commit -m "$message"
   git push
 }
