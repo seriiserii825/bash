@@ -1,2 +1,7 @@
 Local Sites
 .config
+nuxt
+laravel
+html
+react
+wp-projects

@@ -24,19 +24,31 @@ function gitPush() {
     fi
   fi
 
-  # check type of message
-  type_of_message=(
-    '1. Feature'
-    '2. Upate'
-    '3. Bugfix'
-  )
+  function menu(){
+    # check type of message
+    type_of_message=(
+      '1. Feature'
+      '2. Upate'
+      '3. Bugfix'
+    )
 
-  for i in "${type_of_message[@]}"; do
-    echo -e "\t${tgreen}$i${treset}"
-  done
+    for i in "${type_of_message[@]}"; do
+      echo -e "\t${tgreen}$i${treset}"
+    done
 
-  print -n "Select type of message: "
-  read type_of_message
+    print -n "Select type of message: "
+    read selection
+
+    if [[ "$selection" =~ ^[1-3]$ ]]; then
+      echo "$selection"
+    else
+      echo "${tred}Error: Invalid selection. Please enter 1, 2, or 3.${treset}"
+      menu
+    fi
+  }
+
+  type_of_message = menu()
+
   message_type=""
   case $type_of_message in
     1)
