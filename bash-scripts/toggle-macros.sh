@@ -6,6 +6,7 @@ init_file_path="$HOME/.config/nvim/init.vim"
 
 function commentPython(){
     sed -i 's/^\(\s*\)\(.*python-macros.vim\)/\1"\2/' "$init_file_path"
+    echo "Commented python-macros.vim in $init_file_path"
 }
 
 function uncommentPython(){
