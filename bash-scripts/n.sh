@@ -2,6 +2,12 @@ checkNode(){
   # set -x
   file="package.json"
 
+  # check if bun is installed
+  if ! command -v bun &> /dev/null; then
+    echo "${tmagenta}Bun is not installed. I will install for you))).${treset}"
+    npm i bun -g
+  fi
+
   # check if package.json exists
   if [ ! -e "$file" ]; then
     echo "No $file"
@@ -81,4 +87,25 @@ yb(){
 yyb(){
   checkNode
   yarn && yarn build
+}
+
+bi(){
+  checkNode
+  bun install
+}
+bid(){
+  checkNode
+  bun install && bun run dev
+}
+bd(){
+  checkNode
+  bun run dev
+}
+bib(){
+  checkNode
+  bun install && bun run build
+}
+bb(){
+  checkNode
+  bun run build
 }
