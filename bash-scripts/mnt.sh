@@ -1,5 +1,6 @@
 #!/bin/bash
-
+# find with 
+#lsblk -o NAME,SIZE,MOUNTPOINT,LABEL,UUID  and get UUID
 TARGET_UUID="bd51a002-3aea-4574-99c0-a98a67753b37"
 MOUNT_POINT="/mnt"
 
