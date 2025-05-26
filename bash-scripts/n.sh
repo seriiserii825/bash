@@ -11,7 +11,8 @@ checkNode(){
   # check if package.json exists
   if [ ! -e "$file" ]; then
     echo "No $file"
-    return
+    sleep 2
+    exit 1
   fi
 
   # find in package.json line with "node"
@@ -19,7 +20,8 @@ checkNode(){
 
   if [ -z "$node_line" ]; then
     echo "No node line in $file"
-    return
+    sleep 2
+    exit 1
   fi
 
   # extract version (remove quotes and spaces)
@@ -27,7 +29,8 @@ checkNode(){
 
   if [ -z "$node_version" ]; then
     echo "No node version in $file"
-    return
+    sleep 2
+    exit 1
   fi
 
   # if version starts with ^
