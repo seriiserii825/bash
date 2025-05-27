@@ -1,36 +1,33 @@
+closeScritpt(){
+    echo "${tblue}Press Ctrl+C to restart or after 10 seconds terminal will close${treset}"
+    sleep 10
+    exit 1
+}
+
 checkNode(){
   # set -x
   file="package.json"
 
-  # check if bun is installed
-  if ! command -v bun &> /dev/null; then
-    echo "${tmagenta}Bun is not installed. I will install for you))).${treset}"
-    npm i bun -g
-  fi
-
   # check if package.json exists
   if [ ! -e "$file" ]; then
-    echo "No $file"
-    sleep 2
-    exit 1
+    echo "${tmagenta}No $file${treset}"
+    closeScritpt
   fi
 
   # find in package.json line with "node"
   node_line=$(grep "\"node\"" "$file")
 
   if [ -z "$node_line" ]; then
-    echo "No node line in $file"
-    sleep 2
-    exit 1
+    echo "${tmagenta}No node line in $file${treset}"
+    closeScritpt
   fi
 
   # extract version (remove quotes and spaces)
   node_version=$(echo "$node_line" | cut -d':' -f2 | tr -d '[:space:]' | tr -d '"')
 
   if [ -z "$node_version" ]; then
-    echo "No node version in $file"
-    sleep 2
-    exit 1
+    echo "${tmagenta}No node version in $file${treset}"
+    closeScritpt
   fi
 
   # if version starts with ^
@@ -72,6 +69,12 @@ checkNode(){
         }
   fi
   # set +x
+
+  # check if bun is installed
+  if ! command -v bun &> /dev/null; then
+    echo "${tmagenta}Bun is not installed. I will install for you))).${treset}"
+    npm i bun -g
+  fi
 }
 
 yd(){
@@ -111,4 +114,8 @@ bib(){
 bb(){
   checkNode
   bun run build
+}
+ba(){
+  checkNode
+  bun add "$@"
 }
