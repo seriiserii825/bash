@@ -52,7 +52,7 @@ function changeImage(){
     4)
       echo "${tyellow}Enter the height: ${treset}"
       read  height
-      mogrify -resize x$height $*
+      mogrify -auto-orient -resize x$height $*
       changeImage $*
       ;;
     5)
