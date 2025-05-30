@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash 
 
 current_dir=$(pwd)
 dir_name=$(basename "$current_dir")
@@ -6,16 +6,15 @@ theme_name="${dir_name}.local"
 
 function currentThemeToHosts(){
   theme_name=$1
-  theme_host="127.0.0.1 ${current_theme}"
+  theme_host="127.0.0.1 ${theme_name}"
   # check if theme name is already in /etc/hosts
   if grep -q "$theme_host" /etc/hosts; then
-    echo "Theme name $theme_host already exists in /etc/hosts"
+    echo "${tmagenta}Theme name $theme_host already exists in /etc/hosts${treset}"
   else
     # add theme name to /etc/hosts
-    echo "$theme_host" | tee -a /etc/hosts > /dev/null
+    echo "$theme_host" | sudo tee -a /etc/hosts > /dev/null
     cat /etc/hosts
   fi
-  notify-send "Theme name added to /etc/hosts" "You can now access your theme at http://${theme_name}"
 }
 
 function themeToNginx(){
