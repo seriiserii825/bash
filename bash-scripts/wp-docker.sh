@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 read -p "Enter folder name: " folder_name
 if [ -z "$folder_name" ]; then
