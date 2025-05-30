@@ -1,6 +1,5 @@
 #!/bin/bash -x
 
-# check if in cliboard have github
 read -p "Enter folder name: " folder_name
 if [ -z "$folder_name" ]; then
   echo "Folder name cannot be empty."
