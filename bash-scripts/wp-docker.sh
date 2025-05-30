@@ -7,3 +7,4 @@ if [ -z "$folder_name" ]; then
 fi
 url_path="git@github.com:seriiserii825/docker-wp.git"
 git clone $url_path $folder_name
+cd $folder_name
