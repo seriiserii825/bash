@@ -1,39 +1,25 @@
 #!/bin/bash -x
 
-
-function installWP(){
-  HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose run --rm wpcli core install \
-    --url="http://localhost:80" \
-    --title="My Site" \
-    --admin_user=admin \
-    --admin_password=admin \
-    --admin_email=admin@gmail.com \
-    --skip-email
-}
-
-function getCurrentTheme(){
-  current_dir=$(basename "$(pwd)")
-  echo "$current_dir.local"
-}
+current_dir=$(pwd)
+dir_name=$(basename "$current_dir")
+theme_name="${dir_name}.local"
 
 function currentThemeToHosts(){
-  current_theme=$(getCurrentTheme)
-  theme_name="127.0.0.1 ${current_theme}"
+  theme_name=$1
+  theme_host="127.0.0.1 ${current_theme}"
   # check if theme name is already in /etc/hosts
-  if grep -q "$theme_name" /etc/hosts; then
-    echo "Theme name $theme_name already exists in /etc/hosts"
+  if grep -q "$theme_host" /etc/hosts; then
+    echo "Theme name $theme_host already exists in /etc/hosts"
   else
     # add theme name to /etc/hosts
-    echo "$theme_name" | sudo tee -a /etc/hosts > /dev/null
-    sudo cat /etc/hosts
+    echo "$theme_host" | tee -a /etc/hosts > /dev/null
+    cat /etc/hosts
   fi
+  notify-send "Theme name added to /etc/hosts" "You can now access your theme at http://${theme_name}"
 }
 
 function themeToNginx(){
-  current_dir_path=$(pwd)
-  current_theme=$(getCurrentTheme)
-  # go up 3 time
-  cd ../../..
+  current_theme=$1
   # check for docker dir
   if [ ! -d "docker" ]; then
     echo "${tmagenta}No docker directory found, exiting.${treset}"
@@ -59,20 +45,30 @@ function themeToNginx(){
     # add after listen 80;
     sed -i "/listen 80;/a \ \ \ \ server_name ${current_theme};" default.conf
   fi
-
+  echo "${tgreen}Nginx configuration updated for ${current_theme}${treset}"
 }
 
 function changeUrl(){
-  theme_name=$(getCurrentTheme)
+  theme_name=$1
   docker-compose run --rm wpcli option update home "http://${theme_name}"
   docker-compose run --rm wpcli option update siteurl "http://${theme_name}"
+  echo "${tgreen}WordPress site URL updated to http://${theme_name}${treset}"
 }
 
-# installWP
-if [ ! -f front-page.php ]; then
-  echo "${tmagenta}No front-page.php found, exiting.${treset}"
-  exit 1
-fi
-# currentThemeToHosts
-# themeToNginx
-changeUrl
+function installWP(){
+  theme_name=$1
+  HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose run --rm wpcli core install \
+    --url="http://$theme_name" \
+    --title="My Site" \
+    --admin_user=admin \
+    --admin_password=admin \
+    --admin_email=admin@gmail.com \
+    --skip-email
+
+  echo "${tgreen}WordPress installed successfully at http://${theme_name}${treset}"
+}
+currentThemeToHosts "$theme_name"
+themeToNginx "$theme_name"
+changeUrl "$theme_name"
+installWP "$theme_name"
+notify-send "WordPress Installation" "Your WordPress site is ready at http://${theme_name}"
