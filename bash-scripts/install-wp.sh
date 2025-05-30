@@ -3,7 +3,7 @@
 
 function installWP(){
   HOST_UID=$(id -u) HOST_GID=$(id -g) docker-compose run --rm wpcli core install \
-    --url="http://localhost:8888" \
+    --url="http://localhost:80" \
     --title="My Site" \
     --admin_user=admin \
     --admin_password=admin \
@@ -68,11 +68,11 @@ function changeUrl(){
   docker-compose run --rm wpcli option update siteurl "http://${theme_name}"
 }
 
-# installWP
+installWP
 if [ ! -f front-page.php ]; then
   echo "${tmagenta}No front-page.php found, exiting.${treset}"
   exit 1
 fi
 # currentThemeToHosts
-  # themeToNginx
-changeUrl
+# themeToNginx
+# changeUrl
