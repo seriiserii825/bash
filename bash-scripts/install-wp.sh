@@ -68,11 +68,11 @@ function changeUrl(){
   docker-compose run --rm wpcli option update siteurl "http://${theme_name}"
 }
 
-installWP
+# installWP
 if [ ! -f front-page.php ]; then
   echo "${tmagenta}No front-page.php found, exiting.${treset}"
   exit 1
 fi
 # currentThemeToHosts
 # themeToNginx
-# changeUrl
+changeUrl
