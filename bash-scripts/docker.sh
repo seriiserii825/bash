@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function removeImages(){
+function removeImages() {
   # Get image list once and store it
   image_list=$(docker images --format "{{.ID}} {{.Repository}} {{.Tag}}")
   echo "$image_list" | nl
@@ -15,6 +15,11 @@ function removeImages(){
   for index in "${index_array[@]}"; do
     image_id=$(echo "$image_list" | sed -n "${index}p" | awk '{print $1}')
     if [ -n "$image_id" ]; then
+      # Check if image is used by any container
+      used_by=$(docker ps -a --filter "ancestor=$image_id" --format "{{.ID}}")
+      if [ -n "$used_by" ]; then
+        echo "⚠️  Image $image_id is used by container(s): $used_by"
+      fi
       docker rmi "$image_id"
     else
       echo "Invalid index: $index"
