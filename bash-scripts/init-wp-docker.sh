@@ -114,6 +114,22 @@ docker-compose run \
   --dbhost=mysql
 
 # Install WordPress (this creates the DB tables)
+
+read -p "Enter name, email, password devided by comma, or by default will be: admin,admin,admin@gmail.com: " admin_info
+
+if [[ "$admin_info" =~ ^[^,]+,[^,]+,[^,]+$ ]]; then
+  IFS=',' read -r admin_user admin_password admin_email <<< "$admin_info"
+else
+  echo "Invalid input format. Using default values: admin, admin, admin@gmail.com"
+  admin_user="admin"
+  admin_password="admin"
+  admin_email="admin@gmail.com"
+fi
+
+echo "${tgreen}admin_user: $admin_user${treset}"
+echo "${tblue}admin_password: $admin_password${treset}"
+echo "${tyellow}admin_email: $admin_email${treset}"
+
 docker-compose run \
   -e HOME=/tmp \
   -e WP_CLI_DISABLE_CACHE=1 \
@@ -121,9 +137,9 @@ docker-compose run \
   --rm wpcli core install \
     --url="http://${theme_name}" \
     --title="My Site" \
-    --admin_user=admin \
-    --admin_password=admin \
-    --admin_email=admin@gmail.com \
+    --admin_user="$admin_user" \
+    --admin_password="$admin_password" \
+    --admin_email="$admin_email" \
     --skip-email
 
 # Now it's safe to update the home and siteurl options
