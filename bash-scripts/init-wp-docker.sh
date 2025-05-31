@@ -2,6 +2,10 @@
 
 set -e
 
+# Export UID/GID for container use
+export HOST_UID=$(id -u)
+export HOST_GID=$(id -g)
+
 # ─────────────────────────────────────────────────────────────
 # Setup colors for output
 tblue=$(tput setaf 4)
@@ -71,10 +75,6 @@ prettyEcho "${tgreen}Updated nginx config for ${theme_name}${treset}"
 # ─────────────────────────────────────────────────────────────
 
 # ─────────────────────────────────────────────────────────────
-# Export UID/GID for container use
-export HOST_UID=$(id -u)
-export HOST_GID=$(id -g)
-
 # ─────────────────────────────────────────────────────────────
 # Start docker
 prettyEcho "${tgreen}Starting Docker containers...${treset}"
@@ -93,24 +93,23 @@ done
 #   -e PHP_MEMORY_LIMIT=512M \
 #   --rm wpcli core download --force
 
+# Download WordPress core
 docker-compose run \
   -e HOME=/tmp \
   -e WP_CLI_DISABLE_CACHE=1 \
   -e WP_CLI_PHP_ARGS="-d memory_limit=512M" \
   --rm wpcli core download --force
 
+# Create wp-config.php
 docker-compose run \
   -e HOME=/tmp \
-  -e WP_CLI_DISABLE_CACHE=1 \
-  -e WP_CLI_PHP_ARGS="-d memory_limit=512M" \
-  --rm wpcli option update home "http://${theme_name}"
+  --rm wpcli config create \
+  --dbname=wordpress \
+  --dbuser=wp_user \
+  --dbpass=wp_pass \
+  --dbhost=mysql
 
-docker-compose run \
-  -e HOME=/tmp \
-  -e WP_CLI_DISABLE_CACHE=1 \
-  -e WP_CLI_PHP_ARGS="-d memory_limit=512M" \
-  --rm wpcli option update siteurl "http://${theme_name}"
-
+# Install WordPress (this creates the DB tables)
 docker-compose run \
   -e HOME=/tmp \
   -e WP_CLI_DISABLE_CACHE=1 \
@@ -123,17 +122,9 @@ docker-compose run \
     --admin_email=admin@gmail.com \
     --skip-email
 
-# Set WordPress site URL + install via wp-cli
+# Now it's safe to update the home and siteurl options
 docker-compose run --rm wpcli option update home "http://${theme_name}"
 docker-compose run --rm wpcli option update siteurl "http://${theme_name}"
-
-docker-compose run --rm wpcli core install \
-  --url="http://${theme_name}" \
-  --title="My Site" \
-  --admin_user=admin \
-  --admin_password=admin \
-  --admin_email=admin@gmail.com \
-  --skip-email
 
 prettyEcho "${tgreen}WordPress installed at http://${theme_name}${treset}"
 
