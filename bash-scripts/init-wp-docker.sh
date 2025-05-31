@@ -2,6 +2,18 @@
 
 set -e
 
+# check if docker is running
+if ! docker info > /dev/null 2>&1; then
+  echo "${tmagenta}Docker is not running. Please start Docker and try again.${treset}"
+  exit 1
+fi
+
+# check if docker-compose is installed
+if ! command -v docker-compose &> /dev/null; then
+  echo "${tmagenta}docker-compose is not installed. Please install it and try again.${treset}"
+  exit 1
+fi
+
 function prettyEcho(){
   echo "------------------"
   echo -e "$*"

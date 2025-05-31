@@ -19,15 +19,14 @@ if screen -ls | grep -q '\.server'; then
 fi
 
 # Check if docker containers are running
-if docker ps | grep -q '[0-9]'; then
+if docker ps -a | grep -q '[0-9]'; then
     echo "${tmagenta}There are active docker containers:${treset}"
-    docker ps
+    docker ps -a
     echo "${tmagenta}type docker_stop_all to stop all containers${treset}"
-    return
 fi
 
 # wait for user input
-read -p "No background jobs or active screen sessions found. Shut down? [y/n] " -n 1 -r
+read -p "Shut down? [y/n] " -n 1 -r
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     sudo shutdown -h now
