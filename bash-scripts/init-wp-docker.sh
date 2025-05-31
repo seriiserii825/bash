@@ -40,22 +40,6 @@ git clone "$url_path" "$folder_name"
 cd "$folder_name"
 
 # ─────────────────────────────────────────────────────────────
-# Export UID/GID for container use
-export HOST_UID=$(id -u)
-export HOST_GID=$(id -g)
-
-# ─────────────────────────────────────────────────────────────
-# Start docker
-prettyEcho "${tgreen}Starting Docker containers...${treset}"
-docker-compose up -d --build
-
-# Wait for MySQL to be up (important for wp-cli)
-echo "Waiting for MySQL to be ready..."
-until docker-compose exec -T mysql mysql -uwp_user -pwp_pass -e "SHOW DATABASES;" &> /dev/null; do
-  sleep 4
-done
-
-# ─────────────────────────────────────────────────────────────
 # Setup domain and nginx
 
 theme_name="${folder_name}.local"
@@ -85,6 +69,60 @@ fi
 prettyEcho "${tgreen}Updated nginx config for ${theme_name}${treset}"
 
 # ─────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────
+# Export UID/GID for container use
+export HOST_UID=$(id -u)
+export HOST_GID=$(id -g)
+
+# ─────────────────────────────────────────────────────────────
+# Start docker
+prettyEcho "${tgreen}Starting Docker containers...${treset}"
+docker-compose up -d --build
+
+# Wait for MySQL to be up (important for wp-cli)
+echo "Waiting for MySQL to be ready..."
+until docker-compose exec -T mysql mysql -uwp_user -pwp_pass -e "SHOW DATABASES;" &> /dev/null; do
+  sleep 4
+done
+
+# ─────────────────────────────────────────────────────────────
+# Download WordPress core (force download, no cache, more memory)
+# docker-compose run \
+#   -e WP_CLI_DISABLE_CACHE=1 \
+#   -e PHP_MEMORY_LIMIT=512M \
+#   --rm wpcli core download --force
+
+docker-compose run \
+  -e HOME=/tmp \
+  -e WP_CLI_DISABLE_CACHE=1 \
+  -e WP_CLI_PHP_ARGS="-d memory_limit=512M" \
+  --rm wpcli core download --force
+
+docker-compose run \
+  -e HOME=/tmp \
+  -e WP_CLI_DISABLE_CACHE=1 \
+  -e WP_CLI_PHP_ARGS="-d memory_limit=512M" \
+  --rm wpcli option update home "http://${theme_name}"
+
+docker-compose run \
+  -e HOME=/tmp \
+  -e WP_CLI_DISABLE_CACHE=1 \
+  -e WP_CLI_PHP_ARGS="-d memory_limit=512M" \
+  --rm wpcli option update siteurl "http://${theme_name}"
+
+docker-compose run \
+  -e HOME=/tmp \
+  -e WP_CLI_DISABLE_CACHE=1 \
+  -e WP_CLI_PHP_ARGS="-d memory_limit=512M" \
+  --rm wpcli core install \
+    --url="http://${theme_name}" \
+    --title="My Site" \
+    --admin_user=admin \
+    --admin_password=admin \
+    --admin_email=admin@gmail.com \
+    --skip-email
+
 # Set WordPress site URL + install via wp-cli
 docker-compose run --rm wpcli option update home "http://${theme_name}"
 docker-compose run --rm wpcli option update siteurl "http://${theme_name}"
