@@ -132,15 +132,6 @@ docker-compose run --rm wpcli option update siteurl "http://${theme_name}"
 
 prettyEcho "${tgreen}WordPress installed at http://${theme_name}${treset}"
 
-# fix permission
-if [ -d "./wp-content/ai1wm-backups" ]: then
-  chmod -R a+rwX ./wp-content/ai1wm-backups
-fi
-
-if [ -d "./wp-content/plugins/all-in-one-wp-migration/storage" ]; then
-  chmod -R a+rwX ./wp-content/plugins/all-in-one-wp-migration/storage
-fi
-
 # ─────────────────────────────────────────────────────────────
 # Restart docker to apply nginx config
 docker-compose down
