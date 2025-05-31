@@ -1,5 +1,11 @@
 #!/bin/bash
 
+function prettyEcho(){
+  echo "------------------"
+  echo "$*"
+  echo "------------------"
+}
+
 current_user=$(whoami)
 
 echo "Need to enter folder name, that will be created after cloning the repository."
@@ -12,11 +18,15 @@ if [ -z "$folder_name" ]; then
 fi
 
 if [ "$current_user" == "serii" ]; then
-  echo "${tmagenta}You are serii, clone with ssh.${treset}"
+  message="${tblue}You are serii, clone with ssh.${treset}"
+  prettyEcho "$message"
   url_path="git@github.com:seriiserii825/docker-wp.git"
 else
-  echo "${tmagenta}You are not serii, clone with https.${treset}"
+  message="${tmagenta}You are not serii, clone with https.${treset}"
+  prettyEcho "$message"
   url_path="https://github.com/seriiserii825/docker-wp.git"
 fi
 git clone $url_path $folder_name
-cd $folder_name
+
+message="${tgreen}Now run: cd $folder_name${treset}"
+prettyEcho "$message"
