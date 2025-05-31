@@ -10,7 +10,8 @@ if [ -z "$folder_name" ]; then
   echo "Folder name cannot be empty."
   exit 1
 fi
-if $user_name == "serii"; then
+
+if [ "$current_user" == "serii" ]; then
   echo "You are serii, so you can use this script."
   url_path="git@github.com:seriiserii825/docker-wp.git"
 else
