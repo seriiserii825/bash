@@ -10,10 +10,12 @@ if [ -z "$folder_name" ]; then
   echo "Folder name cannot be empty."
   exit 1
 fi
-if $user_name == "serii"; then
-  echo "You are serii, so you can use this script."
+
+if [ "$current_user" == "serii" ]; then
+  echo "${tmagenta}You are serii, clone with ssh.${treset}"
   url_path="git@github.com:seriiserii825/docker-wp.git"
 else
+  echo "${tmagenta}You are not serii, clone with https.${treset}"
   url_path="https://github.com/seriiserii825/docker-wp.git"
 fi
 git clone $url_path $folder_name
