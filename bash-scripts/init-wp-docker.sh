@@ -8,6 +8,40 @@ function prettyEcho(){
   echo "------------------"
 }
 
+intro_message=$(cat <<'EOF'
+==============================
+Run the init-wp-docker.sh script
+==============================
+
+===============================
+Enter name, email, password
+Enter the name of the folder for cloning the repository, from the name of which the domain name will be built, example: test -> test.local
+The installation will start, containers, wordpress will be installed, creating a default account:
+
+login: admin  
+password: admin  
+email: admin@gmail.com
+===============================
+
+================================
+You can change it at the beginning of the installation
+After installation, open the browser and go to: http://test.local
+Log in to the default admin panel using the login and password above
+================================
+
+===============================
+Installing plugins and backups (using the wp-python script for favorites)
+
+wb  
+wb init  
+wb plugins - base plugins  
+wb backups - restore from downloads
+================================
+EOF
+)
+
+prettyEcho "${intro_message}"
+
 # Export UID/GID for container use
 export HOST_UID=$(id -u)
 export HOST_GID=$(id -g)
