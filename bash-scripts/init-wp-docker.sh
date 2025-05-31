@@ -100,6 +100,10 @@ docker-compose run \
   -e WP_CLI_PHP_ARGS="-d memory_limit=512M" \
   --rm wpcli core download --force
 
+if [ -f wp-config.php ]; then
+  rm wp-config.php
+fi
+
 # Create wp-config.php
 docker-compose run \
   -e HOME=/tmp \
