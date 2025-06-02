@@ -77,7 +77,7 @@ else
   admin_email="admin@gmail.com"
 fi
 
-message="user: ${admin_user}\n email: ${admin_email}\n password: ${admin_password}"
+message="user: ${admin_user}\nemail: ${admin_email}\npassword: ${admin_password}"
 prettyEcho "${message}"
 
 read -p "${tmagenta}Do you want to continue? (y/n): ${treset}" confirm
