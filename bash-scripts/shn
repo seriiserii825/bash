@@ -27,6 +27,7 @@ fi
 
 # wait for user input
 read -p "Shut down? [y/n] " -n 1 -r
+echo    # move to a new line
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     sudo shutdown -h now
