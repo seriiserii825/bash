@@ -1,13 +1,5 @@
 #! /bin/bash
 
-function installBasePackages(){
-  packages=("autopep8" "flake8" "mypy")
-  for package in "${packages[@]}"; do
-    if ! python3 -m pip show $package > /dev/null 2>&1; then
-      installPackageByName $package
-    fi
-  done
-}
 function init(){
   current_dir=$(pwd)
   python3 -m venv venv
@@ -20,11 +12,20 @@ function activate(){
   python3 -m pip install --upgrade pip
 }
 function initIfNotExists(){
-  if [ ! -d "venv" ]; then
+  if [[ ! -d "venv" && ! -f "requirements.txt" ]] ; then
     init
   else
     activate
   fi
+}
+function installBasePackages(){
+  initIfNotExists
+  packages=("autopep8" "flake8" "mypy")
+  for package in "${packages[@]}"; do
+    if ! python3 -m pip show $package > /dev/null 2>&1; then
+      installPackageByName $package
+    fi
+  done
 }
 function listRequirements(){
   initIfNotExists
@@ -108,14 +109,14 @@ bat "$HOOK_FILE"
 }
 
 function menu(){
-  echo "${tgreen}1. List${treset}"
+  echo "${tblue}1. List${treset}"
   echo "${tgreen}1.1 Install Base Modules(mypy, pypen8, flake8)${treset}"
+  echo "${tgreen}1.2 Precommit${treset}"
   echo "${tblue}2. Install Package by name${treset}"
   echo "${tblue}3. Install all from requirements.txt${treset}"
   echo "${tmagenta}4. Uninstall${treset}"
   echo "${tmagenta}5. Reinstall all${treset}"
-  echo "${tblue}6. Precommit${treset}"
-  echo "${tmagenta}7. Exit${treset}"
+  echo "${tmagenta}6. Exit${treset}"
   read -p "Enter the option: " option
   case $option in
     1)
@@ -125,6 +126,9 @@ function menu(){
     1.1)
       installBasePackages
       menu
+      ;;
+    1.2)
+      preCommitMyPy
       ;;
     2)
       installPackageByName
@@ -143,9 +147,6 @@ function menu(){
       menu
       ;;
     6)
-      preCommitMyPy
-      ;;
-    7)
       exit 0
       ;;
     *)
