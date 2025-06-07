@@ -81,6 +81,7 @@ function menu(){
     1.1)
       installBasePackages
       menu
+      ;;
     2)
       installPackageByName
       menu
