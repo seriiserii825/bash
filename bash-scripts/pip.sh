@@ -38,6 +38,11 @@ function installBasePackages(){
     installPackageByName $package
   done
 }
+function checkMyPyTypes(){
+  initIfNotExists
+  mypy --explicit-package-bases  --ignore-missing-imports .
+  deactivate
+}
 function listRequirements(){
   initIfNotExists
   if [ ! -f "requirements.txt" ]; then
@@ -119,57 +124,69 @@ chmod +x "$HOOK_FILE"
 bat "$HOOK_FILE"
 }
 
+
 function menu(){
-  echo "${tblue}1. List${treset}"
-  echo "${tgreen}2 Install Base Modules(mypy, pypen8, flake8)${treset}"
-  echo "${tgreen}3 Precommit${treset}"
-  echo "${tblue}4. Install Package by name${treset}"
-  echo "${tblue}5. Install all from requirements.txt${treset}"
-  echo "${tmagenta}6. Uninstall${treset}"
-  echo "${tmagenta}7. Reinstall all${treset}"
-  echo "${tblue}8. View requirements${treset}"
-  echo "${tmagenta}9. Exit${treset}"
-  read -p "Enter the option: " option
-  case $option in
-    1)
-      listRequirements
-      menu
-      ;;
-    2)
-      installBasePackages
-      menu
-      ;;
-    3)
-      preCommitMyPy
-      menu
-      ;;
-    4)
-      installPackageByName
-      menu
-      ;;
-    5)
-      installAllFromRequirements
-      menu
-      ;;
-    6)
-      uninstallPackage
-      menu
-      ;;
-    7)
-      reinstallAll
-      menu
-      ;;
-    8)
-      bat requirements.txt || echo "No requirements.txt found"
-      menu
-      ;;
-    9)
-      exit 0
-      ;;
-    *)
-      echo "Invalid option"
-      exit 0
-      ;;
-  esac
+  menu_items=(
+    "Install Base Modules(mypy, pypen8, flake8)"
+    "Precommit MyPy to .git/hooks/pre-commit"
+    "Check MyPy Types"
+    "List Installed Requirements"
+    "View requirements.txt"
+    "Install Package by Name"
+    "Install All from requirements.txt"
+    "Uninstall Package"
+    "Reinstall All Packages"
+    "Exit"
+    )
+
+    #foreach item in menu_items and show index and item
+  echo "=========================="
+  echo "Select an option:"
+  #without colors
+  for i in "${!menu_items[@]}"; do
+    echo "$((i + 1)). ${menu_items[i]}"
+  done
+  echo "=========================="
+  read -p "Enter your choice: " option
+  if [[ -z "$option" ]]; then
+    echo "${tmagenta}No option selected, exiting.${treset}"
+    exit 0
+  fi
+  if [[ "$option" -eq 1 ]]; then
+    initIfNotExists
+    menu
+  fi
+  if [[ "$option" -eq 2 ]]; then
+    preCommitMyPy
+    menu
+  fi
+  if [[ "$option" -eq 3 ]]; then
+    checkMyPyTypes
+    menu
+  fi
+  if [[ "$option" -eq 4 ]]; then
+    installPackageByName
+    menu
+  fi
+  if [[ "$option" -eq 5 ]]; then
+    installAllFromRequirements
+    menu
+  fi
+  if [[ "$option" -eq 6 ]]; then
+    uninstallPackage
+    menu
+  fi
+  if [[ "$option" -eq 7 ]]; then
+    reinstallAll
+    menu
+  fi
+  if [[ "$option" -eq 8 ]]; then
+    listRequirements
+    menu
+  fi
+  if [[ "$option" -eq 9 ]]; then
+    echo "Exiting..."
+    exit 0
+  fi
 }
 menu
