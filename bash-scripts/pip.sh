@@ -127,7 +127,8 @@ function menu(){
   echo "${tblue}5. Install all from requirements.txt${treset}"
   echo "${tmagenta}6. Uninstall${treset}"
   echo "${tmagenta}7. Reinstall all${treset}"
-  echo "${tmagenta}8. Exit${treset}"
+  echo "${tblue}8. View requirements${treset}"
+  echo "${tmagenta}9. Exit${treset}"
   read -p "Enter the option: " option
   case $option in
     1)
@@ -158,6 +159,9 @@ function menu(){
       menu
       ;;
     8)
+      bat requirements.txt || echo "No requirements.txt found"
+      ;;
+    9)
       exit 0
       ;;
     *)
