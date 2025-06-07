@@ -24,7 +24,7 @@ fi
 
 # Run mypy check
 echo "🔍 Running mypy..."
-$MYPY .
+$MYPY --explicit-package-bases .
 
 STATUS=$?
 
