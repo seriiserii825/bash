@@ -126,67 +126,65 @@ bat "$HOOK_FILE"
 
 
 function menu(){
-  menu_items=(
-    "Install Base Modules(mypy, pypen8, flake8)"
-    "Precommit MyPy to .git/hooks/pre-commit"
-    "Check MyPy Types"
-    "List Installed Requirements"
-    "View requirements.txt"
-    "Install Package by Name"
-    "Install All from requirements.txt"
-    "Uninstall Package"
-    "Reinstall All Packages"
-    "Exit"
-    )
-
-    #foreach item in menu_items and show index and item
-  echo "=========================="
-  echo "Select an option:"
-  #without colors
-  for i in "${!menu_items[@]}"; do
-    echo "$((i + 1)). ${menu_items[i]}"
-  done
-  echo "=========================="
-  read -p "Enter your choice: " option
-  if [[ -z "$option" ]]; then
-    echo "${tmagenta}No option selected, exiting.${treset}"
-    exit 0
-  fi
-  if [[ "$option" -eq 1 ]]; then
-    initIfNotExists
-    menu
-  fi
-  if [[ "$option" -eq 2 ]]; then
-    preCommitMyPy
-    menu
-  fi
-  if [[ "$option" -eq 3 ]]; then
-    checkMyPyTypes
-    menu
-  fi
-  if [[ "$option" -eq 4 ]]; then
-    installPackageByName
-    menu
-  fi
-  if [[ "$option" -eq 5 ]]; then
-    installAllFromRequirements
-    menu
-  fi
-  if [[ "$option" -eq 6 ]]; then
-    uninstallPackage
-    menu
-  fi
-  if [[ "$option" -eq 7 ]]; then
-    reinstallAll
-    menu
-  fi
-  if [[ "$option" -eq 8 ]]; then
-    listRequirements
-    menu
-  fi
-  if [[ "$option" -eq 9 ]]; then
-    echo "Exiting..."
-    exit 0
-  fi
+  echo "${tgreen}1 Install Base Modules(mypy, pypen8, flake8)${treset}"
+  echo "${tgreen}2 Precommit${treset}"
+  echo "${tgreen}3. Check mypy types${treset}"
+  echo "${tblue}4. List requirements.txt${treset}"
+  echo "${tblue}5. Install Package by name${treset}"
+  echo "${tblue}6. Install all from requirements.txt${treset}"
+  echo "${tmagenta}7. Uninstall${treset}"
+  echo "${tmagenta}8. Reinstall all${treset}"
+  echo "${tmagenta}9. Exit${treset}"
+  read -p "Enter the option: " option
+  case $option in
+    1)
+      echo "${tgreen}Installing base packages...${treset}"
+      installBasePackages
+      menu
+      ;;
+    2)
+      echo "${tgreen}Setting up pre-commit hook for mypy...${treset}"
+      preCommitMyPy
+      menu
+      ;;
+    3)
+      echo "${tgreen}Checking mypy types...${treset}"
+      checkMyPyTypes
+      menu
+      ;;
+    4)
+      echo "${tblue}Listing requirements.txt...${treset}"
+      listRequirements
+      menu
+      ;;
+    5)
+      echo "${tblue}Installing package by name...${treset}"
+      installPackageByName
+      menu
+      ;;
+    6)
+      echo "${tblue}Installing all packages from requirements.txt...${treset}"
+      installAllFromRequirements
+      menu
+      ;;
+    7)
+      echo "${tmagenta}Uninstalling package...${treset}"
+      uninstallPackage
+      menu
+      ;;
+    8)
+      echo "${tmagenta}Reinstalling all packages...${treset}"
+      reinstallAll
+      menu
+      ;;
+    9)
+      echo "${tmagenta}Exiting...${treset}"
+      exit 0
+      ;;
+    *)
+      echo "Invalid option"
+      exit 0
+      ;;
+  esac
 }
 menu
