@@ -66,6 +66,7 @@ function reinstallAll(){
 }
 function menu(){
   echo "${tgreen}1. List${treset}"
+  echo "${tgreen}1.1 Install Base Modules(mypy, pypen8, flake8)${treset}"
   echo "${tblue}2. Install Package by name${treset}"
   echo "${tblue}3. Install all from requirements.txt${treset}"
   echo "${tmagenta}4. Uninstall${treset}"
@@ -77,6 +78,9 @@ function menu(){
       listRequirements
       menu
       ;;
+    1.1)
+      installBasePackages
+      menu
     2)
       installPackageByName
       menu
@@ -102,5 +106,4 @@ function menu(){
       ;;
   esac
 }
-installBasePackages
 menu
