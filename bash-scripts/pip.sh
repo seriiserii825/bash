@@ -59,11 +59,54 @@ function uninstallPackage(){
   deactivate
 }
 function reinstallAll(){
-      rm -rf venv
-      initIfNotExists
-      python3 -m pip install -r requirements.txt
-      deactivate
+  rm -rf venv
+  initIfNotExists
+  python3 -m pip install -r requirements.txt
+  deactivate
 }
+
+function preCommitMyPy(){
+  HOOK_FILE=".git/hooks/pre-commit"
+
+  # If .git/hooks does not exist, create it
+  mkdir -p .git/hooks
+
+  # Write hook content
+  cat <<'EOL' > "$HOOK_FILE"
+#!/bin/bash
+
+VENV_DIR="venv"
+MYPY="$VENV_DIR/bin/mypy"
+
+# If virtualenv not found or mypy not installed, exit with error
+if [[ ! -x "$MYPY" ]]; then
+  echo "❌ mypy not found at $MYPY"
+  echo "💡 Activate your venv and run: pip install mypy"
+  exit 1
+fi
+
+# Run mypy check
+echo "🔍 Running mypy..."
+"$MYPY" --explicit-package-bases --ignore-missing-imports .
+
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+  echo "❌ Commit aborted due to mypy errors."
+  exit 1
+fi
+
+echo "✅ mypy passed. Proceeding with commit."
+exit 0
+EOL
+
+# Make it executable
+chmod +x "$HOOK_FILE"
+
+# Show contents
+bat "$HOOK_FILE"
+}
+
 function menu(){
   echo "${tgreen}1. List${treset}"
   echo "${tgreen}1.1 Install Base Modules(mypy, pypen8, flake8)${treset}"
@@ -71,7 +114,8 @@ function menu(){
   echo "${tblue}3. Install all from requirements.txt${treset}"
   echo "${tmagenta}4. Uninstall${treset}"
   echo "${tmagenta}5. Reinstall all${treset}"
-  echo "${tmagenta}6. Exit${treset}"
+  echo "${tblue}6. Precommit${treset}"
+  echo "${tmagenta}7. Exit${treset}"
   read -p "Enter the option: " option
   case $option in
     1)
@@ -99,6 +143,9 @@ function menu(){
       menu
       ;;
     6)
+      preCommitMyPy
+      ;;
+    7)
       exit 0
       ;;
     *)
