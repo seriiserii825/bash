@@ -141,6 +141,7 @@ function menu(){
       ;;
     3)
       preCommitMyPy
+      menu
       ;;
     4)
       installPackageByName
@@ -160,6 +161,7 @@ function menu(){
       ;;
     8)
       bat requirements.txt || echo "No requirements.txt found"
+      menu
       ;;
     9)
       exit 0
