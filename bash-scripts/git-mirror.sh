@@ -20,8 +20,9 @@ elif [[ "$action" == "p" ]]; then
   echo "Repository pushed successfully."
 elif [[ "$action" == "r" ]]; then
   url=$(echo "$clipboard" | sed 's/git clone //')
-  new_url="git remote set-url origin $url"
+  new_url="git remote add origin $url"
   eval "$new_url"
+  git push -u origin main
 else
   echo "Invalid action. Please enter 'c' to clone or 'p' to push."
 fi
