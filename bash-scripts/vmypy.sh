@@ -16,9 +16,9 @@ set +u +e
   source "$VENV_DIR/bin/activate"
 
   if [[ $# -eq 0 ]]; then
-    mypy .
+    mypy --explicit-package-bases .
   else
-    mypy "$@"
+    mypy --explicit-package-bases "$@"
   fi
 
   deactivate
