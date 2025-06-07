@@ -1,4 +1,10 @@
-#! /bin/bash
+#! /bin/bash 
+
+function prettyEcho(){
+  echo "=========================="
+  echo "$*"
+  echo "=========================="
+}
 
 function init(){
   current_dir=$(pwd)
@@ -12,25 +18,30 @@ function activate(){
   python3 -m pip install --upgrade pip
 }
 function initIfNotExists(){
-  if [[ ! -d "venv" && ! -f "requirements.txt" ]] ; then
-    init
-  else
+  # if not dir venv and not file requirements.txt
+  if [ -d "venv" ] && [ -f "requirements.txt" ]; then
+    prettyEcho "Activating virtual environment"
     activate
+  else
+    prettyEcho "Creating virtual environment and installing base packages"
+    init
   fi
 }
 function installBasePackages(){
   initIfNotExists
   packages=("autopep8" "flake8" "mypy")
   for package in "${packages[@]}"; do
-    if ! python3 -m pip show $package > /dev/null 2>&1; then
-      installPackageByName $package
+    if grep -q "$package" requirements.txt; then
+      prettyEcho "${tblue}$package is already installed${treset}"
+      continue
     fi
+    installPackageByName $package
   done
 }
 function listRequirements(){
   initIfNotExists
   if [ ! -f "requirements.txt" ]; then
-    echo "No requirements.txt found"
+    prettyEcho "No requirements.txt found"
   fi
   bat requirements.txt
   deactivate
@@ -110,43 +121,43 @@ bat "$HOOK_FILE"
 
 function menu(){
   echo "${tblue}1. List${treset}"
-  echo "${tgreen}1.1 Install Base Modules(mypy, pypen8, flake8)${treset}"
-  echo "${tgreen}1.2 Precommit${treset}"
-  echo "${tblue}2. Install Package by name${treset}"
-  echo "${tblue}3. Install all from requirements.txt${treset}"
-  echo "${tmagenta}4. Uninstall${treset}"
-  echo "${tmagenta}5. Reinstall all${treset}"
-  echo "${tmagenta}6. Exit${treset}"
+  echo "${tgreen}2 Install Base Modules(mypy, pypen8, flake8)${treset}"
+  echo "${tgreen}3 Precommit${treset}"
+  echo "${tblue}4. Install Package by name${treset}"
+  echo "${tblue}5. Install all from requirements.txt${treset}"
+  echo "${tmagenta}6. Uninstall${treset}"
+  echo "${tmagenta}7. Reinstall all${treset}"
+  echo "${tmagenta}8. Exit${treset}"
   read -p "Enter the option: " option
   case $option in
     1)
       listRequirements
       menu
       ;;
-    1.1)
+    2)
       installBasePackages
       menu
       ;;
-    1.2)
+    3)
       preCommitMyPy
       ;;
-    2)
+    4)
       installPackageByName
       menu
       ;;
-    3)
+    5)
       installAllFromRequirements
       menu
       ;;
-    4)
+    6)
       uninstallPackage
       menu
       ;;
-    5)
+    7)
       reinstallAll
       menu
       ;;
-    6)
+    8)
       exit 0
       ;;
     *)

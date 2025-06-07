@@ -16,9 +16,9 @@ set +u +e
   source "$VENV_DIR/bin/activate"
 
   if [[ $# -eq 0 ]]; then
-    mypy --explicit-package-bases .
+    mypy --explicit-package-bases  --ignore-missing-imports .
   else
-    mypy --explicit-package-bases "$@"
+    mypy --explicit-package-bases  --ignore-missing-imports "$@"
   fi
 
   deactivate
