@@ -1,7 +1,7 @@
 #! /bin/bash
 
 function installBasePackages(){
-  packages=("autopep8" "flake8")
+  packages=("autopep8" "flake8" "mypy")
   for package in "${packages[@]}"; do
     if ! python3 -m pip show $package > /dev/null 2>&1; then
       installPackageByName $package
