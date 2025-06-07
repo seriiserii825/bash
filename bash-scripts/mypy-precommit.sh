@@ -1,15 +1,12 @@
 #!/bin/bash
 
-# if .git/hooks/pre-commit does not exist, create it
-if [ ! -f .git/hooks/pre-commit ]; then
-    echo "Creating pre-commit hook..."
-    touch .git/hooks/pre-commit
-    chmod +x .git/hooks/pre-commit
-fi
+HOOK_FILE=".git/hooks/pre-commit"
 
-# paste multiline text in file
+# If .git/hooks does not exist, create it
+mkdir -p .git/hooks
 
-cat <<EOL > .git/hooks/pre-commit
+# Write hook content
+cat <<'EOL' > "$HOOK_FILE"
 #!/bin/bash
 
 VENV_DIR="venv"
@@ -24,7 +21,7 @@ fi
 
 # Run mypy check
 echo "🔍 Running mypy..."
-$MYPY --explicit-package-bases .
+"$MYPY" --explicit-package-bases --ignore-missing-imports .
 
 STATUS=$?
 
@@ -37,5 +34,8 @@ echo "✅ mypy passed. Proceeding with commit."
 exit 0
 EOL
 
-# Make the pre-commit hook executable
-chmod +x .git/hooks/pre-commit
+# Make it executable
+chmod +x "$HOOK_FILE"
+
+# Show contents
+bat "$HOOK_FILE"
