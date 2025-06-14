@@ -1,36 +1,11 @@
 #!/bin/bash
 
-
-# Check for running background jobs
-if jobs | grep -q '[0-9]'; then
-    echo "${blue}There are background jobs running:${reset}"
-    jobs
-    echo "${tgreen}type kill %1 to kill the job${treset}"
-    #press enter to continue
-    return
-fi
-
-# Check for active screen sessions
-if screen -ls | grep -q '\.server'; then
-    echo "${tmagenta}There are active screen sessions:${treset}"
-    screen -ls
-    echo "${tmagenta}type kill_server [session_name] to kill the session${treset}"
-    return
-fi
-
-# Check if docker containers are running
 if docker ps -a | grep -q '[0-9]'; then
-    echo "${tmagenta}There are active docker containers:${treset}"
-    docker ps -a
-    echo "${tmagenta}type docker_stop_all to stop all containers${treset}"
+  echo "${tmagenta}There are active docker containers:${treset}"
+  docker ps -a
+  echo "${tmagenta}Stopping all docker containers...${treset}"
+  docker stop $(docker ps -q)
+  echo "${tgreen}All docker containers stopped.${treset}"
 fi
 
-# wait for user input
-read -p "Shut down? [y/n] " -n 1 -r
-echo    # move to a new line
-
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    sudo shutdown -h now
-else
-    echo "${tgreen}Shutdown aborted${treset}"
-fi
+sudo shutdown -h now
