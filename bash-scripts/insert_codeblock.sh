@@ -5,7 +5,7 @@ content=$(xclip -selection clipboard -o)
 
 # Wrap in triple backticks with proper line breaks
 wrapped=$(cat <<EOF
-\`\`\`
+\`\`\`bash
 ${content}
 \`\`\`
 EOF
