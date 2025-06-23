@@ -62,7 +62,7 @@ sed -i '/^\s*$/d' "${type_name}.ts"                 # Empty lines
 
 # Convert interface to type
 sed -i 's/interface/type/g' "${type_name}.ts"
-sed -i "s/type ${type_name}/type ${type_name} =/g" "${type_name}.ts"
+sed -i "s/{/ = {/g" "${type_name}.ts"
 
 # Show result
 pretty_echo "${tgreen}Final cleaned TypeScript output:${treset}"
