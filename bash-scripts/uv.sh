@@ -69,9 +69,23 @@ function checkMyPy() {
   init
   if ! [ -x "$VENV_DIR/bin/mypy" ]; then
     echo "mypy not installed. Installing..."
-    uv  install mypy
+    uv add mypy
   fi
-  uv venv exec mypy --explicit-package-bases --ignore-missing-imports .
+  # Run mypy inside .venv
+  "$VENV_DIR/bin/mypy" --explicit-package-bases --ignore-missing-imports .
+}
+
+
+function installBasePackages(){
+  init
+  packages=("autopep8" "flake8" "mypy")
+  for package in "${packages[@]}"; do
+    if grep -q "$package" pyproject.toml; then
+      prettyEcho "${tblue}$package is already installed${treset}"
+      continue
+    fi
+    installPackage $package
+  done
 }
 
 function preCommitMyPy() {
@@ -124,13 +138,14 @@ function migrateRequirementsTxt() {
   prettyEcho "📦 Converting requirements.txt to pyproject.toml..."
   uv add -r requirements.txt
   prettyEcho "✅ Migration complete. requirements.txt will be removed."
-  rm -f requirements.txt
+  rm -rf venv requirements.txt
 }
 
 function menu() {
   echo ""
   echo "🌀 UV Project Manager (no , no requirements.txt)"
   echo "${tblue}1. Init Project (create venv + pyproject.toml)${treset}"
+  echo "${tblue}1.1 Install base packages${treset}"
   echo "${tblue}2 Sync${treset}"
   echo "${tblue}3 Reinstall${treset}"
   echo "${tgreen}4. Install Package${treset}"
@@ -144,6 +159,7 @@ function menu() {
 
   case $opt in
     1) init; menu ;;
+    1.1) installBasePackages; menu ;;
     2) sync; menu ;;
     3) reinstall; menu ;;
     4) installPackage; menu ;;
