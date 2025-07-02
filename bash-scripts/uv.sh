@@ -123,15 +123,15 @@ function migrateRequirementsTxt() {
 function menu() {
   echo ""
   echo "🌀 UV Project Manager (no , no requirements.txt)"
-  echo "1. Init Project (create venv + pyproject.toml)"
-  echo "1.1 Sync"
-  echo "2. Install Package"
-  echo "3. Uninstall Package"
-  echo "4. List Installed Packages"
-  echo "5. Check Types with mypy"
-  echo "6. Setup Pre-Commit Hook for mypy"
-  echo "7. Migrate requirements.txt to pyproject.toml"
-  echo "8. Exit"
+  echo "${tblue}1. Init Project (create venv + pyproject.toml)${treset}"
+  echo "${tblue}1.1 Sync${treset}"
+  echo "${tgreen}2. Install Package${treset}"
+  echo "${tmagenta}3. Uninstall Package${treset}"
+  echo "${tgreen}4. List Installed Packages${treset}"
+  echo "${tblue}5. Check Types with mypy${treset}"
+  echo "${tgreen}6. Setup Pre-Commit Hook for mypy${treset}"
+  echo "${tblue}7. Migrate requirements.txt to pyproject.toml${treset}"
+  echo "${tmagenta}8. Exit${treset}"
   read -p "Choose option: " opt
 
   case $opt in
