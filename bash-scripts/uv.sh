@@ -107,6 +107,13 @@ EOL
   bat "$HOOK_FILE" 2>/dev/null || cat "$HOOK_FILE"
 }
 
+function reinstall() {
+  init
+  rm -rf "$VENV_DIR"
+  prettyEcho "🔄 Reinstalling all packages..."
+  uv sync
+}
+
 function migrateRequirementsTxt() {
   init
   if [ ! -f "requirements.txt" ]; then
@@ -124,26 +131,28 @@ function menu() {
   echo ""
   echo "🌀 UV Project Manager (no , no requirements.txt)"
   echo "${tblue}1. Init Project (create venv + pyproject.toml)${treset}"
-  echo "${tblue}1.1 Sync${treset}"
-  echo "${tgreen}2. Install Package${treset}"
-  echo "${tmagenta}3. Uninstall Package${treset}"
-  echo "${tgreen}4. List Installed Packages${treset}"
-  echo "${tblue}5. Check Types with mypy${treset}"
-  echo "${tgreen}6. Setup Pre-Commit Hook for mypy${treset}"
-  echo "${tblue}7. Migrate requirements.txt to pyproject.toml${treset}"
-  echo "${tmagenta}8. Exit${treset}"
+  echo "${tblue}2 Sync${treset}"
+  echo "${tblue}3 Reinstall${treset}"
+  echo "${tgreen}4. Install Package${treset}"
+  echo "${tmagenta}5. Uninstall Package${treset}"
+  echo "${tgreen}6. List Installed Packages${treset}"
+  echo "${tblue}7. Check Types with mypy${treset}"
+  echo "${tgreen}8. Setup Pre-Commit Hook for mypy${treset}"
+  echo "${tblue}9. Migrate requirements.txt to pyproject.toml${treset}"
+  echo "${tmagenta}10. Exit${treset}"
   read -p "Choose option: " opt
 
   case $opt in
     1) init; menu ;;
-    1.1) sync; menu ;;
-    2) installPackage; menu ;;
-    3) uninstallPackage; menu ;;
-    4) listPackages; menu ;;
-    5) checkMyPy; menu ;;
-    6) preCommitMyPy; menu ;;
-    7) migrateRequirementsTxt; menu ;;
-    8) echo "Goodbye 👋"; exit 0 ;;
+    2) sync; menu ;;
+    3) reinstall; menu ;;
+    4) installPackage; menu ;;
+    5) uninstallPackage; menu ;;
+    6) listPackages; menu ;;
+    7) checkMyPy; menu ;;
+    8) preCommitMyPy; menu ;;
+    9) migrateRequirementsTxt; menu ;;
+    10) echo "Goodbye 👋"; exit 0 ;;
     *) echo "❌ Invalid option"; exit 1 ;;
   esac
 }
