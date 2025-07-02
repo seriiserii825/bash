@@ -62,7 +62,7 @@ function uninstallPackage() {
 
 function listPackages() {
   init
-  uv  list
+  uv pip list
 }
 
 function checkMyPy() {
