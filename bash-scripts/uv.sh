@@ -145,30 +145,30 @@ function menu() {
   echo ""
   echo "🌀 UV Project Manager (no , no requirements.txt)"
   echo "${tblue}1. Init Project (create venv + pyproject.toml)${treset}"
-  echo "${tblue}1.1 Install base packages${treset}"
-  echo "${tblue}2 Sync${treset}"
-  echo "${tblue}3 Reinstall${treset}"
-  echo "${tgreen}4. Install Package${treset}"
-  echo "${tmagenta}5. Uninstall Package${treset}"
-  echo "${tgreen}6. List Installed Packages${treset}"
-  echo "${tblue}7. Check Types with mypy${treset}"
-  echo "${tgreen}8. Setup Pre-Commit Hook for mypy${treset}"
-  echo "${tblue}9. Migrate requirements.txt to pyproject.toml${treset}"
-  echo "${tmagenta}10. Exit${treset}"
+  echo "${tblue}2. Migrate requirements.txt to pyproject.toml${treset}"
+  echo "${tgreen}3. Setup Pre-Commit Hook for mypy${treset}"
+  echo "${tblue}4. Install base packages${treset}"
+  echo "${tblue}5 Sync${treset}"
+  echo "${tgreen}6. Install Package${treset}"
+  echo "${tmagenta}7. Uninstall Package${treset}"
+  echo "${tblue}8 Reinstall${treset}"
+  echo "${tgreen}9. List Installed Packages${treset}"
+  echo "${tblue}10. Check Types with mypy${treset}"
+  echo "${tmagenta}11. Exit${treset}"
   read -p "Choose option: " opt
 
   case $opt in
     1) init; menu ;;
-    1.1) installBasePackages; menu ;;
-    2) sync; menu ;;
-    3) reinstall; menu ;;
-    4) installPackage; menu ;;
-    5) uninstallPackage; menu ;;
-    6) listPackages; menu ;;
-    7) checkMyPy; menu ;;
-    8) preCommitMyPy; menu ;;
-    9) migrateRequirementsTxt; menu ;;
-    10) echo "Goodbye 👋"; exit 0 ;;
+    2) migrateRequirementsTxt; menu ;;
+    3) preCommitMyPy; menu ;;
+    4) installBasePackages; menu ;;
+    5) sync; menu ;;
+    6) installPackage; menu ;;
+    7) uninstallPackage; menu ;;
+    8) reinstall; menu ;;
+    9) listPackages; menu ;;
+    10) checkMyPy; menu ;;
+    11) echo "Goodbye 👋"; exit 0 ;;
     *) echo "❌ Invalid option"; exit 1 ;;
   esac
 }
