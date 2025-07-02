@@ -107,6 +107,19 @@ EOL
   bat "$HOOK_FILE" 2>/dev/null || cat "$HOOK_FILE"
 }
 
+function migrateRequirementsTxt() {
+  init
+  if [ ! -f "requirements.txt" ]; then
+    prettyEcho "❌ requirements.txt not found"
+    return
+  fi
+
+  prettyEcho "📦 Converting requirements.txt to pyproject.toml..."
+  uv add -r requirements.txt
+  prettyEcho "✅ Migration complete. requirements.txt will be removed."
+  rm -f requirements.txt
+}
+
 function menu() {
   echo ""
   echo "🌀 UV Project Manager (no , no requirements.txt)"
@@ -117,7 +130,8 @@ function menu() {
   echo "4. List Installed Packages"
   echo "5. Check Types with mypy"
   echo "6. Setup Pre-Commit Hook for mypy"
-  echo "7. Exit"
+  echo "7. Migrate requirements.txt to pyproject.toml"
+  echo "8. Exit"
   read -p "Choose option: " opt
 
   case $opt in
@@ -128,7 +142,8 @@ function menu() {
     4) listPackages; menu ;;
     5) checkMyPy; menu ;;
     6) preCommitMyPy; menu ;;
-    7) echo "Goodbye 👋"; exit 0 ;;
+    7) migrateRequirementsTxt; menu ;;
+    8) echo "Goodbye 👋"; exit 0 ;;
     *) echo "❌ Invalid option"; exit 1 ;;
   esac
 }
