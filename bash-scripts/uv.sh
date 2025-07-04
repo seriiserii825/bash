@@ -1,24 +1,45 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────
+#  🌀  UV Project Manager  –  now with Ruff lint + format guard
+# ─────────────────────────────────────────────────────────────
 
+# ── Config ───────────────────────────────────────────────────
 VENV_DIR=".venv"
 PYPROJECT_FILE="pyproject.toml"
 
-function prettyEcho() {
-  echo "=========================="
-  echo "$*"
-  echo "=========================="
+# ANSI colours (optional)
+tblue="\e[34m"; tgreen="\e[32m"; tmagenta="\e[35m"; treset="\e[0m"
+
+# ── Helpers ──────────────────────────────────────────────────
+prettyEcho() {
+  echo -e "${tblue}==========================${treset}"
+  echo -e "$*"
+  echo -e "${tblue}==========================${treset}"
 }
 
-function init() {
-  if [ ! -d "$VENV_DIR" ]; then
-    prettyEcho "🔧 Creating uv virtual environment..."
+# Ensure Ruff is installed system‑wide (Arch Linux)
+ensureRuff() {
+  if ! command -v ruff >/dev/null 2>&1; then
+    prettyEcho "🐍 Installing Ruff system‑wide with pacman…"
+    sudo pacman -Sy --needed --noconfirm ruff
+  else
+    prettyEcho "✅ Ruff already installed"
+  fi
+}
+
+# ── Core setup ───────────────────────────────────────────────
+init() {
+  # 1. virtual env
+  if [[ ! -d "$VENV_DIR" ]]; then
+    prettyEcho "🔧 Creating uv virtual environment…"
     uv venv "$VENV_DIR"
   else
     prettyEcho "✅ Virtual environment already exists"
   fi
 
-  if [ ! -f "$PYPROJECT_FILE" ]; then
-    prettyEcho "📄 Creating pyproject.toml..."
+  # 2. pyproject.toml skeleton
+  if [[ ! -f "$PYPROJECT_FILE" ]]; then
+    prettyEcho "📄 Creating pyproject.toml…"
     cat <<EOF > "$PYPROJECT_FILE"
 [project]
 name = "my_project"
@@ -27,8 +48,7 @@ description = ""
 EOF
   else
     prettyEcho "✅ pyproject.toml already exists"
-    
-    # Remove 'dependencies = []' if it exists (which blocks uv auto-tracking)
+    # Remove empty dependency array that blocks uv auto‑tracking
     if grep -q 'dependencies\s*=\s*\[\s*\]' "$PYPROJECT_FILE"; then
       prettyEcho "🧹 Removing empty dependencies=[] from pyproject.toml"
       sed -i '/dependencies\s*=\s*\[\s*\]/d' "$PYPROJECT_FILE"
@@ -36,144 +56,93 @@ EOF
   fi
 }
 
-function sync() {
-  init
-  prettyEcho "🔄 Syncing project with uv..."
-  uv sync
-}
-
-function installPackage() {
-  init
-  # if have arguments, use them as package name
-  if [ $# -gt 0 ]; then
-    package_name="$1"
-  else
-    read -p "📦 Enter package name to install: " package_name
-  fi
-  uv add "$package_name"
-}
-
-function uninstallPackage() {
+# ── UV wrappers ──────────────────────────────────────────────
+sync()          { init; prettyEcho "🔄 Syncing project with uv…"; uv sync; }
+installPackage(){ init; package_name="${1:-$(read -p '📦 Package to install: ' x && echo $x)}"; uv add "$package_name"; }
+uninstallPackage(){
   init
   packages=$(uv pip list | tail -n +3 | awk '{print $1}' | fzf --multi)
-  if [ -z "$packages" ]; then
-    echo "No package selected"
-    return
-  fi
-  for pkg in $packages; do
-    uv remove "$pkg"
-  done
+  [[ -z "$packages" ]] && { echo "No package selected"; return; }
+  for pkg in $packages; do uv remove "$pkg"; done
+}
+listPackages()  { init; uv pip list; }
+reinstall()     { init; rm -rf "$VENV_DIR"; prettyEcho "🔄 Reinstalling all packages…"; uv sync; }
+
+# ── Ruff integration ────────────────────────────────────────
+checkRuff() {
+  ensureRuff
+  prettyEcho "🔍 Running Ruff (check + format)…"
+  ruff check . --fix || { echo "❌ Ruff check failed"; exit 1; }
+  ruff format .        || { echo "❌ Ruff format failed"; exit 1; }
+  prettyEcho "✅ Ruff clean!"
 }
 
-function listPackages() {
-  init
-  uv pip list
-}
-
-function checkMyPy() {
-  init
-  if ! [ -x "$VENV_DIR/bin/mypy" ]; then
-    echo "mypy not installed. Installing..."
-    uv add mypy
-  fi
-  # Run mypy inside .venv
-  "$VENV_DIR/bin/mypy" --explicit-package-bases --ignore-missing-imports .
-}
-
-
-function installBasePackages(){
-  init
-  packages=("autopep8" "flake8" "mypy")
-  for package in "${packages[@]}"; do
-    if grep -q "$package" pyproject.toml; then
-      prettyEcho "${tblue}$package is already installed${treset}"
-      continue
-    fi
-    installPackage $package
-  done
-}
-
-function preCommitMyPy() {
+preCommitRuff() {
+  ensureRuff
   HOOK_FILE=".git/hooks/pre-commit"
   mkdir -p .git/hooks
 
   cat <<'EOL' > "$HOOK_FILE"
-#!/bin/bash
+#!/usr/bin/env bash
+echo "🔍 Running Ruff pre‑commit hook…"
 
-VENV_DIR=".venv"
-MYPY="$VENV_DIR/bin/mypy"
-
-if [[ ! -x "$MYPY" ]]; then
-  echo "❌ mypy not found at $MYPY"
-  echo "💡 Run: uv  install mypy"
+if ! command -v ruff >/dev/null 2>&1; then
+  echo "❌ Ruff not found. Install it with: sudo pacman -S ruff"
   exit 1
 fi
 
-echo "🔍 Running mypy..."
-"$MYPY" --explicit-package-bases --ignore-missing-imports .
+ruff check . --fix || { echo "❌ Commit aborted (Ruff check)"; exit 1; }
+ruff format .      || { echo "❌ Commit aborted (Ruff format)"; exit 1; }
 
-STATUS=$?
-if [ $STATUS -ne 0 ]; then
-  echo "❌ Commit aborted due to mypy errors."
-  exit 1
-fi
-
-echo "✅ mypy passed. Proceeding with commit."
+echo "✅ Ruff passed. Proceeding with commit."
 exit 0
 EOL
 
   chmod +x "$HOOK_FILE"
   bat "$HOOK_FILE" 2>/dev/null || cat "$HOOK_FILE"
+  prettyEcho "✅ Git pre‑commit hook installed."
 }
 
-function reinstall() {
+# ── Misc helpers ─────────────────────────────────────────────
+migrateRequirementsTxt() {
   init
-  rm -rf "$VENV_DIR"
-  prettyEcho "🔄 Reinstalling all packages..."
-  uv sync
-}
+  [[ ! -f "requirements.txt" ]] \
+    && { prettyEcho "❌ requirements.txt not found"; return; }
 
-function migrateRequirementsTxt() {
-  init
-  if [ ! -f "requirements.txt" ]; then
-    prettyEcho "❌ requirements.txt not found"
-    return
-  fi
-
-  prettyEcho "📦 Converting requirements.txt to pyproject.toml..."
+  prettyEcho "📦 Converting requirements.txt → pyproject.toml…"
   uv add -r requirements.txt
-  prettyEcho "✅ Migration complete. requirements.txt will be removed."
-  rm -rf venv requirements.txt
+  rm -f requirements.txt venv
+  prettyEcho "✅ Migration complete."
 }
 
-function menu() {
+# ── Menu UI ──────────────────────────────────────────────────
+menu() {
   echo ""
-  echo "🌀 UV Project Manager (no , no requirements.txt)"
-  echo "${tblue}1. Init Project (create venv + pyproject.toml)${treset}"
-  echo "${tgreen}2. Install Package${treset}"
-  echo "${tblue}3. Install base packages${treset}"
-  echo "${tblue}4 Sync${treset}"
-  echo "${tmagenta}5. Uninstall Package${treset}"
-  echo "${tblue}6 Reinstall${treset}"
-  echo "${tgreen}7. List Installed Packages${treset}"
-  echo "${tblue}8. Migrate requirements.txt to pyproject.toml${treset}"
-  echo "${tblue}9. Check Types with mypy${treset}"
-  echo "${tmagenta}10. Exit${treset}"
+  echo "🌀 ${tgreen}UV Project Manager (Ruff edition)${treset}"
+  echo " 1. Init Project + install pre‑commit hook"
+  echo " 2. Install Package"
+  echo " 3. Sync"
+  echo " 4. Uninstall Package"
+  echo " 5. Reinstall all packages"
+  echo " 6. List installed packages"
+  echo " 7. Migrate requirements.txt → pyproject.toml"
+  echo " 8. Run Ruff check + format"
+  echo " 9. Exit"
   read -p "Choose option: " opt
 
   case $opt in
-    1) init; preCommitMyPy; menu ;;
-    2) installPackage; menu ;;
-    3) installBasePackages; menu ;;
-    4) sync; menu ;;
-    5) uninstallPackage; menu ;;
-    6) reinstall; menu ;;
-    7) listPackages; menu ;;
-    8) migrateRequirementsTxt; menu ;;
-    9) checkMyPy; menu ;;
-    10) echo "Goodbye 👋"; exit 0 ;;
+    1) init; preCommitRuff; menu ;;
+    2) installPackage;      menu ;;
+    3) sync;                menu ;;
+    4) uninstallPackage;    menu ;;
+    5) reinstall;           menu ;;
+    6) listPackages;        menu ;;
+    7) migrateRequirementsTxt; menu ;;
+    8) checkRuff;           menu ;;
+    9) echo "Goodbye 👋"; exit 0 ;;
     *) echo "❌ Invalid option"; exit 1 ;;
   esac
 }
 
+# ── Kick things off ──────────────────────────────────────────
 menu
