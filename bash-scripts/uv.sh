@@ -59,6 +59,7 @@ exclude = [
     "__pycache__",
 ]
 fix = true
+target-version = "py312"  # <- specify Python 3.12 explicitly here
 
 [tool.ruff.lint]
 select = [
@@ -73,6 +74,39 @@ select = [
 EOF
   else
     prettyEcho "✅ pyproject.toml already exists"
+    # add ruff setting in pyproject.toml if not present
+    if ! grep -q '\[tool.ruff\]' "$PYPROJECT_FILE"; then
+      prettyEcho "🔧 Adding Ruff settings to pyproject.toml…"
+      cat <<EOF >> "$PYPROJECT_FILE"
+[tool.ruff]
+line-length = 88
+exclude = [
+    "migrations",
+    "tests",
+    "docs",
+    "build",
+    "dist",
+    "venv",
+    ".venv",
+    ".git",
+    "__pycache__",
+]
+fix = true
+target-version = "py312"  # <- specify Python 3.12 explicitly here
+
+[tool.ruff.lint]
+select = [
+    "F401",  # Unused import
+    "F403",  # Wildcard import
+    "F405",  # Name may be undefined, or defined from star imports
+    "F841",  # Local variable is assigned to but never used
+    "E501",  # Line too long
+    "I",     # Import sorting (isort-compatible)
+]
+EOF
+    fi
+
+
     # Remove empty dependency array that blocks uv auto‑tracking
     if grep -q 'dependencies\s*=\s*\[\s*\]' "$PYPROJECT_FILE"; then
       prettyEcho "🧹 Removing empty dependencies=[] from pyproject.toml"
@@ -151,22 +185,20 @@ menu() {
   echo " 5. Reinstall all packages"
   echo " 6. List installed packages"
   echo " 7. Migrate requirements.txt → pyproject.toml"
-  echo " 8. Run Ruff check + format"
+  echo " 8. Init Project + install pre‑commit hook"
   echo " 9. Exit"
-  echo " 10. Init Project + install pre‑commit hook"
   read -p "Choose option: " opt
 
   case $opt in
-    1) ruff check . --fix && ruff format . ;;
+    1) checkRuff;           menu ;;
     2) installPackage;      menu ;;
     3) sync;                menu ;;
-    4) uninstallPackage;    menu ;;
+    4) uninstallPackage; reinstall;   menu ;;
     5) reinstall;           menu ;;
     6) listPackages;        menu ;;
     7) migrateRequirementsTxt; menu ;;
-    8) checkRuff;           menu ;;
+    8) init; preCommitRuff; menu ;;
     9) echo "Goodbye 👋"; exit 0 ;;
-    10) init; preCommitRuff; menu ;;
     *) echo "❌ Invalid option"; exit 1 ;;
   esac
 }
