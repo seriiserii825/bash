@@ -55,13 +55,13 @@ function installPackage() {
 
 function uninstallPackage() {
   init
-  packages=$(uv list | tail -n +3 | awk '{print $1}' | fzf --multi)
+  packages=$(uv pip list | tail -n +3 | awk '{print $1}' | fzf --multi)
   if [ -z "$packages" ]; then
     echo "No package selected"
     return
   fi
   for pkg in $packages; do
-    uv  uninstall "$pkg"
+    uv remove "$pkg"
   done
 }
 
@@ -150,28 +150,28 @@ function menu() {
   echo ""
   echo "🌀 UV Project Manager (no , no requirements.txt)"
   echo "${tblue}1. Init Project (create venv + pyproject.toml)${treset}"
-  echo "${tblue}2. Migrate requirements.txt to pyproject.toml${treset}"
-  echo "${tblue}4. Install base packages${treset}"
-  echo "${tblue}5 Sync${treset}"
-  echo "${tgreen}6. Install Package${treset}"
-  echo "${tmagenta}7. Uninstall Package${treset}"
-  echo "${tblue}8 Reinstall${treset}"
-  echo "${tgreen}9. List Installed Packages${treset}"
-  echo "${tblue}10. Check Types with mypy${treset}"
-  echo "${tmagenta}11. Exit${treset}"
+  echo "${tgreen}2. Install Package${treset}"
+  echo "${tblue}3. Install base packages${treset}"
+  echo "${tblue}4 Sync${treset}"
+  echo "${tmagenta}5. Uninstall Package${treset}"
+  echo "${tblue}6 Reinstall${treset}"
+  echo "${tgreen}7. List Installed Packages${treset}"
+  echo "${tblue}8. Migrate requirements.txt to pyproject.toml${treset}"
+  echo "${tblue}9. Check Types with mypy${treset}"
+  echo "${tmagenta}10. Exit${treset}"
   read -p "Choose option: " opt
 
   case $opt in
     1) init; preCommitMyPy; menu ;;
-    2) migrateRequirementsTxt; menu ;;
-    4) installBasePackages; menu ;;
-    5) sync; menu ;;
-    6) installPackage; menu ;;
-    7) uninstallPackage; menu ;;
-    8) reinstall; menu ;;
-    9) listPackages; menu ;;
-    10) checkMyPy; menu ;;
-    11) echo "Goodbye 👋"; exit 0 ;;
+    2) installPackage; menu ;;
+    3) installBasePackages; menu ;;
+    4) sync; menu ;;
+    5) uninstallPackage; menu ;;
+    6) reinstall; menu ;;
+    7) listPackages; menu ;;
+    8) migrateRequirementsTxt; menu ;;
+    9) checkMyPy; menu ;;
+    10) echo "Goodbye 👋"; exit 0 ;;
     *) echo "❌ Invalid option"; exit 1 ;;
   esac
 }
