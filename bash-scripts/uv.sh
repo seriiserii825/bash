@@ -37,6 +37,8 @@ init() {
     prettyEcho "✅ Virtual environment already exists"
   fi
 
+  uv add ruff
+
   # 2. pyproject.toml skeleton
   if [[ ! -f "$PYPROJECT_FILE" ]]; then
     prettyEcho "📄 Creating pyproject.toml…"
