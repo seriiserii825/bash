@@ -43,8 +43,13 @@ function sync() {
 }
 
 function installPackage() {
-  read -p "📦 Enter package name to install: " package_name
   init
+  # if have arguments, use them as package name
+  if [ $# -gt 0 ]; then
+    package_name="$1"
+  else
+    read -p "📦 Enter package name to install: " package_name
+  fi
   uv add "$package_name"
 }
 
@@ -146,7 +151,6 @@ function menu() {
   echo "🌀 UV Project Manager (no , no requirements.txt)"
   echo "${tblue}1. Init Project (create venv + pyproject.toml)${treset}"
   echo "${tblue}2. Migrate requirements.txt to pyproject.toml${treset}"
-  echo "${tgreen}3. Setup Pre-Commit Hook for mypy${treset}"
   echo "${tblue}4. Install base packages${treset}"
   echo "${tblue}5 Sync${treset}"
   echo "${tgreen}6. Install Package${treset}"
@@ -158,9 +162,8 @@ function menu() {
   read -p "Choose option: " opt
 
   case $opt in
-    1) init; menu ;;
+    1) init; preCommitMyPy; menu ;;
     2) migrateRequirementsTxt; menu ;;
-    3) preCommitMyPy; menu ;;
     4) installBasePackages; menu ;;
     5) sync; menu ;;
     6) installPackage; menu ;;
