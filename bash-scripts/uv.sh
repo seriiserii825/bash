@@ -59,6 +59,7 @@ exclude = [
     "__pycache__",
 ]
 fix = true
+unsafe-fixes = true
 target-version = "py312"  # <- specify Python 3.12 explicitly here
 
 [tool.ruff.lint]
