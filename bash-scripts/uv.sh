@@ -7,9 +7,6 @@
 VENV_DIR=".venv"
 PYPROJECT_FILE="pyproject.toml"
 
-# ANSI colours (optional)
-tblue="\e[34m"; tgreen="\e[32m"; tmagenta="\e[35m"; treset="\e[0m"
-
 # ── Helpers ──────────────────────────────────────────────────
 prettyEcho() {
   echo -e "${tblue}==========================${treset}"
@@ -147,7 +144,7 @@ migrateRequirementsTxt() {
 menu() {
   echo ""
   echo "🌀 ${tgreen}UV Project Manager (Ruff edition)${treset}"
-  echo " 1. Init Project + install pre‑commit hook"
+  echo " 1. Ruff check"
   echo " 2. Install Package"
   echo " 3. Sync"
   echo " 4. Uninstall Package"
@@ -156,10 +153,11 @@ menu() {
   echo " 7. Migrate requirements.txt → pyproject.toml"
   echo " 8. Run Ruff check + format"
   echo " 9. Exit"
+  echo " 10. Init Project + install pre‑commit hook"
   read -p "Choose option: " opt
 
   case $opt in
-    1) init; preCommitRuff; menu ;;
+    1) ruff check . --fix && ruff format . ;;
     2) installPackage;      menu ;;
     3) sync;                menu ;;
     4) uninstallPackage;    menu ;;
@@ -168,6 +166,7 @@ menu() {
     7) migrateRequirementsTxt; menu ;;
     8) checkRuff;           menu ;;
     9) echo "Goodbye 👋"; exit 0 ;;
+    10) init; preCommitRuff; menu ;;
     *) echo "❌ Invalid option"; exit 1 ;;
   esac
 }
