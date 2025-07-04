@@ -39,7 +39,7 @@ init() {
   # 2. pyproject.toml skeleton
   if [[ ! -f "$PYPROJECT_FILE" ]]; then
     prettyEcho "📄 Creating pyproject.toml…"
-    cat <<EOF > "$PYPROJECT_FILE"
+    cat <<'EOF' > "$PYPROJECT_FILE"
 [project]
 name = "my_project"
 version = "0.1.0"
@@ -71,14 +71,13 @@ select = [
     "E501",  # Line too long
     "I",     # Import sorting (isort-compatible)
 ]
-```
 EOF
   else
     prettyEcho "✅ pyproject.toml already exists"
     # add ruff setting in pyproject.toml if not present
     if ! grep -q '\[tool.ruff\]' "$PYPROJECT_FILE"; then
       prettyEcho "🔧 Adding Ruff settings to pyproject.toml…"
-      cat <<EOF >> "$PYPROJECT_FILE"
+      cat <<'EOF' >> "$PYPROJECT_FILE"
 [tool.ruff]
 line-length = 88
 exclude = [
@@ -93,6 +92,7 @@ exclude = [
     "__pycache__",
 ]
 fix = true
+unsafe-fixes = true
 target-version = "py312"  # <- specify Python 3.12 explicitly here
 
 [tool.ruff.lint]
