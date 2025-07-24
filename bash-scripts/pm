@@ -4,6 +4,9 @@
 source ~/dotfiles/zsh_modules/zsh_colors
 
 function pipToUv(){
+  set -e
+
+
   # if uv is not installed
   # check if uv is installed
   if ! command -v uv &> /dev/null; then
@@ -26,7 +29,7 @@ function pipToUv(){
   fi
 
   # Add dependencies from requirements.txt
-  poetry add "$(cat requirements.txt)"
+  poetry add $(cat requirements.txt)
 
   # Remove poetry.lock file (Poetry’s lock)
   rm -f poetry.lock
@@ -46,8 +49,6 @@ function pipToUv(){
   fi
 
   rm -rf .mypy_cache .venv venv requirements.txt
-
-  echo "✅ Done: pyproject.toml is now uv-compatible with Python 3.10 requirements."
 }
 
 function prettyEcho(){
@@ -158,8 +159,8 @@ function menu(){
   echo "${tblue}6. Install all${treset}"
   echo "${tmagenta}7. Uninstall${treset}"
   echo "${tmagenta}8. Reinstall all${treset}"
-  echo "${tmagenta}9. Exit${treset}"
-  echo "${tblue}10. Pip to Uv${treset}"
+  echo "${tblue}9. Pip to Uv${treset}"
+  echo "${tmagenta}10. Exit${treset}"
   read -r -p "Enter the option: " option
   case $option in
     1)
