@@ -1,5 +1,8 @@
 #! /bin/bash 
 
+# shellcheck source=/home/serii/dotfiles/zsh_modules/zsh_colors
+source ~/dotfiles/zsh_modules/zsh_colors
+
 function prettyEcho(){
   echo "=========================="
   echo "$*"
@@ -13,7 +16,7 @@ function initIfNotExists(){
   fi
 
   if [ ! -f pyproject.toml ]; then
-    uv init
+    uv init .
   fi
 }
 function installBasePackages(){
@@ -24,7 +27,7 @@ function installBasePackages(){
       prettyEcho "${tblue}$package is already installed${treset}"
       continue
     fi
-    installPackageByName $package
+    installPackageByName "$package"
   done
 }
 function checkMyPyTypes(){
@@ -40,23 +43,27 @@ function installPackageByName(){
   if [ -n "$1" ]; then
     package_name=$1
   else
-    read -p "Enter the package name: " package_name
+    read -r -p "Enter the package name: " package_name
   fi
-  uv add $package_name
+  uv add "$package_name"
 }
+
 function syncAll(){
   initIfNotExists
   uv sync
 }
+
+# shellcheck disable=SC2120
 function uninstallPackage(){
   initIfNotExists
   if [ -n "$1" ]; then
     package_name=$1
   else
-    read -p "Enter the package name to uninstall: " package_name
+    read -r -p "Enter the package name to uninstall: " package_name
   fi
-  uv remove $package_name
+  uv remove "$package_name"
 }
+
 function reinstallAll(){
   initIfNotExists
   uv sync --reinstall
@@ -105,7 +112,7 @@ function menu(){
   echo "${tmagenta}7. Uninstall${treset}"
   echo "${tmagenta}8. Reinstall all${treset}"
   echo "${tmagenta}9. Exit${treset}"
-  read -p "Enter the option: " option
+  read -r -p "Enter the option: " option
   case $option in
     1)
       echo "${tgreen}Installing base packages...${treset}"
