@@ -43,4 +43,6 @@ else
   echo "uv.lock already exists in .gitignore"
 fi
 
+rm -rf .mypy_cache .venv venv requirements.txt
+
 echo "✅ Done: pyproject.toml is now uv-compatible with Python 3.10 requirements."
