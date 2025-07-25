@@ -1,10 +1,46 @@
 #! /bin/bash
 
 function removeSpaces(){
-    perl-rename 's/ /-/g' *
-    perl-rename 's/----/-/g' *
-    perl-rename 's/---/-/g' *
-    perl-rename 's/--/-/g' *
+  perl-rename 's/ /-/g' *
+  perl-rename 's/----/-/g' *
+  perl-rename 's/---/-/g' *
+  perl-rename 's/--/-/g' *
+}
+
+function cropImage() {
+  read -p "Pixels to crop from top (leave empty for 0): " top_crop
+  read -p "Pixels to crop from bottom (leave empty for 0): " bottom_crop
+  read -p "Pixels to crop from left (leave empty for 0): " left_crop
+  read -p "Pixels to crop from right (leave empty for 0): " right_crop
+
+  # Default empty inputs to zero
+  top_crop=${top_crop:-0}
+  bottom_crop=${bottom_crop:-0}
+  left_crop=${left_crop:-0}
+  right_crop=${right_crop:-0}
+
+  for img in "$@"; do
+    if [[ ! -f "$img" ]]; then
+      echo "File not found: $img"
+      continue
+    fi
+
+    width=$(identify -format "%w" "$img")
+    height=$(identify -format "%h" "$img")
+
+    # Calculate new width and height
+    new_width=$((width - left_crop - right_crop))
+    new_height=$((height - top_crop - bottom_crop))
+
+    if (( new_width <= 0 || new_height <= 0 )); then
+      echo "Error: Crop exceeds image dimensions for $img"
+      continue
+    fi
+
+    # Crop geometry: WIDTHxHEIGHT+X+Y
+    mogrify -crop "${new_width}x${new_height}+${left_crop}+${top_crop}" +repage "$img"
+    echo "Cropped $img: top $top_crop, bottom $bottom_crop, left $left_crop, right $right_crop pixels"
+  done
 }
 
 function changeImage(){
@@ -18,7 +54,8 @@ function changeImage(){
   echo "${tgreen}5. Flop${treset}"
   echo "${tgreen}5.1 Flop current and copy${treset}"
   echo "${tblue}6. Rotate${treset}"
-  echo "${tmagenta}7. Exit${treset}"
+  echo "${tblue}7. Crop${treset}"
+  echo "${tmagenta}8. Exit${treset}"
   read -p "${tgreen}Enter your choice: ${treset}" choice
   case $choice in
     1)
@@ -73,6 +110,11 @@ function changeImage(){
       changeImage $*
       ;;
     7)
+      echo "${tblue}Crop the image${treset}"
+      cropImage $*
+      changeImage $*
+      ;;
+    8)
       exit 0
       ;;
     *)
