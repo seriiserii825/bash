@@ -15,7 +15,10 @@ fi
 echo "You selected: $image_file_path"
 
 # Open image on black background
-feh --image-bg black "$image_file_path" &
 
-# Open image on white background
-feh --image-bg white "$image_file_path" &
+black_color="#444444"
+white_color="#d3d3d3"
+
+feh --image-bg $black_color "$image_file_path" &
+
+feh --image-bg $white_color "$image_file_path" &
