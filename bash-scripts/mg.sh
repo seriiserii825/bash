@@ -64,10 +64,7 @@ function changeImage(){
   read -p "${tgreen}Enter your choice: ${treset}" choice
   case $choice in
     1)
-      echo -e "${tblue}Resolution of the image${treset}"
-      identify -format "%wx%h\n" $*
-      echo -e "${tgreen}Size of the image${treset}"
-      du -sh $*
+      showSizes
       changeImage $*
       ;;
     2)
