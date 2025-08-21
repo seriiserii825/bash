@@ -7,6 +7,11 @@ function removeSpaces(){
   perl-rename 's/--/-/g' *
 }
 
+function showSizes(){
+  find . -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" \) \
+    -exec identify -format "%f | %wx%h\n" {} \; | sort | column -t -s'|'
+  }
+
 function cropImage() {
   read -p "Pixels to crop from top (leave empty for 0): " top_crop
   read -p "Pixels to crop from bottom (leave empty for 0): " bottom_crop
@@ -126,7 +131,7 @@ function changeImage(){
 
 removeSpaces
 COLUMNS=1
-select which in "one" "all"
+select which in "one" "all" "info"
 do
   case $which in 
     one)
@@ -138,6 +143,10 @@ do
     all)
       echo "${tgreen}Select all images${treset}"
       changeImage *
+      break
+      ;;
+    info)
+      showSizes
       break
       ;;
     *)
