@@ -49,7 +49,6 @@ function cropImage() {
 }
 
 function changeImage(){
-  ls -la 
   echo -e "${tgreen}Select an option${treset}"
   echo "${tblue}1. Info${treset}"
   echo "${tyellow}2. Optimize${treset}"
