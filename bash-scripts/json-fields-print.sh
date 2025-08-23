@@ -1,13 +1,36 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-# got json file with fzf
-FILE=${1:-$(fzf --prompt="Select JSON file: " --query="$1" --height=40% --layout=reverse --border --preview='cat {}' --preview-window=up:70%)}
-[ -z "$FILE" ] && { echo "No file selected"; exit 1; }
-# FILE="your.json"
+# Если передали путь — используем его, иначе выбираем *.json через fzf
+if [[ $# -ge 1 ]]; then
+  FILE="$1"
+else
+  FILE="$(find . -type f -name '*.json' \
+    | fzf --select-1 --exit-0 \
+          --prompt='Select JSON file: ' \
+          --height=40% --layout=reverse --border \
+          --preview='head -n 120 {}' --preview-window=up:70%)"
+fi
 
+[ -z "${FILE:-}" ] && { echo "No file selected"; exit 1; }
+[ ! -f "$FILE" ] && { echo "Not a file: $FILE"; exit 1; }
+
+echo "== File: $FILE =="
+
+echo "== Debug: top-level field indexes, labels, types =="
 jq -r '
   .[] 
-  | .fields[] 
+  | (.fields // []) 
+  | to_entries[] 
+  | [("idx=" + ( .key|tostring )), .value.label, .value.type] 
+  | @tsv
+' "$FILE" | column -t -s $'\t'
+
+echo
+echo "== Output: label<TAB>type (top-level only) =="
+jq -r '
+  .[] 
+  | (.fields // [])[] 
   | [.label, .type] 
   | @tsv
-' "$FILE"
+' "$FILE" | sed 's/\r$//' | column -t -s $'\t'
