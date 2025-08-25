@@ -17,20 +17,20 @@ fi
 
 echo "== File: $FILE =="
 
-echo "== Debug: top-level field indexes, labels, types =="
+echo "== Debug: top-level field indexes, key, label, type =="
 jq -r '
   .[] 
   | (.fields // []) 
   | to_entries[] 
-  | [("idx=" + ( .key|tostring )), .value.label, .value.type] 
+  | [("idx=" + ( .key|tostring )), .value.key, .value.label, .value.type] 
   | @tsv
 ' "$FILE" | column -t -s $'\t'
 
 echo
-echo "== Output: label<TAB>type (top-level only) =="
+echo "== Output: key, label, type (top-level only) =="
 jq -r '
   .[] 
   | (.fields // [])[] 
-  | [.label, .type] 
+  | [.key, .label, .type] 
   | @tsv
 ' "$FILE" | sed 's/\r$//' | column -t -s $'\t'
