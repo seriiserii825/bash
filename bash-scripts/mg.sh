@@ -12,17 +12,31 @@ function showSizes(){
     -exec identify -format "%f | %wx%h\n" {} \; | sort | column -t -s'|'
   }
 
+function showImageSize(){
+  identify -format "%f | %wx%h\n" "$1"
+}
+
 function cropImage() {
-  read -p "Pixels to crop from top (leave empty for 0): " top_crop
-  read -p "Pixels to crop from bottom (leave empty for 0): " bottom_crop
-  read -p "Pixels to crop from left (leave empty for 0): " left_crop
-  read -p "Pixels to crop from right (leave empty for 0): " right_crop
+  read -p "Pixels to crop top,right,bottom,left (comma separated, leave empty for 0): " crop_values
+  top_crop=$(echo $crop_values | cut -d',' -f1)
+  right_crop=$(echo $crop_values | cut -d',' -f2)
+  bottom_crop=$(echo $crop_values | cut -d',' -f3)
+  left_crop=$(echo $crop_values | cut -d',' -f4)
 
   # Default empty inputs to zero
   top_crop=${top_crop:-0}
   bottom_crop=${bottom_crop:-0}
   left_crop=${left_crop:-0}
   right_crop=${right_crop:-0}
+
+  echo "Cropping values - Top: $top_crop, Right: $right_crop, Bottom: $bottom_crop, Left: $left_crop"
+
+
+  read -p "Are you sure you want to crop these images? (y/n): " confirm
+  if [[ "$confirm" != "y" ]]; then
+    echo "Crop operation cancelled."
+    continue
+  fi
 
   for img in "$@"; do
     if [[ ! -f "$img" ]]; then
@@ -32,20 +46,24 @@ function cropImage() {
 
     width=$(identify -format "%w" "$img")
     height=$(identify -format "%h" "$img")
+    echo "Processing $img (original size: ${width}x$(identify -format "%h" "$img"))"
 
     # Calculate new width and height
     new_width=$((width - left_crop - right_crop))
     new_height=$((height - top_crop - bottom_crop))
+    echo "New dimensions will be: ${new_width}x${new_height}"
 
     if (( new_width <= 0 || new_height <= 0 )); then
       echo "Error: Crop exceeds image dimensions for $img"
       continue
     fi
 
+
     # Crop geometry: WIDTHxHEIGHT+X+Y
     mogrify -crop "${new_width}x${new_height}+${left_crop}+${top_crop}" +repage "$img"
-    echo "Cropped $img: top $top_crop, bottom $bottom_crop, left $left_crop, right $right_crop pixels"
+
   done
+  echo "Cropping completed."
 }
 
 function changeImage(){
