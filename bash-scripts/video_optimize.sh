@@ -13,10 +13,16 @@ if [[ ! "$quality" =~ ^[0-9]+$ ]] || [ "$quality" -lt 18 ] || [ "$quality" -gt 2
     quality=20
 fi
 
-output_dir="./optimized"
-mkdir -p "$output_dir"
-optimized_name="$output_dir/$(basename "${choosed_video_with_fzf%.*}_optimized_${quality}.mp4")"
+read -p "Remove audio? (y/n): " remove_audio
 
-ffmpeg -i "$choosed_video_with_fzf" -vcodec libx264 -crf "$quality" -preset slow -acodec aac -b:a 128k "$optimized_name"
+base_name="$(basename "${choosed_video_with_fzf%.*}")"
+
+if [[ "$remove_audio" =~ ^[Yy]$ ]]; then
+    optimized_name="${base_name}_optimized_${quality}-no-audio.mp4"
+    ffmpeg -i "$choosed_video_with_fzf" -c:v libx264 -crf "$quality" -preset slow -an "$optimized_name"
+else
+    optimized_name="${base_name}_optimized_${quality}.mp4"
+    ffmpeg -i "$choosed_video_with_fzf" -c:v libx264 -crf "$quality" -preset slow -c:a aac -b:a 96k "$optimized_name"
+fi
 
 echo "✅ Optimization complete: $optimized_name"
