@@ -60,10 +60,10 @@ notify-send "Color" "Hex color: $hex_color"
 
 # read -p "Enter the hex color (e.g., #ff5733): " hex_color
 
-read -p "Do you want to lighten or darken the color? (lighten/darken), use l/h: " action
+read -p "Do you want to lighten or darken the color? (lighten/darken), use l/d: " action
 if [ "$action" = "l" ]; then
     action="lighten"
-elif [ "$action" = "h" ]; then
+  else [ "$action" = "d" ]; then
     action="darken"
 fi
 read -p "Enter the percentage to adjust (e.g., 10 for 10%): " adjustment
