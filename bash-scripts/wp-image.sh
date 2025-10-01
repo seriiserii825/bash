@@ -59,16 +59,11 @@ echo "Searching for posts containing a specific image ID or filename in WordPres
 
 while true; do
     select option in \
-        "Find posts by image ID or filename" \
         "Find image ID by filename" \
         "Find posts by image ID" \
         "Show all image alts" \
         "Exit"; do
         case $option in
-            "Find posts by image ID or filename")
-                findPostByImage "$image_name"
-                break
-                ;;
             "Find image ID by filename")
                 findImageIdByName "$image_name"
                 break
