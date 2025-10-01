@@ -43,6 +43,18 @@ WHERE pm.meta_value = '$image_id';
 "
 }
 
+showImageAlt(){
+wp db query "
+SELECT p.ID, p.post_title, pm.meta_value AS alt
+FROM wp_posts p
+LEFT JOIN wp_postmeta pm 
+  ON (p.ID = pm.post_id AND pm.meta_key = '_wp_attachment_image_alt')
+WHERE p.post_type = 'attachment' 
+  AND p.post_mime_type LIKE 'image/%'
+ORDER BY p.ID DESC;
+"
+}
+
 echo "Searching for posts containing a specific image ID or filename in WordPress database..."
 
 while true; do
@@ -50,6 +62,7 @@ while true; do
         "Find posts by image ID or filename" \
         "Find image ID by filename" \
         "Find posts by image ID" \
+        "Show all image alts" \
         "Exit"; do
         case $option in
             "Find posts by image ID or filename")
@@ -62,6 +75,10 @@ while true; do
                 ;;
             "Find posts by image ID")
                 findPostByImageId
+                break
+                ;;
+              "Show all image alts")
+                showImageAlt
                 break
                 ;;
             "Exit")
