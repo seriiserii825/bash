@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Arch pkg helper (looped menu)
 # - Show foreign (Qm)
-# - Remove by regex pattern
-# - Unified search (pacman + yay[AUR]) with install prompt
-# Exit only via "EXIT"
+# - Show explicit official (QEN) and explicit foreign (QEM)
+# - Remove with fzf (optional regex filter)
+# - Unified search (pacman + AUR) with install prompt
+# Exit only via numbered "7) Exit"
 
 set -euo pipefail
 
@@ -13,140 +14,131 @@ ok()   { printf "\e[32m%s\e[0m\n" "$*"; }
 info() { printf "\e[36m%s\e[0m\n" "$*"; }
 
 command -v pacman >/dev/null 2>&1 || { err "pacman not found"; exit 1; }
-
-has_yay=false
-if command -v yay >/dev/null 2>&1; then has_yay=true; fi
+has_yay=false; command -v yay >/dev/null 2>&1 && has_yay=true
+has_fzf=false; command -v fzf >/dev/null 2>&1 && has_fzf=true
 
 show_qm() {
   info "Foreign (AUR) packages (pacman -Qm):"
-  if ! pacman -Qm 2>/dev/null | sed 's/^/  • /'; then
-    echo "  (none)"
+  pacman -Qm 2>/dev/null | sed 's/^/  • /' || echo "  (none)"
+}
+
+show_qen() {
+  read -rp "Filter regex for explicit OFFICIAL (ENTER=all): " rgx || true
+  info "Explicit OFFICIAL packages (pacman -Qen):"
+  if [[ -n "${rgx:-}" ]]; then
+    pacman -Qen | grep -Ei -- "$rgx" | sed 's/^/  • /' || echo "  (none)"
+  else
+    pacman -Qen | sed 's/^/  • /' || echo "  (none)"
   fi
 }
 
-remove_by_pattern() {
-  read -rp "Enter package prefix or regex (e.g. vlc-plugin-): " pattern
-  [[ -z "$pattern" ]] && { err "Empty input"; return; }
-  [[ "$pattern" =~ -$ ]] && pattern="${pattern}.+"
-  local regex="^${pattern}$"
+show_qem() {
+  read -rp "Filter regex for explicit FOREIGN/AUR (ENTER=all): " rgx || true
+  info "Explicit FOREIGN (AUR) packages (pacman -Qem):"
+  if [[ -n "${rgx:-}" ]]; then
+    pacman -Qem | grep -Ei -- "$rgx" | sed 's/^/  • /' || echo "  (none)"
+  else
+    pacman -Qem | sed 's/^/  • /' || echo "  (none)"
+  fi
+}
 
-  info "Searching installed packages matching regex: $regex"
-  mapfile -t PKGS < <(pacman -Qq | grep -E "$regex" || true)
-  (( ${#PKGS[@]} == 0 )) && { err "No packages found."; return; }
+remove_with_fzf() {
+  $has_fzf || { err "fzf not found. Install: sudo pacman -S fzf"; return; }
 
-  echo "Found packages:"
-  printf '  • %s\n' "${PKGS[@]}"
+  read -rp "Regex filter for installed packages (ENTER=all): " rgx || true
+  mapfile -t ALL < <(pacman -Qq)
+  if [[ -n "${rgx:-}" ]]; then
+    mapfile -t LIST < <(printf '%s\n' "${ALL[@]}" | grep -Ei -- "$rgx" || true)
+  else
+    LIST=("${ALL[@]}")
+  fi
 
-  read -rp "Proceed to REMOVE these packages with 'pacman -Rns'? [y/N] " ans
-  [[ "$ans" =~ ^[Yy]$ ]] || { echo "Cancelled."; return; }
+  ((${#LIST[@]})) || { err "No packages match filter."; return; }
 
-  printf '%s\n' "${PKGS[@]}" | sudo xargs -r pacman -Rns --
+  info "Select packages to REMOVE (TAB to toggle, ENTER to confirm):"
+  sel=$(printf '%s\n' "${LIST[@]}" | fzf --multi --prompt='Remove > ' --height=80% --reverse) || {
+    note "Cancelled."; return;
+  }
+
+  [[ -z "$sel" ]] && { note "Nothing selected."; return; }
+
+  echo "You selected:"
+  printf '  • %s\n' $sel
+  read -rp "Proceed with 'pacman -Rns' for ALL selected? [y/N] " yn
+  [[ "$yn" =~ ^[Yy]$ ]] || { note "Cancelled."; return; }
+
+  # shellcheck disable=SC2086
+  sudo pacman -Rns -- $sel
   ok "Removal complete."
 }
 
 # -------- Unified search + install ----------
-# Collects results from pacman -Ss and yay -Ss (if present)
-# Presents merged list, then installs via pacman (repo) or yay (AUR)
 unified_search_install() {
   read -rp "Search query (name/keyword): " q
   [[ -z "$q" ]] && { err "Empty query"; return; }
 
-  declare -a ROWS=()    # elements: "SRC|REPO|PKG|DESC"
-  declare -A SEEN=()    # key "REPO|PKG" to dedup
+  declare -a ROWS=()     # "SRC|REPO|PKG|DESC"
+  declare -A SEEN=()     # key "REPO|PKG"
 
-  # Parse pacman -Ss output
-  # Format: repo/pkg version [installed] ...
-  #         <4-spaces> description
   info "Searching official repos: pacman -Ss \"$q\""
-  local line repo pkg desc
-  local prev_pkg_key=""
+  local line repo pkg desc prev
+  prev=""
   while IFS= read -r line; do
     if [[ "$line" =~ ^([a-z0-9\-]+)/([^[:space:]]+)[[:space:]] ]]; then
-      repo="${BASH_REMATCH[1]}"
-      pkg="${BASH_REMATCH[2]}"
-      prev_pkg_key="$repo|$pkg"
-      # initialize with empty desc; fill on next indented line if present
-      if [[ -z "${SEEN[$prev_pkg_key]+x}" ]]; then
-        ROWS+=("PACMAN|$repo|$pkg|")
-        SEEN[$prev_pkg_key]=1
-      fi
-    elif [[ "$line" =~ ^[[:space:]]{2,}(.+) ]] && [[ -n "$prev_pkg_key" ]]; then
-      # description line
-      desc="${BASH_REMATCH[1]}"
-      # update last ROW's desc if it matches prev_pkg_key
+      repo="${BASH_REMATCH[1]}"; pkg="${BASH_REMATCH[2]}"; prev="$repo|$pkg"
+      if [[ -z "${SEEN[$prev]+x}" ]]; then ROWS+=("PACMAN|$repo|$pkg|"); SEEN[$prev]=1; fi
+    elif [[ "$line" =~ ^[[:space:]]{2,}(.+) ]] && [[ -n "$prev" ]]; then
+      desc="${BASHREMATCH[1]:-${BASH_REMATCH[1]}}"
       for i in "${!ROWS[@]}"; do
-        IFS='|' read -r SRC R RE P D <<<"${ROWS[$i]}"
-        if [[ "$R|$P" == "$prev_pkg_key" && -z "$D" ]]; then
-          ROWS[$i]="$SRC|$R|$P|$desc"
-          break
-        fi
+        IFS='|' read -r SRC R P D <<<"${ROWS[$i]}"
+        if [[ "$R|$P" == "$prev" && -z "$D" ]]; then ROWS[$i]="$SRC|$R|$P|$desc"; break; fi
       done
     fi
   done < <(pacman -Ss "$q" || true)
 
-  # Parse yay -Ss if available (searches repos + AUR)
   if $has_yay; then
     info "Searching AUR & repos: yay -Ss \"$q\""
-    prev_pkg_key=""
+    prev=""
     while IFS= read -r line; do
-      # yay formats: aur/pkg ...   or repo/pkg ...
       if [[ "$line" =~ ^([a-z0-9\-]+)/([^[:space:]]+)[[:space:]] ]]; then
-        repo="${BASH_REMATCH[1]}"
-        pkg="${BASH_REMATCH[2]}"
-        prev_pkg_key="$repo|$pkg"
-        # For AUR entries, repo will be 'aur'
-        if [[ -z "${SEEN[$prev_pkg_key]+x}" ]]; then
-          ROWS+=("YAY|$repo|$pkg|")
-          SEEN[$prev_pkg_key]=1
-        fi
-      elif [[ "$line" =~ ^[[:space:]]{2,}(.+) ]] && [[ -n "$prev_pkg_key" ]]; then
-        desc="${BASH_REMATCH[1]}"
+        repo="${BASH_REMATCH[1]}"; pkg="${BASH_REMATCH[2]}"; prev="$repo|$pkg"
+        if [[ -z "${SEEN[$prev]+x}" ]]; then ROWS+=("YAY|$repo|$pkg|"); SEEN[$prev]=1; fi
+      elif [[ "$line" =~ ^[[:space:]]{2,}(.+) ]] && [[ -n "$prev" ]]; then
+        desc="${BASHREMATCH[1]:-${BASH_REMATCH[1]}}"
         for i in "${!ROWS[@]}"; do
-          IFS='|' read -r SRC R E P D <<<"${ROWS[$i]}"
-          # shellcheck disable=SC2034
-          if [[ "$R|$P" == "$prev_pkg_key" && -z "$D" ]]; then
-            ROWS[$i]="$SRC|$R|$E|$desc"
-            break
-          fi
+          IFS='|' read -r SRC R P D <<<"${ROWS[$i]}"
+          if [[ "$R|$P" == "$prev" && -z "$D" ]]; then ROWS[$i]="$SRC|$R|$P|$desc"; break; fi
         done
       fi
     done < <(yay -Ss "$q" || true)
   else
-    note "yay not found — AUR results skipped. Install: sudo pacman -S yay"
+    note "yay not found — skipping AUR search (sudo pacman -S yay)"
   fi
 
-  (( ${#ROWS[@]} == 0 )) && { err "No results."; return; }
+  ((${#ROWS[@]})) || { err "No results."; return; }
 
-  echo
-  echo "Results:"
-  local idx=1
+  echo; echo "Results:"
+  local i=1
   for row in "${ROWS[@]}"; do
     IFS='|' read -r SRC REPO PKG DESC <<<"$row"
     [[ -z "$DESC" ]] && DESC="(no description)"
-    printf "%2d) [%s] %s/%s — %s\n" "$idx" "$SRC" "$REPO" "$PKG" "$DESC"
-    ((idx++))
+    printf "%2d) [%s] %s/%s — %s\n" "$i" "$SRC" "$REPO" "$PKG" "$DESC"
+    ((i++))
   done
 
-  echo
-  read -rp "Choose number to install (or ENTER to cancel): " pick
-  [[ -z "$pick" ]] && { echo "Cancelled."; return; }
-  if ! [[ "$pick" =~ ^[0-9]+$ ]] || (( pick < 1 || pick > ${#ROWS[@]} )); then
-    err "Invalid choice."; return;
-  fi
+  read -rp "Choose number to install (ENTER=cancel): " n
+  [[ -z "$n" ]] && { note "Cancelled."; return; }
+  [[ "$n" =~ ^[0-9]+$ ]] && (( n>=1 && n<=${#ROWS[@]} )) || { err "Invalid choice."; return; }
 
-  local choice="${ROWS[$((pick-1))]}"
-  IFS='|' read -r SRC REPO PKG DESC <<<"$choice"
+  IFS='|' read -r SRC REPO PKG DESC <<<"${ROWS[$((n-1))]}"
+  echo; info "Selected: [$SRC] $REPO/$PKG"
 
-  echo
-  info "Selected: [$SRC] $REPO/$PKG"
   if [[ "$REPO" == "aur" || "$SRC" == "YAY" ]]; then
-    $has_yay || { err "yay not available to install AUR packages."; return; }
-    read -rp "Install via yay: '$PKG'? [y/N] " yn
-    [[ "$yn" =~ ^[Yy]$ ]] || { echo "Cancelled."; return; }
+    $has_yay || { err "yay required to install AUR packages."; return; }
+    read -rp "Install via yay '$PKG'? [y/N] " yn; [[ "$yn" =~ ^[Yy]$ ]] || { note "Cancelled."; return; }
     yay -S "$PKG"
   else
-    read -rp "Install via pacman: '$PKG'? [y/N] " yn
-    [[ "$yn" =~ ^[Yy]$ ]] || { echo "Cancelled."; return; }
+    read -rp "Install via pacman '$PKG'? [y/N] " yn; [[ "$yn" =~ ^[Yy]$ ]] || { note "Cancelled."; return; }
     sudo pacman -S "$PKG"
   fi
   ok "Done."
@@ -156,18 +148,26 @@ main_menu() {
   while true; do
     echo
     echo "====== PACKAGE MENU ======"
-    echo "1) Show foreign (AUR) packages (pacman -Qm)"
-    echo "2) Remove packages by pattern"
-    echo "3) Unified search (pacman + AUR) and install"
-    echo "EXIT) Exit program"
+    echo "1) Show foreign (Qm)"
+    echo "2) Show explicit OFFICIAL (QEN)"
+    echo "3) Show explicit FOREIGN/AUR (QEM)"
+    echo "4) Remove packages (fzf, optional regex)"
+    echo "5) Unified search (pacman + AUR) and install"
+    echo "6) Refresh databases (pacman/yay) & orphans list"
+    echo "7) Exit"
     echo "=========================="
     read -rp "Choose: " choice
-
     case "$choice" in
       1) show_qm ;;
-      2) remove_by_pattern ;;
-      3) unified_search_install ;;
-      EXIT|exit|q|Q) echo "👋 Bye!"; break ;;
+      2) show_qen ;;
+      3) show_qem ;;
+      4) remove_with_fzf ;;
+      5) unified_search_install ;;
+      6)
+        sudo pacman -Sy
+        $has_yay && yay -Sy || true
+        echo "Orphans:"; pacman -Qtdq 2>/dev/null | sed 's/^/  • /' || echo "  (none)";;
+      7) echo "👋 Bye!"; break ;;
       *) echo "Invalid choice." ;;
     esac
   done
