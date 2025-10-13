@@ -4,7 +4,8 @@
 # - Show explicit official (QEN) and explicit foreign (QEM)
 # - Remove with fzf (optional regex filter)
 # - Unified search (pacman + AUR) with install prompt
-# Exit only via numbered "7) Exit"
+# - Save explicit package lists to pacman.txt and eiwi.txt
+# Exit via numbered "8) Exit"
 
 set -euo pipefail
 
@@ -52,27 +53,22 @@ remove_with_fzf() {
   else
     LIST=("${ALL[@]}")
   fi
-
   ((${#LIST[@]})) || { err "No packages match filter."; return; }
 
   info "Select packages to REMOVE (TAB to toggle, ENTER to confirm):"
   sel=$(printf '%s\n' "${LIST[@]}" | fzf --multi --prompt='Remove > ' --height=80% --reverse) || {
     note "Cancelled."; return;
   }
-
   [[ -z "$sel" ]] && { note "Nothing selected."; return; }
 
-  echo "You selected:"
-  printf '  • %s\n' $sel
+  echo "You selected:"; printf '  • %s\n' $sel
   read -rp "Proceed with 'pacman -Rns' for ALL selected? [y/N] " yn
   [[ "$yn" =~ ^[Yy]$ ]] || { note "Cancelled."; return; }
-
   # shellcheck disable=SC2086
   sudo pacman -Rns -- $sel
   ok "Removal complete."
 }
 
-# -------- Unified search + install ----------
 unified_search_install() {
   read -rp "Search query (name/keyword): " q
   [[ -z "$q" ]] && { err "Empty query"; return; }
@@ -81,14 +77,13 @@ unified_search_install() {
   declare -A SEEN=()     # key "REPO|PKG"
 
   info "Searching official repos: pacman -Ss \"$q\""
-  local line repo pkg desc prev
-  prev=""
+  local line repo pkg desc prev; prev=""
   while IFS= read -r line; do
     if [[ "$line" =~ ^([a-z0-9\-]+)/([^[:space:]]+)[[:space:]] ]]; then
       repo="${BASH_REMATCH[1]}"; pkg="${BASH_REMATCH[2]}"; prev="$repo|$pkg"
       if [[ -z "${SEEN[$prev]+x}" ]]; then ROWS+=("PACMAN|$repo|$pkg|"); SEEN[$prev]=1; fi
     elif [[ "$line" =~ ^[[:space:]]{2,}(.+) ]] && [[ -n "$prev" ]]; then
-      desc="${BASHREMATCH[1]:-${BASH_REMATCH[1]}}"
+      desc="${BASH_REMATCH[1]}"
       for i in "${!ROWS[@]}"; do
         IFS='|' read -r SRC R P D <<<"${ROWS[$i]}"
         if [[ "$R|$P" == "$prev" && -z "$D" ]]; then ROWS[$i]="$SRC|$R|$P|$desc"; break; fi
@@ -104,7 +99,7 @@ unified_search_install() {
         repo="${BASH_REMATCH[1]}"; pkg="${BASH_REMATCH[2]}"; prev="$repo|$pkg"
         if [[ -z "${SEEN[$prev]+x}" ]]; then ROWS+=("YAY|$repo|$pkg|"); SEEN[$prev]=1; fi
       elif [[ "$line" =~ ^[[:space:]]{2,}(.+) ]] && [[ -n "$prev" ]]; then
-        desc="${BASHREMATCH[1]:-${BASH_REMATCH[1]}}"
+        desc="${BASH_REMATCH[1]}"
         for i in "${!ROWS[@]}"; do
           IFS='|' read -r SRC R P D <<<"${ROWS[$i]}"
           if [[ "$R|$P" == "$prev" && -z "$D" ]]; then ROWS[$i]="$SRC|$R|$P|$desc"; break; fi
@@ -144,6 +139,25 @@ unified_search_install() {
   ok "Done."
 }
 
+save_lists() {
+  local packages_dir="$HOME/dotfiles/packages"
+  [[ -d "$packages_dir" ]] || mkdir -p "$packages_dir" || { err "Failed to create $packages_dir"; return; }
+
+  local pac_file="$packages_dir/pacman.txt"
+  local eiwi_file="$packages_dir/eiwi.txt"   # как просили: список AUR/foreign
+
+  info "Saving explicit OFFICIAL packages to $pac_file ..."
+  mapfile -t OFF < <(pacman -Qenq | sort -f)
+  printf "%s\n" "${OFF[@]}" > "$pac_file"
+
+  info "Saving explicit AUR/FOREIGN packages to $eiwi_file ..."
+  mapfile -t AUR < <(pacman -Qemq | sort -f)
+  printf "%s\n" "${AUR[@]}" > "$eiwi_file"
+
+  ok "Saved: $(wc -l < "$pac_file") to pacman.txt;  $(wc -l < "$eiwi_file") to eiwi.txt"
+  note "Location: $packages_dir"
+}
+
 main_menu() {
   while true; do
     echo
@@ -154,7 +168,8 @@ main_menu() {
     echo "4) Remove packages (fzf, optional regex)"
     echo "5) Unified search (pacman + AUR) and install"
     echo "6) Refresh databases (pacman/yay) & orphans list"
-    echo "7) Exit"
+    echo "7) Save explicit lists (pacman.txt / eiwi.txt)"
+    echo "8) Exit"
     echo "=========================="
     read -rp "Choose: " choice
     case "$choice" in
@@ -166,8 +181,10 @@ main_menu() {
       6)
         sudo pacman -Sy
         $has_yay && yay -Sy || true
-        echo "Orphans:"; pacman -Qtdq 2>/dev/null | sed 's/^/  • /' || echo "  (none)";;
-      7) echo "👋 Bye!"; break ;;
+        echo "Orphans:"; pacman -Qtdq 2>/dev/null | sed 's/^/  • /' || echo "  (none)"
+        ;;
+      7) save_lists ;;
+      8) echo "👋 Bye!"; break ;;
       *) echo "Invalid choice." ;;
     esac
   done
