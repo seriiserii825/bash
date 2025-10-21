@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 # Find icon by argument after calling script
 # Example: ./fontawesome.sh setting
@@ -10,7 +10,7 @@ if [ -z "$chrome_path" ]; then
   exit 1
 fi
 
-icon_name=$1
+read -p "Enter icon name: " icon_name
 if [ -z "$icon_name" ]; then
   echo "Please provide an icon name."
   exit 1
