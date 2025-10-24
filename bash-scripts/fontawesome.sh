@@ -1,31 +1,32 @@
-#!/bin/bash -x
+#!/bin/bash
 
-# Find icon by argument after calling script
-# Example: ./fontawesome.sh setting
-# Open browser with search result for "setting" icon
+# Ask user for FontAwesome icon name (interactive)
+read -rp "🔍 Enter icon name to search on FontAwesome: " icon_name
 
-chrome_path=$(which google-chrome-stable)
-if [ -z "$chrome_path" ]; then
-  echo "Google Chrome is not installed."
-  exit 1
-fi
-
-icon_name=$1
+# Exit if empty
 if [ -z "$icon_name" ]; then
-  echo "Please provide an icon name."
+  echo "⚠️  Icon name cannot be empty."
   exit 1
 fi
 
+# Normalize to lowercase
 icon_name=$(echo "$icon_name" | tr '[:upper:]' '[:lower:]')
 
-# Switch to workspace 1 and focus it
-i3-msg workspace 1
+# Check for Chrome
+chrome_path=$(command -v google-chrome-stable || command -v google-chrome)
+if [ -z "$chrome_path" ]; then
+  echo "❌ Google Chrome is not installed."
+  exit 1
+fi
 
-# Open browser with search result for the icon
+# Switch to workspace 1 (i3)
+i3-msg workspace 1 >/dev/null
+
+# Open search URL
 $chrome_path "https://fontawesome.com/search?q=$icon_name&o=r&ic=free" &
 
-# Wait for the browser to fully load the window
+# Wait for window to appear
 sleep 2
 
-# Focus the browser window using wmctrl
+# Focus the Chrome window
 wmctrl -x -a "google-chrome.Google-chrome"

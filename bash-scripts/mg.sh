@@ -16,6 +16,46 @@ function showImageSize(){
   identify -format "%f | %wx%h\n" "$1"
 }
 
+function showBySize(){
+  read -p "Show files larger than (e.g., 500k, 2M): " size_limit
+  find . -maxdepth 1 -type f -size +$size_limit -exec du -h {} + | sort -rh
+
+  read -p "Find by width? (y/n): " find_width_choice
+  if [[ "$find_width_choice" == "y" ]]; then
+    read -p "Enter minimum width (in px): " find_width
+    find . -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" \) \
+      -exec sh -c '
+    w=$(identify -format "%w" "$1")
+    if [ "$w" -gt '"$find_width"' ]; then
+      h=$(identify -format "%h" "$1")
+      echo "$1 | ${w}x${h}"
+  fi
+  ' _ {} \; | sort | column -t -s'|'
+  fi
+
+  read -p "Do you want to see dimensions of these files? (y/n): " show_dims
+  if [[ "$show_dims" == "y" ]]; then
+    find . -maxdepth 1 -type f -size +$size_limit \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" \) \
+      -exec identify -format "%f | %wx%h\n" {} \; | sort | column -t -s'|'
+  fi
+
+  read -p "Do you want to resize images wider than 1920px? (y/n): " resize_choice
+  if [[ "$resize_choice" == "y" ]]; then
+    min_width=1920
+
+    find . -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) -print0 |
+      while IFS= read -r -d '' img; do
+        w=$(identify -format "%w" "$img" 2>/dev/null) || continue
+        if [[ "$w" -gt "$min_width" ]]; then
+          mogrify -resize "${min_width}x>" "$img" && echo "Resized: $img (${w}px → ${min_width}px)"
+        fi
+      done
+
+      echo "Resizing completed."
+  fi
+
+}
+
 function cropImage() {
   read -p "Pixels to crop top,right,bottom,left (comma separated, leave empty for 0): " crop_values
   top_crop=$(echo $crop_values | cut -d',' -f1)
@@ -77,7 +117,8 @@ function changeImage(){
   echo "${tgreen}5.1 Flop current and copy${treset}"
   echo "${tblue}6. Rotate${treset}"
   echo "${tblue}7. Crop${treset}"
-  echo "${tmagenta}8. Exit${treset}"
+  echo "${tmagenta}8. Filter By Size${treset}"
+  echo "${tmagenta}9. Exit${treset}"
   read -p "${tgreen}Enter your choice: ${treset}" choice
   case $choice in
     1)
@@ -134,6 +175,10 @@ function changeImage(){
       changeImage $*
       ;;
     8)
+      echo "${tblue}Filter images by size${treset}"
+      showBySize $*
+      ;;
+    9)
       exit 0
       ;;
     *)
