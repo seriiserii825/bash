@@ -53,7 +53,6 @@ function showBySize(){
 
       echo "Resizing completed."
   fi
-
 }
 
 function cropImage() {
@@ -185,7 +184,7 @@ function changeImage(){
 
 removeSpaces
 COLUMNS=1
-select which in "one" "all" "info" "size";
+select which in "one" "all" "info" "size" "exit";
 do
   case $which in 
     one)
@@ -206,6 +205,10 @@ do
     size)
       echo "${tblue}Filter images by size${treset}"
       showBySize
+      ;;
+    exit)
+      echo "Exiting..."
+      break
       ;;
     *)
       echo "Invalid option"
