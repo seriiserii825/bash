@@ -18,7 +18,7 @@ function showImageSize(){
 
 function showBySize(){
   read -p "Show files larger than (e.g., 500k, 2M): " size_limit
-  find . -maxdepth 1 -type f -size +$size_limit -exec du -h {} + | sort -rh
+  find . -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" \) -size +$size_limit -exec du -h {} + | sort -rh
 
   read -p "Find by width? (y/n): " find_width_choice
   if [[ "$find_width_choice" == "y" ]]; then
@@ -117,8 +117,7 @@ function changeImage(){
   echo "${tgreen}5.1 Flop current and copy${treset}"
   echo "${tblue}6. Rotate${treset}"
   echo "${tblue}7. Crop${treset}"
-  echo "${tmagenta}8. Filter By Size${treset}"
-  echo "${tmagenta}9. Exit${treset}"
+  echo "${tmagenta}8. Exit${treset}"
   read -p "${tgreen}Enter your choice: ${treset}" choice
   case $choice in
     1)
@@ -175,10 +174,6 @@ function changeImage(){
       changeImage $*
       ;;
     8)
-      echo "${tblue}Filter images by size${treset}"
-      showBySize $*
-      ;;
-    9)
       exit 0
       ;;
     *)
@@ -190,7 +185,7 @@ function changeImage(){
 
 removeSpaces
 COLUMNS=1
-select which in "one" "all" "info"
+select which in "one" "all" "info" "size";
 do
   case $which in 
     one)
@@ -207,6 +202,10 @@ do
     info)
       showSizes
       break
+      ;;
+    size)
+      echo "${tblue}Filter images by size${treset}"
+      showBySize
       ;;
     *)
       echo "Invalid option"
