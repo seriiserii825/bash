@@ -8,6 +8,11 @@ function removeSpaces(){
 }
 
 function showSizes(){
+  if [ $# -gt 0 ]; then
+    find "$@" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" \) \
+      -exec identify -format "%f | %wx%h\n" {} \; | sort | column -t -s'|'
+    return
+  fi
   find . -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" \) \
     -exec identify -format "%f | %wx%h\n" {} \; | sort | column -t -s'|'
   }
@@ -120,7 +125,7 @@ function changeImage(){
   read -p "${tgreen}Enter your choice: ${treset}" choice
   case $choice in
     1)
-      showSizes
+      showSizes $*
       changeImage $*
       ;;
     2)
