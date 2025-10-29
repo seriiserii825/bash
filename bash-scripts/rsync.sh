@@ -1,89 +1,59 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Read configuration from config.json
-CONFIG_FILE=".vscode/sftp.json"
-NAME=$(jq -r '.name' "$CONFIG_FILE")
-HOST=$(jq -r '.host' "$CONFIG_FILE")
-PROTOCOL=$(jq -r '.protocol' "$CONFIG_FILE")
-PORT=$(jq -r '.port' "$CONFIG_FILE")
-USERNAME=$(jq -r '.username' "$CONFIG_FILE")
-PASSWORD=$(jq -r '.password' "$CONFIG_FILE")
-REMOTE_PATH=$(jq -r '.remotePath' "$CONFIG_FILE")
-REMOTE_PATH="$REMOTE_PATH/"
-IGNORE_PATTERNS=$(jq -r '.ignore | join("|")' "$CONFIG_FILE")
+# Проверка зависимостей
+need() { command -v "$1" >/dev/null 2>&1 || { echo "❌ Требуется $1"; exit 1; }; }
+need fzf
+need rsync
 
-
-# echo "Starting $NAME"
-# echo "Host: $HOST"
-# echo "Protocol: $PROTOCOL"
-# echo "Port: $PORT"
-# echo "Username: $USERNAME"
-# echo "Password: $PASSWORD"
-# echo "Remote Path: $REMOTE_PATH"
-# echo "Ignore Patterns: $IGNORE_PATTERNS"
-
-function uploadAll(){
-  # Function to upload a file using rsync with sshpass
-  upload_file() {
-    local file_path=$1
-    local relative_path=${file_path#./}  # Get the relative path from the current directory
-
-    sshpass -p "$PASSWORD" rsync -avz --progress --rsh="sshpass -p $PASSWORD ssh -p $PORT" "$file_path" "$USERNAME@$HOST:$REMOTE_PATH$relative_path"
-
-    echo "Uploading $file_path to $REMOTE_PATH$relative_path"
-    notify-send "Uploading $file_path to $REMOTE_PATH$relative_path"
-  }
-
-# Function to delete a file from the remote server using ssh and sshpass
-delete_file() {
-  local file_path=$1
-  local relative_path=${file_path#./}  # Get the relative path from the current directory
-
-  sshpass -p "$PASSWORD" ssh -p "$PORT" "$USERNAME@$HOST" "rm -f $REMOTE_PATH$relative_path"
-
-  echo "Deleting $file_path from $REMOTE_PATH$relative_path"
-  notify-send "Deleting $file_path from $REMOTE_PATH$relative_path"
-}
-
-# Start watching files with inotify
-inotifywait -m -r -e modify,create,delete --exclude "$IGNORE_PATTERNS" --format "%w%f %e" . | while read file event; do
-if [[ $event == *DELETE* ]]; then
-  delete_file "$file"
-else
-  echo "Detected $event on $file"
-  upload_file "$file"
-fi
-done
-}
-
-function buildUploadDist(){
-  local dist_path="dist"
-  echo $REMOTE_PATH$dist_path
-  #remove dist on server
-  sshpass -p "$PASSWORD" ssh -p "$PORT" "$USERNAME@$HOST" "rm -rf $REMOTE_PATH$dist_path"
-  sshpass -p "$PASSWORD" rsync -avz --progress --rsh="sshpass -p $PASSWORD ssh -p $PORT" "$dist_path" "$USERNAME@$HOST:$REMOTE_PATH"
-  echo "Uploading $file_path to $REMOTE_PATH$relative_path"
-  notify-send "Uploading $file_path to $REMOTE_PATH$relative_path"
-}
-
-echo "1) Upload all files(type 1 or any key, or press enter)"
-echo "2) Upload dist folder"
-
-read -p "Enter your choice: " choice
-if [ $choice -eq 2 ]; then
-  buildUploadDist
-else
-  uploadAll
+# Проверка аргумента (путь назначения)
+DEST="${1:-}"
+if [ -z "$DEST" ]; then
+  echo "❌ Укажи путь назначения!"
+  echo "Пример: ./rsync.sh /mnt/Courses/typescript"
+  exit 1
 fi
 
-# # check if has argument build
-# if [ "$1" == "build" ]; then
-#   echo "Building project"
-#   yarn build
-#   notify-send "Building end"
-#   buildUploadDist
-#   notify-send "finished upload dist"
-# else
-#   uploadAll
-# fi
-#
+# Проверка существования папки
+if [ ! -d "$DEST" ]; then
+  read -r -p "Папка '$DEST' не существует. Создать? [y/N]: " MK
+  [[ "$MK" =~ ^[Yy]$ ]] || { echo "Отменено."; exit 1; }
+  mkdir -p -- "$DEST"
+fi
+
+echo "🔎 Выбери файл или папку (только первый уровень текущей директории):"
+SELECTED="$(
+  find . -mindepth 1 -maxdepth 1 -printf '%P\0' \
+  | fzf --read0 --height=80% --reverse \
+        --preview 'p="{}"; if [ -d "$p" ]; then ls -la --color=always -- "$p"; else file -b -- "$p"; fi' \
+        --preview-window=right,60%
+)"
+[ -n "${SELECTED}" ] || { echo "Отменено."; exit 1; }
+
+# Определяем тип и путь
+if [ -d "$SELECTED" ]; then
+  ITEM_TYPE="dir"
+  SRC="${SELECTED%/}"   # копировать папку целиком
+else
+  ITEM_TYPE="file"
+  SRC="$SELECTED"
+fi
+
+echo "📦 Источник: $SRC ($ITEM_TYPE)"
+echo "🛬 Назначение: $DEST"
+
+# Dry-run (по желанию)
+read -r -p "Сделать пробный запуск (dry-run)? [y/N]: " DRY
+DRY_FLAG=()
+[[ "$DRY" =~ ^[Yy]$ ]] && DRY_FLAG=(--dry-run)
+
+echo
+echo "▶️  Команда:"
+echo "rsync -ah --info=progress2 ${DRY_FLAG[*]:-} --partial --inplace \"$SRC\" \"$DEST/\""
+echo
+
+# Запуск rsync
+rsync -ah --info=progress2 "${DRY_FLAG[@]}" --partial --inplace --human-readable \
+  -- "$SRC" "$DEST/"
+
+echo "✅ Готово."
