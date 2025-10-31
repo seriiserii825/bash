@@ -1,6 +1,6 @@
 #!/bin/bash
 
-file_path=$(fzf)
+file_path=$(find . -maxdepth 1 -type f -iname "*.jpg" -printf "%f\n" | fzf --prompt="Select JPG: " --height=80% --reverse)
 file_name=$(basename $file_path)
 file_extention="${file_name##*.}"
 new_file_name="center-${file_name%.*}.${file_extention}"
