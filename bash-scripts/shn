@@ -1,11 +1,46 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-if docker ps -a | grep -q '[0-9]'; then
-  echo "${tmagenta}There are active docker containers:${treset}"
-  docker ps -a
-  echo "${tmagenta}Stopping all docker containers...${treset}"
-  docker stop $(docker ps -q)
-  echo "${tgreen}All docker containers stopped.${treset}"
+# Optional colors (use existing if already exported)
+: "${tmagenta:=$'\e[35m'}"
+: "${tgreen:=$'\e[32m'}"
+: "${tyellow:=$'\e[33m'}"
+: "${tred:=$'\e[31m'}"
+: "${treset:=$'\e[0m'}"
+
+# 1) Is docker installed?
+if ! command -v docker >/dev/null 2>&1; then
+  echo "${tyellow}Docker CLI not found. Skipping container checks.${treset}"
+  exec sudo shutdown -h now
 fi
 
-sudo shutdown -h now
+# 2) Is the daemon reachable? (works for both rootful/rootless)
+if ! docker info >/dev/null 2>&1; then
+  echo "${tyellow}Docker daemon is not running or not reachable. Skipping container checks.${treset}"
+  exec sudo shutdown -h now
+fi
+
+# 3) Daemon is up — check containers
+running_ids="$(docker ps -q)"
+all_ids="$(docker ps -aq)"
+
+if [ -n "$all_ids" ]; then
+  # Show a quick summary
+  running_count="$(printf '%s\n' "$running_ids" | sed '/^$/d' | wc -l | tr -d ' ')"
+  all_count="$(printf '%s\n' "$all_ids" | sed '/^$/d' | wc -l | tr -d ' ')"
+  echo "${tmagenta}Docker containers present: total=${all_count}, running=${running_count}.${treset}"
+
+  if [ -n "$running_ids" ]; then
+    echo "${tmagenta}Stopping all running containers...${treset}"
+    # Stop only running ones
+    docker stop $running_ids
+    echo "${tgreen}All running containers stopped.${treset}"
+  fi
+
+  # Optional: uncomment to remove stopped containers as well
+  # echo "${tyellow}Removing stopped containers...${treset}"
+  # docker rm $(docker ps -aq) >/dev/null 2>&1 || true
+else
+  echo "${tgreen}No Docker containers found.${treset}"
+fi
+
+exec sudo shutdown -h now
