@@ -12,20 +12,20 @@ if [ ! -f "$GITIGNORE" ]; then
   exit 1
 fi
 
-# Check current state
-if grep -qE "^[#]*${TARGET}$" "$GITIGNORE"; then
-  if grep -qE "^#${TARGET}$" "$GITIGNORE"; then
-    # Uncomment dist
-    sed -i "s/^#${TARGET}$/${TARGET}/" "$GITIGNORE"
+# Regex: optional spaces, optional '#', optional spaces, dist, optional slash, end of line
+REGEX="^[[:space:]]*#?[[:space:]]*${TARGET}/?$"
+
+if grep -qE "$REGEX" "$GITIGNORE"; then
+  if grep -qE "^[[:space:]]*#[[:space:]]*${TARGET}/?$" "$GITIGNORE"; then
+    # Uncomment
+    sed -i "s/^[[:space:]]*#[[:space:]]*${TARGET}\/\?$/${TARGET}\//" "$GITIGNORE"
     echo "Uncommented 'dist' in .gitignore"
-    echo "Removing dist from git cache..."
     git rm -rf --cached dist >/dev/null 2>&1 || true
   else
-    # Comment dist
-    sed -i "s/^${TARGET}$/#${TARGET}/" "$GITIGNORE"
+    # Comment
+    sed -i "s/^[[:space:]]*${TARGET}\/\?$/# ${TARGET}\//" "$GITIGNORE"
     echo "Commented 'dist' in .gitignore"
   fi
 else
-  # If dist line doesn’t exist, append it commented
   echo "Not found dist in .gitignore"
 fi
