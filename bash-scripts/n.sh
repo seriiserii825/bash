@@ -107,6 +107,14 @@ bd(){
   checkNode
   bun run dev
 }
+bisw(){
+  checkNode
+  bun install && bun run start:watch
+}
+bsw(){
+  checkNode
+  bun run start:watch
+}
 bib(){
   checkNode
   bun install && bun run build
