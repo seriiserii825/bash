@@ -111,6 +111,10 @@ bisw(){
   checkNode
   bun install && bun run start:watch
 }
+bsd(){
+  checkNode
+  bun run start:dev
+}
 bsw(){
   checkNode
   bun run start:watch
