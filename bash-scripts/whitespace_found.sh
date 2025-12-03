@@ -1,65 +1,80 @@
 #!/bin/bash
 
-echo "PHP files with whitespace/empty lines before <?php:"
-echo "===================================================="
+# Array to store problematic file paths
+problematic_files=()
 
-# Temporary file to store problematic files
-temp_file=$(mktemp)
-
+# Find PHP files that don't start with <?php but contain it
 find . -type f -name "*.php" | while read -r file; do
-    first_byte=$(head -c 1 "$file" | od -An -tx1 | tr -d ' ')
-    
-    if [ "$first_byte" != "3c" ] && [ -n "$first_byte" ]; then
-        if head -c 100 "$file" | grep -q "<?php"; then
-            echo ""
-            echo "Found: $file"
-            echo "First character (hex): $first_byte"
-            echo "First 3 lines:"
-            head -n 3 "$file" | cat -A
-            echo "---"
-            echo "$file" >> "$temp_file"
-        fi
-    fi
+first_byte=$(head -c 1 "$file" | od -An -tx1 | tr -d ' ')
+
+if [ "$first_byte" != "3c" ] && [ -n "$first_byte" ]; then
+  if head -c 100 "$file" | grep -q "<?php"; then
+    problematic_files+=("$file")
+  fi
+fi
 done
 
-echo "===================================================="
-echo "Scan complete."
-echo ""
+# Export the array for use after the loop
+# (Note: the while loop runs in a subshell, so we need to collect files differently)
+
+# Better approach: collect files first, then display
+temp_file=$(mktemp)
+find . -type f -name "*.php" | while read -r file; do
+first_byte=$(head -c 1 "$file" | od -An -tx1 | tr -d ' ')
+
+if [ "$first_byte" != "3c" ] && [ -n "$first_byte" ]; then
+  if head -c 100 "$file" | grep -q "<?php"; then
+    echo "$file" >> "$temp_file"
+  fi
+fi
+done
 
 # Count problematic files
 file_count=$(wc -l < "$temp_file" 2>/dev/null || echo "0")
 
-if [ "$file_count" -eq 0 ]; then
-    echo "No files with whitespace before <?php found."
-    rm -f "$temp_file"
-    exit 0
-fi
-
-echo "Found $file_count file(s) with whitespace before <?php."
 echo ""
-read -p "Do you want to remove the whitespace from these files? (y/n): " answer
+echo "========================================"
+echo "Summary: $file_count problematic file(s) found"
+echo "========================================"
 
-if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
-    echo ""
-    echo "Removing whitespace..."
-    
-    while IFS= read -r file; do
-        if [ -f "$file" ]; then
-            # Create backup
-            cp "$file" "$file.bak"
-            
-            # Remove leading whitespace and empty lines before <?php
-            perl -i -pe 's/\A\s+(?=<\?php)//s' "$file"
-            
-            echo "✓ Fixed: $file (backup: $file.bak)"
-        fi
-    done < "$temp_file"
-    
-    echo ""
-    echo "Done! Backups created with .bak extension."
-    echo "If everything looks good, you can remove backups with: find . -name '*.php.bak' -delete"
-else
-    echo "No changes made."
+# Read files into array and display them
+if [ "$file_count" -gt 0 ]; then
+  # Store in array
+  mapfile -t file_list < "$temp_file"
+
+    # Display each file
+    for file in "${file_list[@]}"; do
+      echo "  - $file"
+    done
 fi
 
+echo "========================================"
+echo "Fixing files..."
+echo "========================================"
+
+    # Process each file to remove whitespace before <?php
+    fixed_count=0
+    for file in "${file_list[@]}"; do
+        if [ -f "$file" ]; then
+            # Use awk to:
+            # 1. Skip everything until we find <?php
+            # 2. Remove leading whitespace from the <?php line
+            # 3. Print everything from <?php onwards
+            awk '
+                /<?php/ { 
+                    found = 1
+                    sub(/^[[:space:]]+/, "")
+                }
+                found { print }
+            ' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+            
+            echo "  ✓ Fixed: $file (backup: $file.bak)"
+            ((fixed_count++))
+        fi
+    done
+
+    echo ""
+    echo "Fixed $fixed_count file(s)"
+
+# Clean up
 rm -f "$temp_file"
