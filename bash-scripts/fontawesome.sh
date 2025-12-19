@@ -1,32 +1,30 @@
 #!/bin/bash
 
-# Ask user for FontAwesome icon name (interactive)
 read -rp "🔍 Enter icon name to search on FontAwesome: " icon_name
 
-# Exit if empty
 if [ -z "$icon_name" ]; then
   echo "⚠️  Icon name cannot be empty."
   exit 1
 fi
 
-# Normalize to lowercase
+# normalize
 icon_name=$(echo "$icon_name" | tr '[:upper:]' '[:lower:]')
 
-# Check for Chrome
+# URL-encode (handles spaces)
+encoded_icon=$(printf '%s' "$icon_name" | sed 's/ /%20/g')
+
 chrome_path=$(command -v google-chrome-stable || command -v google-chrome)
 if [ -z "$chrome_path" ]; then
   echo "❌ Google Chrome is not installed."
   exit 1
 fi
 
-# Switch to workspace 1 (i3)
-i3-msg workspace 1 >/dev/null
+# open in background (important for i3)
+# nohup "$chrome_path" \
+#   "https://fontawesome.com/search?q=$encoded_icon&o=r&ic=free" \
+#   >/dev/null 2>&1 &
 
-# Open search URL
-$chrome_path "https://fontawesome.com/search?q=$icon_name&o=r&ic=free" &
-
-# Wait for window to appear
-sleep 2
-
-# Focus the Chrome window
-wmctrl -x -a "google-chrome.Google-chrome"
+nohup "$chrome_path" \
+  --new-window \
+  --user-data-dir=/tmp/chrome-fa-search \
+  "https://fontawesome.com/search?q=$encoded_icon&ic=free-collection" &
