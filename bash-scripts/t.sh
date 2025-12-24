@@ -8,7 +8,7 @@
 # Parses currently selected text and removes 
 # newlines
 current_lang="en"
-read -p "Enter current language("${tgreen}en${treset}", "${tblue}it${treset}", "${tmagenta}ru${treset}", "${tyellow}ro${treset}", "${tblue}en${treset}")" current_lang
+read -p "Enter current language("${tgreen}en${treset}", "${tblue}it${treset}", "${tmagenta}ru${treset}", "${tyellow}ro${treset}", "${tblue}en${treset}", "${tblue}fr${treset}" )" current_lang
 
 
 while /home/serii/Documents/bash/bash-scripts/clipnotify;

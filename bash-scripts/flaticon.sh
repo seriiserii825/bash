@@ -1,31 +1,30 @@
 #!/bin/bash
 
-# Find icon by argument after calling script
-# Example: ./fontawesome.sh setting
-# Open browser with search result for "setting" icon
+read -rp "🔍 Enter icon name to search on Flaticon: " icon_name
 
-chrome_path=$(which google-chrome-stable)
-if [ -z "$chrome_path" ]; then
-  echo "Google Chrome is not installed."
-  exit 1
-fi
-
-read -p "Enter icon name: " icon_name
 if [ -z "$icon_name" ]; then
-  echo "Please provide an icon name."
+  echo "⚠️  Icon name cannot be empty."
   exit 1
 fi
 
+# normalize
 icon_name=$(echo "$icon_name" | tr '[:upper:]' '[:lower:]')
 
-# Switch to workspace 1 and focus it
-i3-msg workspace 1
+# URL-encode (handles spaces)
+encoded_icon=$(printf '%s' "$icon_name" | sed 's/ /%20/g')
 
-# Open browser with search result for the icon
-$chrome_path "https://www.flaticon.com/search?word=$icon_name" &
+chrome_path=$(command -v google-chrome-stable || command -v google-chrome)
+if [ -z "$chrome_path" ]; then
+  echo "❌ Google Chrome is not installed."
+  exit 1
+fi
 
-# Wait for the browser to fully load the window
-sleep 2
+# open in background (important for i3)
+# nohup "$chrome_path" \
+#   "https://fontawesome.com/search?q=$encoded_icon&o=r&ic=free" \
+#   >/dev/null 2>&1 &
 
-# Focus the browser window using wmctrl
-wmctrl -x -a "google-chrome.Google-chrome"
+nohup "$chrome_path" \
+  --new-window \
+  --user-data-dir=/tmp/chrome-fa-search \
+  "https://www.flaticon.com/search?word=$icon_name" &
