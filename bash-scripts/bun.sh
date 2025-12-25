@@ -1,12 +1,18 @@
 #!/bin/bash
 
 packages=()
+dev_mode=false
 
 show_selected() {
   if [ ${#packages[@]} -eq 0 ]; then
     echo "📦 Выбрано: (пусто)"
   else
     echo "📦 Выбрано: ${packages[*]}"
+  fi
+  if [ "$dev_mode" = true ]; then
+    echo "📌 Режим: devDependencies"
+  else
+    echo "📌 Режим: dependencies"
   fi
   echo ""
 }
@@ -25,12 +31,17 @@ search_package() {
     selected_list="${packages[*]}"
   fi
   
+  local mode_label="dependencies"
+  if [ "$dev_mode" = true ]; then
+    mode_label="devDependencies"
+  fi
+  
   local menu=$(echo -e "🔍 ИСКАТЬ ЕЩЁ\n✅ УСТАНОВИТЬ ВЫБРАННЫЕ\n❌ ОЧИСТИТЬ ВЫБОР\n---\n$result")
   
   local selected=$(echo "$menu" | fzf \
     --height=50% \
     --reverse \
-    --header="📦 Выбрано: $selected_list" \
+    --header="📦 Выбрано: $selected_list | 📌 $mode_label" \
     --header-first)
   
   case "$selected" in
@@ -61,6 +72,12 @@ search_package() {
       ;;
   esac
 }
+
+clear
+read -p "Установить как devDependencies? [y/N]: " dev_choice
+if [[ "$dev_choice" =~ ^[Yy]$ ]]; then
+  dev_mode=true
+fi
 
 clear
 show_selected
@@ -97,4 +114,9 @@ fi
 
 echo "🚀 Установка: ${packages[*]}"
 echo ""
-bun add "${packages[@]}"
+
+if [ "$dev_mode" = true ]; then
+  bun add -d "${packages[@]}"
+else
+  bun add "${packages[@]}"
+fi
