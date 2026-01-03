@@ -31,8 +31,8 @@ fi
 
 # Determine port range based on folder name prefix
 if [[ "$FOLDER_NAME" == nest* ]]; then
-    PORT_START=5400
-    PORT_END=5499
+    PORT_START=3300
+    PORT_END=3399
     PORT_LABEL="NestJS (54xx)"
 elif [[ "$FOLDER_NAME" == nuxt* ]]; then
     PORT_START=3000
