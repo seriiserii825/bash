@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 # Configuration
@@ -33,19 +32,24 @@ fi
 if [[ "$FOLDER_NAME" == nest* ]]; then
     PORT_START=3300
     PORT_END=3399
-    PORT_LABEL="NestJS (54xx)"
+    PORT_LABEL="NestJS (33xx)"
 elif [[ "$FOLDER_NAME" == nuxt* ]]; then
     PORT_START=3000
     PORT_END=3099
     PORT_LABEL="Nuxt (30xx)"
 else
     PORT_START=3100
-    PORT_END=3999
-    PORT_LABEL="Other (31xx-39xx)"
+    PORT_END=3299
+    PORT_LABEL="Other (31xx-32xx)"
 fi
 
+# Generate subdomain and config filename
+SUBDOMAIN="${FOLDER_NAME}.${DOMAIN_SUFFIX}"
+CONFIG_FILE="${NGINX_SITES_AVAILABLE}/${SUBDOMAIN}"
+SYMLINK_PATH="${NGINX_SITES_ENABLED}/${SUBDOMAIN}"
+
 echo "→ Project type: $PORT_LABEL"
-echo "→ Subdomain: ${FOLDER_NAME}.${DOMAIN_SUFFIX}"
+echo "→ Subdomain: $SUBDOMAIN"
 
 # Get all used ports from nginx configs and running processes
 USED_PORTS=$(grep -rh "proxy_pass http://127.0.0.1:" "$NGINX_SITES_AVAILABLE" 2>/dev/null | \
@@ -73,10 +77,6 @@ if [ -z "$SELECTED_PORT" ]; then
 fi
 
 echo "✓ Selected port: $SELECTED_PORT"
-
-# Config file path
-CONFIG_FILE="${NGINX_SITES_AVAILABLE}/${FOLDER_NAME}"
-SUBDOMAIN="${FOLDER_NAME}.${DOMAIN_SUFFIX}"
 
 # Check if config already exists
 if [ -f "$CONFIG_FILE" ]; then
@@ -114,7 +114,6 @@ EOF
 echo "✓ Config created: $CONFIG_FILE"
 
 # Create symlink
-SYMLINK_PATH="${NGINX_SITES_ENABLED}/${FOLDER_NAME}"
 if [ ! -L "$SYMLINK_PATH" ]; then
     sudo ln -s "$CONFIG_FILE" "$SYMLINK_PATH"
     echo "✓ Symlink created"
@@ -139,6 +138,7 @@ echo ""
 echo "=== Setup Complete ==="
 echo "Subdomain: $SUBDOMAIN"
 echo "Port: $SELECTED_PORT"
+echo "Config: $CONFIG_FILE"
 echo ""
 echo "Next steps:"
 echo "  1. Add DNS record for $SUBDOMAIN"
