@@ -57,11 +57,6 @@ checkNode(){
             }
     fi
 
-    # check if yarn is installed
-    if ! command -v yarn &> /dev/null; then
-        echo "Failed to install Yarn" return
-    fi
-
     # Use the version
     nvm use "$node_version" || {
       echo "Failed to switch to Node version $node_version"
