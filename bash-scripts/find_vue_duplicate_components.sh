@@ -1,8 +1,35 @@
 #!/bin/bash
 
+
+
 # Находим все .vue файлы в текущей папке и подпапках
 # и помещаем их в массив
-mapfile -t vue_files < <(find . -type f -name "*.vue")
+# mapfile -t vue_files < <(find . -type f -name "*.vue")
+
+
+# Спрашиваем, где искать
+echo "Где искать .vue файлы?"
+echo "Enter  — текущая папка"
+echo "f      — выбрать папку через fzf"
+read -r -p "> " SEARCH_CHOICE
+
+SEARCH_DIR="."
+
+if [[ "$SEARCH_CHOICE" == "f" || "$SEARCH_CHOICE" == "F" ]]; then
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf не установлен"
+    exit 1
+  fi
+
+  SEARCH_DIR=$(find . -type d \
+    -not -path "*/node_modules/*" \
+    -not -path "*/dist/*" \
+    -not -path "*/build/*" \
+    | fzf)
+
+  [ -z "$SEARCH_DIR" ] && exit 0
+fi
+mapfile -t vue_files < <(find "$SEARCH_DIR" -type f -name "*.vue")
 
 # Проверяем, найдены ли файлы
 if [ ${#vue_files[@]} -eq 0 ]; then
@@ -29,6 +56,7 @@ if [[ "$answer" != "y" && "$answer" != "Y" && "$answer" != "д" && "$answer" != 
   exit 0
 fi
 
+
 echo ""
 echo "${tblue}Начинаем поиск использования компонентов...${treset}"
 echo "================================"
@@ -41,7 +69,7 @@ for vue_file in "${vue_files[@]}"; do
     # Ищем использование компонента в других файлах
     # Поиск по имени компонента (может быть в разных форматах: PascalCase, kebab-case)
     # Ищем в .vue, .js, .ts файлах
-    matches=$(grep -r -l --include="*.vue" --include="*.js" --include="*.ts" \
+    matches=$(grep -r -l --include="*.vue" \
       --exclude-dir=node_modules \
       --exclude-dir=dist \
       --exclude-dir=build \
