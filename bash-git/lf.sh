@@ -7,6 +7,7 @@ lf(){
   source "$script_dir/openFileInGit.sh"
   source "$script_dir/resolveConflict.sh"
 
+  # Define color variables
   if [[ $# -eq 1 && $1 == '-h' ]]; then
     echo "Usage: lf [message]"
     echo "Push, pull, sync, or clone a git repository."
