@@ -2,7 +2,9 @@
 
 # Загрузить переменные из .env
 if [ -f .env ]; then
-    export $(cat .env | grep -v '^#' | xargs)
+    set -a
+    source .env
+    set +a
 else
     echo "Error: .env file not found!"
     exit 1
@@ -19,7 +21,19 @@ RETENTION_DAYS=7
 mkdir -p $BACKUP_DIR
 
 # Имя файла с датой
-BACKUP_FILE="$BACKUP_DIR/backup_${DB_NAME}_$(date +%Y%m%d_%H%M%S).sql.gz"
+read -p "Enter backup name : " BACKUP_NAME
+
+if [ -z "$BACKUP_NAME" ]; then
+    BACKUP_NAME="backup_${DB_NAME}_$(date +%Y%m%d_%H%M%S)"
+else
+    BACKUP_NAME="${BACKUP_NAME}_$(date +%Y%m%d_%H%M%S)"
+fi
+
+BACKUP_NAME_SAFE=$(echo "$BACKUP_NAME" | tr ' ' '_' | tr -cd 'A-Za-z0-9_-')
+
+BACKUP_FILE="$BACKUP_DIR/${BACKUP_NAME_SAFE}.sql.gz"
+
+# BACKUP_FILE="$BACKUP_DIR/backup_${DB_NAME}_$(date +%Y%m%d_%H%M%S).sql.gz"
 
 # Создать бэкап
 echo "Creating backup of database: $DB_NAME"
