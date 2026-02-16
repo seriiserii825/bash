@@ -31,9 +31,8 @@ if [ $? -eq 0 ]; then
     echo "✅ Backup successful: $BACKUP_FILE"
     echo "Size: $(du -h $BACKUP_FILE | cut -f1)"
     
-    # Удалить старые бэкапы
-    find $BACKUP_DIR -name "backup_${DB_NAME}_*.sql.gz" -mtime +$RETENTION_DAYS -delete
-    echo "Old backups cleaned up (older than $RETENTION_DAYS days)"
+    # Удалить старые бэкапы но оставить последние 4
+    ls -1t "$BACKUP_DIR"/backup_"${DB_NAME}"_*.sql.gz 2>/dev/null | tail -n +5 | xargs -r rm -f
 else
     echo "❌ Backup failed!"
     exit 1
