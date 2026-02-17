@@ -1,7 +1,9 @@
 #!/bin/bash
 # Загрузить переменные из .env
 if [ -f .env ]; then
-    export $(cat .env | grep -v '^#' | xargs)
+  set -a
+  source .env
+  set +a
 else
     echo "Error: .env file not found!"
     exit 1
