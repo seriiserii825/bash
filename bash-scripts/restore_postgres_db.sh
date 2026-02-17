@@ -39,13 +39,13 @@ if [ ! -d "./backups" ]; then
   exit 1
 fi
 
-if ! ls ./backups/backup_*.sql.gz >/dev/null 2>&1; then
-  echo "Error: No backup files found in ./backups/ (backup_*.sql.gz)"
-  exit 1
-fi
+# if ! ls ./backups/backup_*.sql.gz >/dev/null 2>&1; then
+#   echo "Error: No backup files found in ./backups/ (backup_*.sql.gz)"
+#   exit 1
+# fi
 
 echo "Select a backup file to restore:"
-BACKUP_FILE="$(ls -t ./backups/backup_*.sql.gz | fzf \
+BACKUP_FILE="$(ls -t ./backups/*.sql.gz | fzf \
   --height=40% \
   --reverse \
   --border \
