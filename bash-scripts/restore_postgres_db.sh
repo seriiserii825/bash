@@ -1,100 +1,97 @@
 #!/bin/bash
-# Загрузить переменные из .env
+set -euo pipefail
+
+# Load .env
 if [ -f .env ]; then
   set -a
   source .env
   set +a
 else
-    echo "Error: .env file not found!"
-    exit 1
+  echo "Error: .env file not found!"
+  exit 1
 fi
 
-# Настройки из .env
-CONTAINER_NAME=$(docker ps --filter "name=postgres" --format "{{.Names}}" | head -n 1)
-DB_USER="${DB_USERNAME}"
-DB_NAME="${DB_NAME}"
+# Required vars from .env
+: "${DB_USERNAME:?DB_USERNAME is not set in .env}"
+: "${DB_NAME:?DB_NAME is not set in .env}"
 
-# Check if fzf is installed
-if ! command -v fzf &> /dev/null; then
-    echo "Error: fzf is not installed!"
-    echo "Install it with: sudo apt install fzf (Debian/Ubuntu) or brew install fzf (macOS)"
-    exit 1
+DB_USER="$DB_USERNAME"
+DB_NAME="$DB_NAME"
+
+# Find postgres container (adjust name filter if needed)
+CONTAINER_NAME="$(docker ps --format '{{.Names}}' | grep -i postgres | head -n 1 || true)"
+
+if [ -z "$CONTAINER_NAME" ]; then
+  echo "Error: Postgres container not found (docker ps | grep postgres)."
+  exit 1
 fi
 
-# Check if backups directory exists
+# fzf check
+if ! command -v fzf >/dev/null 2>&1; then
+  echo "Error: fzf is not installed!"
+  echo "Install on Arch: sudo pacman -S fzf"
+  exit 1
+fi
+
+# backups dir check
 if [ ! -d "./backups" ]; then
-    echo "Error: ./backups directory not found!"
-    exit 1
+  echo "Error: ./backups directory not found!"
+  exit 1
 fi
 
-# Check if there are any backups
-if [ -z "$(ls -A ./backups/backup_*.sql.gz 2>/dev/null)" ]; then
-    echo "Error: No backup files found in ./backups/"
-    exit 1
+if ! ls ./backups/backup_*.sql.gz >/dev/null 2>&1; then
+  echo "Error: No backup files found in ./backups/ (backup_*.sql.gz)"
+  exit 1
 fi
 
-# Use fzf to select backup file
 echo "Select a backup file to restore:"
-BACKUP_FILE=$(ls -t ./backups/backup_*.sql.gz | fzf \
-    --height=40% \
-    --reverse \
-    --border \
-    --prompt="Select backup: " \
-    --preview="echo 'File: {}'; echo ''; ls -lh {}; echo ''; echo 'Created:'; stat -c '%y' {} 2>/dev/null || stat -f '%Sm' {}" \
-    --preview-window=right:50%)
+BACKUP_FILE="$(ls -t ./backups/backup_*.sql.gz | fzf \
+  --height=40% \
+  --reverse \
+  --border \
+  --prompt="Select backup: " \
+  --preview="echo 'File: {}'; echo ''; ls -lh {}; echo ''; echo 'Created:'; stat -c '%y' {} 2>/dev/null || stat -f '%Sm' {}" \
+  --preview-window=right:50%)"
 
-# Check if user cancelled selection
 if [ -z "$BACKUP_FILE" ]; then
-    echo "No backup selected. Exiting."
-    exit 0
+  echo "No backup selected. Exiting."
+  exit 0
 fi
 
-# Validate selected file
 if [ ! -f "$BACKUP_FILE" ]; then
-    echo "Error: Backup file not found: $BACKUP_FILE"
-    exit 1
+  echo "Error: Backup file not found: $BACKUP_FILE"
+  exit 1
 fi
 
-echo ""
-echo "Database: $DB_NAME"
+echo
+echo "Database:  $DB_NAME"
 echo "Container: $CONTAINER_NAME"
-echo "Backup file: $BACKUP_FILE"
-echo ""
+echo "Backup:    $BACKUP_FILE"
+echo
 echo "⚠️  WARNING: This will DROP and recreate the database!"
-echo "All current data will be lost!"
 read -p "Continue? (yes/no): " -r
 echo
 
-if [[ $REPLY == "yes" ]]; then
-    echo "Starting restore process..."
-    
-    # Отключить все подключения
-    echo "Disconnecting active connections..."
-    docker exec $CONTAINER_NAME psql -U $DB_USER -d postgres -c \
-        "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$DB_NAME' AND pid <> pg_backend_pid();"
-    
-    # Пересоздать базу
-    echo "Dropping database..."
-    docker exec $CONTAINER_NAME psql -U $DB_USER -d postgres -c "DROP DATABASE IF EXISTS $DB_NAME;"
-    
-    echo "Creating database..."
-    docker exec $CONTAINER_NAME psql -U $DB_USER -d postgres -c "CREATE DATABASE $DB_NAME;"
-    
-    # Восстановить
-    echo "Restoring data..."
-    if [[ $BACKUP_FILE == *.gz ]]; then
-        gunzip < $BACKUP_FILE | docker exec -i $CONTAINER_NAME psql -U $DB_USER -d $DB_NAME
-    else
-        docker exec -i $CONTAINER_NAME psql -U $DB_USER -d $DB_NAME < $BACKUP_FILE
-    fi
-    
-    if [ $? -eq 0 ]; then
-        echo "✅ Restore completed successfully!"
-    else
-        echo "❌ Restore failed!"
-        exit 1
-    fi
-else
-    echo "Restore cancelled."
-    exit 0
+if [[ "$REPLY" != "yes" ]]; then
+  echo "Restore cancelled."
+  exit 0
 fi
+
+echo "Starting restore process..."
+
+echo "Disconnecting active connections..."
+docker exec "$CONTAINER_NAME" psql -U "$DB_USER" -d postgres -c \
+  "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$DB_NAME' AND pid <> pg_backend_pid();"
+
+echo "Dropping database..."
+docker exec "$CONTAINER_NAME" psql -U "$DB_USER" -d postgres -c \
+  "DROP DATABASE IF EXISTS \"$DB_NAME\";"
+
+echo "Creating database..."
+docker exec "$CONTAINER_NAME" psql -U "$DB_USER" -d postgres -c \
+  "CREATE DATABASE \"$DB_NAME\";"
+
+echo "Restoring data..."
+gunzip -c "$BACKUP_FILE" | docker exec -i "$CONTAINER_NAME" psql -U "$DB_USER" -d "$DB_NAME"
+
+echo "✅ Restore completed successfully!"
