@@ -51,3 +51,26 @@ echo "  1) $file1"
 echo "  2) $file2"
 echo
 
+# ─── Launch diff tool ──────────────────────────────────────
+
+case "$DIFF_TOOL" in
+  meld)
+    meld "$file1" "$file2" &>/dev/null &
+    ;;
+  vimdiff|vimdiff3)
+    vimdiff "$file1" "$file2"
+    ;;
+  nvim)
+    nvim -d "$file1" "$file2"
+    ;;
+  delta)
+    diff -u "$file1" "$file2" | delta
+    ;;
+  diff-so-fancy)
+    diff -u "$file1" "$file2" | diff-so-fancy | less --tabs=4 -RFX
+    ;;
+  *)
+    # fallback to plain diff
+    command diff --color=always -u "$file1" "$file2" | less -R
+    ;;
+esac
