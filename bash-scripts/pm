@@ -129,7 +129,7 @@ function preCommitMyPy(){
 
 # Run mypy check
 echo "🔍 Running mypy..."
-mypy --explicit-package-bases --ignore-missing-imports .
+.venv/bin/mypy --explicit-package-bases --ignore-missing-imports .
 
 STATUS=$?
 
