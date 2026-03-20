@@ -16,8 +16,7 @@ while [[ "$DIR" != "/" ]]; do
 
     read -rp "Copy file path to clipboard? (y/N): " answer
     if [[ "$answer" =~ ^[Yy]$ ]]; then
-      : > "$FILE"
-      nvim "\"$FILE\""
+      nvim "$FILE"
       # echo "$FILE"
       # echo -n "\"$FILE\":" | xclip -selection clipboard
       # echo "✔ File path copied to clipboard"
