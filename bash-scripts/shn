@@ -46,7 +46,7 @@ fi
 # 2) Mount checks (/mnt)
 # ============================
 
-mounted_points="$(findmnt -rn -o TARGET | grep "^${MOUNT_BASE}/")"
+mounted_points="$(findmnt -rn -o TARGET | grep -E "^${MOUNT_BASE}(/|$)")"
 
 if [ -z "$mounted_points" ]; then
   echo "${tgreen}No mounts in ${MOUNT_BASE}.${treset}"
