@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+
+# ========= COLORS =========
+: "${tmagenta:=$'\e[35m'}"
+: "${tgreen:=$'\e[32m'}"
+: "${tyellow:=$'\e[33m'}"
+: "${tred:=$'\e[31m'}"
+: "${treset:=$'\e[0m'}"
+
+# ========= SETTINGS =========
+MOUNT_BASE="/mnt"
+
+echo "${tmagenta}== Safe Reboot Script ==${treset}"
+
+# ============================
+# 1) Docker checks
+# ============================
+
+if command -v docker >/dev/null 2>&1; then
+  if docker info >/dev/null 2>&1; then
+    running_ids="$(docker ps -q)"
+    all_ids="$(docker ps -aq)"
+
+    if [ -n "$all_ids" ]; then
+      running_count="$(printf '%s\n' "$running_ids" | sed '/^$/d' | wc -l | tr -d ' ')"
+      all_count="$(printf '%s\n' "$all_ids" | sed '/^$/d' | wc -l | tr -d ' ')"
+
+      echo "${tmagenta}Docker: total=${all_count}, running=${running_count}${treset}"
+
+      if [ -n "$running_ids" ]; then
+        echo "${tmagenta}Stopping running containers...${treset}"
+        docker stop $running_ids >/dev/null
+        echo "${tgreen}Containers stopped.${treset}"
+      fi
+    else
+      echo "${tgreen}No Docker containers.${treset}"
+    fi
+  else
+    echo "${tyellow}Docker daemon not running.${treset}"
+  fi
+else
+  echo "${tyellow}Docker not installed.${treset}"
+fi
+
+# ============================
+# 2) Mount checks (/mnt)
+# ============================
+
+mounted_points="$(findmnt -rn -o TARGET | grep -E "^${MOUNT_BASE}(/|$)")"
+
+if [ -z "$mounted_points" ]; then
+  echo "${tgreen}No mounts in ${MOUNT_BASE}.${treset}"
+else
+  echo "${tyellow}Found mounts in ${MOUNT_BASE}:${treset}"
+  echo "$mounted_points"
+
+  echo
+  read -rp "Unmount ALL mounts above? [y/N]: " answer
+
+  if [[ "$answer" =~ ^[yY]$ ]]; then
+    echo "${tmagenta}Unmounting...${treset}"
+
+    for mount_point in $mounted_points; do
+      if sudo umount "$mount_point" 2>/dev/null; then
+        echo "${tgreen}✔ $mount_point${treset}"
+      else
+        echo "${tred}✖ Failed: $mount_point${treset}"
+      fi
+    done
+  else
+    echo "${tyellow}Unmount skipped.${treset}"
+  fi
+fi
+
+# ============================
+# 3) Reboot
+# ============================
+
+echo "${tmagenta}Rebooting...${treset}"
+exec sudo reboot
