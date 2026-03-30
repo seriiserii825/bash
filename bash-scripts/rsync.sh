@@ -23,7 +23,9 @@ fi
 
 echo "🔎 Выбери файл или папку (только первый уровень текущей директории):"
 SELECTED="$(
-  find . -mindepth 1 -maxdepth 1 -printf '%P\0' \
+  find . -mindepth 1 -maxdepth 1 -printf '%T@ %P\0' \
+  | sort -rz -k1,1 \
+  | sed -z 's/^[^ ]* //' \
   | fzf --read0 --height=80% --reverse \
         --preview 'p="{}"; if [ -d "$p" ]; then ls -la --color=always -- "$p"; else file -b -- "$p"; fi' \
         --preview-window=right,60%
