@@ -48,51 +48,55 @@ if [[ "$mode" == cover* ]]; then
   fi
 fi
 
-# Select image with fzf
-image=$(find . -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.webp" \) \
-  | fzf --preview 'identify -format "%f  %wx%h" {}')
+# Select images with fzf (Tab = toggle, Ctrl-A = all)
+mapfile -t images < <(find . -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.webp" \) \
+  | fzf --multi --preview 'identify -format "%f  %wx%h" {}' \
+        --bind 'ctrl-a:select-all' \
+        --prompt="Select images (Tab=multi, Ctrl-A=all): ")
 
-if [[ -z "$image" ]]; then
+if [[ ${#images[@]} -eq 0 ]]; then
   echo "No image selected."
   exit 1
 fi
 
-# Get source dimensions
-img_w=$(identify -format "%w" "$image")
-img_h=$(identify -format "%h" "$image")
+for image in "${images[@]}"; do
+  # Get source dimensions
+  img_w=$(identify -format "%w" "$image")
+  img_h=$(identify -format "%h" "$image")
 
-echo "Source:   ${img_w}x${img_h}"
-echo "Target:   ${target_w}x${target_h}"
+  echo "Source:   ${img_w}x${img_h}"
+  echo "Target:   ${target_w}x${target_h}"
 
-# Compare aspect ratios to decide which dimension to scale by
-img_ratio_x100=$(( img_w * 100 / img_h ))
-tgt_ratio_x100=$(( target_w * 100 / target_h ))
+  # Compare aspect ratios to decide which dimension to scale by
+  img_ratio_x100=$(( img_w * 100 / img_h ))
+  tgt_ratio_x100=$(( target_w * 100 / target_h ))
 
-if (( img_ratio_x100 > tgt_ratio_x100 )); then
-  scale_arg="x${target_h}"
-  echo "Scale:    by height (image is wider)"
-else
-  scale_arg="${target_w}x"
-  echo "Scale:    by width (image is taller)"
-fi
+  if (( img_ratio_x100 > tgt_ratio_x100 )); then
+    scale_arg="x${target_h}"
+    echo "Scale:    by height (image is wider)"
+  else
+    scale_arg="${target_w}x"
+    echo "Scale:    by width (image is taller)"
+  fi
 
-# Build output filename
-ext="${image##*.}"
-base="${image%.*}"
-output="${base}_${target_w}x${target_h}.${ext}"
+  # Build output filename
+  ext="${image##*.}"
+  base="${image%.*}"
+  output="${base}_${target_w}x${target_h}.${ext}"
 
-if [[ "$mode" == cover* ]]; then
-  echo "Crop:     $gravity"
-  convert "$image" \
-    -resize "$scale_arg" \
-    -gravity "$gravity" \
-    -extent "${target_w}x${target_h}" \
-    "$output"
-else
-  convert "$image" \
-    -resize "$scale_arg" \
-    "$output"
-fi
+  if [[ "$mode" == cover* ]]; then
+    echo "Crop:     $gravity"
+    convert "$image" \
+      -resize "$scale_arg" \
+      -gravity "$gravity" \
+      -extent "${target_w}x${target_h}" \
+      "$output"
+  else
+    convert "$image" \
+      -resize "$scale_arg" \
+      "$output"
+  fi
 
-echo "Saved:   $output"
-identify -format "%f  %wx%h\n" "$output"
+  echo "Saved:   $output"
+  identify -format "%f  %wx%h\n" "$output"
+done
