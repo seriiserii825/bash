@@ -45,9 +45,18 @@ echo "Watching for new jpg/png/webp — resize by $DIM_LABEL"
 echo "Press Ctrl+C to quit at any time."
 echo
 
+# tracks files we just resized to ignore the close_write they generate
+declare -A PROCESSED
+
 resize_image() {
   local file="$1"
   local w h
+
+  # skip if we just resized this file (mogrify triggers another close_write)
+  if [[ -n "${PROCESSED[$file]}" ]]; then
+    unset "PROCESSED[$file]"
+    return
+  fi
 
   # wait briefly for the file to be fully written
   sleep 0.5
@@ -63,6 +72,8 @@ resize_image() {
   fi
 
   echo "  Found: $(basename "$file")  (${w}x${h})"
+
+  PROCESSED[$file]=1
   mogrify -resize "$RESIZE_ARG" "$file"
 
   local w2 h2
