@@ -160,13 +160,21 @@ function changeImage(){
     3)
       echo "${tblue}Enter the width: ${treset}"
       read  width
+      echo "${tblue}Before:${treset}"
+      showSizes $*
       mogrify -resize $width"x" $*
+      echo "${tgreen}After:${treset}"
+      showSizes $*
       changeImage $*
       ;;
     4)
       echo "${tyellow}Enter the height: ${treset}"
       read  height
+      echo "${tblue}Before:${treset}"
+      showSizes $*
       mogrify -auto-orient -resize x$height $*
+      echo "${tgreen}After:${treset}"
+      showSizes $*
       changeImage $*
       ;;
     5)
