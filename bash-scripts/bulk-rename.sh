@@ -15,13 +15,6 @@ total=${#files[@]}
 # Ask for new base name
 read -p "New base name (e.g. image): " base
 
-# Confirm
-echo ""
-echo "Found $total file(s) with .$ext"
-echo "Will rename to: ${base}-1.$ext ... ${base}-${total}.$ext"
-read -p "Continue? (y/n): " confirm
-[[ "$confirm" != "y" ]] && echo "Aborted." && exit 0
-
 # Determine padding width based on total count
 if (( total > 100 )); then
   pad=3
@@ -30,6 +23,15 @@ elif (( total > 10 )); then
 else
   pad=1
 fi
+
+# Confirm
+first=$(printf "%0${pad}d" 1)
+last=$(printf "%0${pad}d" "$total")
+echo ""
+echo "Found $total file(s) with .$ext"
+echo "Will rename to: ${base}-${first}.$ext ... ${base}-${last}.$ext"
+read -p "Continue? (y/n): " confirm
+[[ "$confirm" != "y" ]] && echo "Aborted." && exit 0
 
 # Rename files
 count=1
