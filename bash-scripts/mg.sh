@@ -60,7 +60,18 @@ function showBySize(){
   fi
 }
 
+function filterImages(){
+  local result=()
+  for f in "$@"; do
+    [[ "${f,,}" =~ \.(jpg|jpeg|png|webp)$ ]] && result+=("$f")
+  done
+  echo "${result[@]}"
+}
+
 function cropImage() {
+  local imgs
+  read -ra imgs <<< "$(filterImages "$@")"
+  set -- "${imgs[@]}"
   read -p "Pixels to crop top,right,bottom,left (comma separated, leave empty for 0): " crop_values
   top_crop=$(echo $crop_values | cut -d',' -f1)
   right_crop=$(echo $crop_values | cut -d',' -f2)
@@ -111,6 +122,9 @@ function cropImage() {
 }
 
 function changeImage(){
+  local imgs
+  read -ra imgs <<< "$(filterImages "$@")"
+  set -- "${imgs[@]}"
   echo -e "${tgreen}Select an option${treset}"
   echo "${tblue}1. Info${treset}"
   echo "${tyellow}2. Optimize${treset}"
