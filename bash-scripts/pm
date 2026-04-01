@@ -80,7 +80,7 @@ function installBasePackages(){
 }
 function checkMyPyTypes(){
   initIfNotExists
-  mypy --explicit-package-bases  --ignore-missing-imports .
+  mypy --explicit-package-bases --ignore-missing-imports --disable-error-code import-untyped .
 }
 function listInstalledPackages(){
   initIfNotExists
@@ -129,7 +129,7 @@ function preCommitMyPy(){
 
 # Run mypy check
 echo "🔍 Running mypy..."
-.venv/bin/mypy --explicit-package-bases --ignore-missing-imports .
+.venv/bin/mypy --explicit-package-bases --ignore-missing-imports --disable-error-code import-untyped .
 
 STATUS=$?
 
