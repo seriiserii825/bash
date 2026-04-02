@@ -1,0 +1,5 @@
+type,files
+vue,.env
+nuxt,.env,nuxt.config.ts,ecosystem.config.cjs
+next,package.json
+react,.env
