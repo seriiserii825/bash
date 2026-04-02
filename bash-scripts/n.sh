@@ -74,68 +74,55 @@ checkNode(){
 
 yd(){
   checkNode
-  py_ports || return
   yarn dev
 }
 yyd(){
   checkNode
-  py_ports || return
   yarn && yarn dev
 }
 
 yb(){
   checkNode
-  py_ports || return
   yarn build
 }
 yyb(){
   checkNode
-  py_ports || return
   yarn && yarn build
 }
 
 bi(){
   checkNode
-  py_ports || return
   bun install
 }
 bid(){
   checkNode
-  py_ports || return
   bun install && bun run dev
 }
 bd(){
   checkNode
-  py_ports || return
   bun run dev
 }
 bisw(){
   checkNode
-  py_ports || return
   bun install && bun run start:watch
 }
 bsd(){
   checkNode
-  py_ports || return
   bun run start:dev
 }
 bsw(){
   checkNode
-  py_ports || return
   bun run start:watch
 }
 bib(){
   checkNode
-  py_ports || return
   bun install && bun run build
 }
 bb(){
   checkNode
-  py_ports || return
   bun run build
 }
 ba(){
   checkNode
-  py_ports || return
   bun add "$@"
 }
