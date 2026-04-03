@@ -1,10 +1,11 @@
 source "$(dirname "${BASH_SOURCE[0]}")/modules/getProjectType.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/modules/vueHandler.sh"
 
 function portsHandler(){
   project_type=$(getProjectType)
   case $project_type in
     "vue")
-      echo "vue"
+      vueHandler
       ;;
     "react")
       echo "react"
