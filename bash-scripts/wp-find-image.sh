@@ -187,6 +187,22 @@ find_post_type() {
   "
 }
 
+change_image_alt() {
+  read -rp "Enter Image ID: " IMG_ID
+  if command -v xclip &>/dev/null; then
+    NEW_ALT=$(xclip -o -selection clipboard)
+  elif command -v xsel &>/dev/null; then
+    NEW_ALT=$(xsel --clipboard)
+  else
+    echo "No clipboard tool found (need xclip or xsel)"
+    return
+  fi
+  NEW_ALT=$(echo "$NEW_ALT" | xargs)
+  echo "🖼️  Setting alt for attachment ID $IMG_ID to: '$NEW_ALT'"
+  wp post meta update "$IMG_ID" _wp_attachment_image_alt "$NEW_ALT"
+  echo "✅ Done."
+}
+
 # --- Menu loop ---
 while true; do
   echo ""
@@ -195,9 +211,10 @@ while true; do
   echo "2) Find post parent for image (and usage if unattached)"
   echo "3) Find post title by ID"
   echo "4) Find post type by title"
-  echo "5) Exit"
+  echo "5) Change image alt by ID (alt from clipboard)"
+  echo "6) Exit"
   echo "======================================="
-  read -rp "Choose an option [1-5]: " opt
+  read -rp "Choose an option [1-6]: " opt
   echo ""
 
   case "$opt" in
@@ -205,7 +222,8 @@ while true; do
     2) find_post_parent_for_image ;;
     3) find_post_title ;;
     4) find_post_type ;;
-    5) echo "👋 Bye!"; exit 0 ;;
+    5) change_image_alt ;;
+    6) echo "👋 Bye!"; exit 0 ;;
     *) echo "Invalid option. Try again." ;;
   esac
 done
