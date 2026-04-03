@@ -12,7 +12,7 @@ SITEURL=$(wp option get siteurl 2>/dev/null)
 
 find_image_id() {
   read -rp "Enter image name: " IMAGE_NAME
-  IMAGE_NAME=$(echo "$IMAGE_NAME" | xargs)
+  IMAGE_NAME=$(echo "$IMAGE_NAME" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
   echo "🔍 Finding image ID(s) by name: '$IMAGE_NAME'"
   # 1) Try by GUID
   wp db query "
@@ -177,7 +177,7 @@ find_post_type() {
 change_image_alt() {
   read -rp "Enter Image ID: " IMG_ID
   read -rp "Enter alt text: " NEW_ALT
-  NEW_ALT=$(echo "$NEW_ALT" | xargs)
+  NEW_ALT=$(echo "$NEW_ALT" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
   echo "🖼️  Setting alt for attachment ID $IMG_ID to: '$NEW_ALT'"
   wp post meta update "$IMG_ID" _wp_attachment_image_alt "$NEW_ALT"
   echo "✅ Done."
