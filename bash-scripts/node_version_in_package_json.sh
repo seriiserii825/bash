@@ -44,6 +44,12 @@ if [[ -z "$VERSION" ]]; then
     exit 1
 fi
 
+# If input is just digits (e.g. "22"), expand to "22.*"
+if [[ "$VERSION" =~ ^[0-9]+$ ]]; then
+    VERSION="${VERSION}.*"
+    echo "Expanded to: $VERSION"
+fi
+
 # Write to package.json using node
 node -e "
 const fs = require('fs');
