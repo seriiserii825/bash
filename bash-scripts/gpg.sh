@@ -64,7 +64,9 @@ function oneFile(){
   read -p "Encrypt or decrypt file(e/d):"
 
   if [ $REPLY == "e" ]; then
-    file_with_fzf=$(find . -maxdepth 1 -type f | fzf)
+    gpgrc=".gpgrc"
+    echo "${tyellow}Note: only files from .gpgrc will be used${treset}"
+    file_with_fzf=$(sed 's/\.gpg$//' "$gpgrc" | fzf)
     gpg -e -r $user $file_with_fzf
     echo "${tgreen}File $file_with_fzf.gpg created${treset}"
   elif [ $REPLY == "d" ]; then
