@@ -100,6 +100,31 @@ function moreFiles(){
   fi
 }
 
+function envFile(){
+  local action=$1
+  local env_file=".env"
+  local env_gpg=".env.gpg"
+
+  if [ "$action" == "--encrypt" ]; then
+    if [ ! -f "$env_file" ]; then
+      echo "${tmagenta}Error: $env_file not found.${treset}"
+      exit 1
+    fi
+    gpg -e -r $user $env_file
+    echo "${tgreen}File $env_gpg created${treset}"
+  elif [ "$action" == "--decrypt" ]; then
+    if [ ! -f "$env_gpg" ]; then
+      echo "${tmagenta}Error: $env_gpg not found.${treset}"
+      exit 1
+    fi
+    gpg -d $env_gpg > $env_file
+    echo "${tgreen}File $env_file decrypted${treset}"
+  else
+    echo "${tmagenta}Error: use --encrypt or --decrypt with --env.${treset}"
+    exit 1
+  fi
+}
+
 function menu(){
   ls -la
   echo "${tgreen}1. One file${treset}"
@@ -124,4 +149,8 @@ function menu(){
   fi
 }
 
-menu
+if [ "$1" == "--env" ]; then
+  envFile "$2"
+else
+  menu
+fi
