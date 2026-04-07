@@ -15,7 +15,7 @@ if [[ "$1" == "--help" ]]; then
   echo -e "     image wider than target  → scale by ${tyellow}height${treset}"
   echo -e "     image taller than target → scale by ${tyellow}width${treset}"
   echo -e "  ${tblue}4.${treset} Center-crop to exact target size"
-  echo -e "  ${tblue}5.${treset} Saves as ${tgray}originalname_WxH.ext${treset}  (original untouched)"
+  echo -e "  ${tblue}5.${treset} Saves as ${tgray}originalname_WxH_Gravity.ext${treset} for cover, ${tgray}originalname_WxH.ext${treset} for fit  (original untouched)"
   exit 0
 fi
 
@@ -82,7 +82,11 @@ for image in "${images[@]}"; do
   # Build output filename
   ext="${image##*.}"
   base="${image%.*}"
-  output="${base}_${target_w}x${target_h}.${ext}"
+  if [[ "$mode" == cover* ]]; then
+    output="${base}_${target_w}x${target_h}_${gravity}.${ext}"
+  else
+    output="${base}_${target_w}x${target_h}.${ext}"
+  fi
 
   if [[ "$mode" == cover* ]]; then
     echo "Crop:     $gravity"
