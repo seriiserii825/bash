@@ -114,8 +114,12 @@ function cropImage() {
     fi
 
 
-    # Crop geometry: WIDTHxHEIGHT+X+Y
-    mogrify -crop "${new_width}x${new_height}+${left_crop}+${top_crop}" +repage "$img"
+    base="${img%.*}"
+    ext="${img##*.}"
+    new_name="${base}-${top_crop}-${right_crop}-${bottom_crop}-${left_crop}.${ext}"
+    cp "$img" "$new_name"
+    mogrify -crop "${new_width}x${new_height}+${left_crop}+${top_crop}" +repage "$new_name"
+    echo "Created: $new_name"
 
   done
   echo "Cropping completed."
