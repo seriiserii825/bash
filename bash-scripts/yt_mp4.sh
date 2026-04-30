@@ -8,6 +8,8 @@ if [[ $youtube_url == *youtube* ]]; then
   # else if zen
 elif [[ $youtube_url == *zen* ]]; then
   yt-dlp -o '%(title)s.%(ext)s' --format "bestvideo+bestaudio[ext=m4a]/bestvideo+bestaudio/best" --merge-output-format mp4 $youtube_url
+elif [[ $youtube_url == *vkvideo* || $youtube_url == *vk.com/video* ]]; then
+  yt-dlp -o '%(title)s.%(ext)s' --format "bestvideo+bestaudio[ext=m4a]/bestvideo+bestaudio/best" --merge-output-format mp4 $youtube_url
 else
   echo "${tmagenta}Error: Invalid YouTube URL.${treset}"
 fi
