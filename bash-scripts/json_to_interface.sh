@@ -40,6 +40,8 @@ if [ -z "$interface_name" ]; then
 fi
 
 interface_name="${interface_name}"
+# Remove any accidental I prefix the user may have typed (we'll add it ourselves)
+interface_name="${interface_name#I}"
 
 # Work directory
 cd ~/Downloads || exit 1
@@ -61,6 +63,16 @@ sed -i '/\/\*\*/,/\*\//d' "${interface_name}.ts"         # Multi-line block comm
 sed -i '/\/\*.*\*\//d' "${interface_name}.ts"            # Single-line block comments
 sed -i 's/\/\/.*//' "${interface_name}.ts"               # Single-line `//` comments
 sed -i '/^\s*$/d' "${interface_name}.ts"                 # Empty lines
+
+# Add I prefix to every interface name and all its type references
+mapfile -t inames < <(grep -oP '(?<=\binterface )[A-Za-z0-9]+' "${interface_name}.ts")
+for name in "${inames[@]}"; do
+  sed -i "s/\b${name}\b/I${name}/g" "${interface_name}.ts"
+done
+
+# Rename file with I prefix
+mv "${interface_name}.ts" "I${interface_name}.ts"
+interface_name="I${interface_name}"
 
 # Show result
 pretty_echo "${tgreen}Final cleaned TypeScript output:${treset}"
