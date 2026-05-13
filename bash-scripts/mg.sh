@@ -219,13 +219,14 @@ function changeImage(){
 
 removeSpaces
 COLUMNS=1
-select which in "one" "all" "info" "size" "exit";
+select which in "select" "all" "info" "size" "exit";
 do
-  case $which in 
-    one)
-      file_path=$( fzf )
-      echo "${tgreen}Select image: $file_path${treset}"
-      changeImage $file_path
+  case $which in
+    select)
+      mapfile -t selected_files < <(fzf --multi)
+      [[ ${#selected_files[@]} -eq 0 ]] && echo "No files selected." && break
+      echo "${tgreen}Selected: ${selected_files[*]}${treset}"
+      changeImage "${selected_files[@]}"
       break
       ;;
     all)
