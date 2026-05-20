@@ -14,7 +14,7 @@ while [[ "$DIR" != "/" ]]; do
 
     echo "Found: $FILE"
 
-    read -rp "Copy file path to clipboard? (y/N): " answer
+    read -rp "Open wp-config? (y/N): " answer
     if [[ "$answer" =~ ^[Yy]$ ]]; then
       nvim "$FILE"
       # echo "$FILE"
