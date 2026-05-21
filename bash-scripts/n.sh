@@ -98,6 +98,10 @@ bid(){
   checkNode
   bun install && bun run dev
 }
+bil(){
+  checkNode
+  bun install && bun run local
+}
 bd(){
   checkNode
   bun run dev
