@@ -1,0 +1,32 @@
+#!/bin/bash
+
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ACTION_FILE=$(mktemp)
+
+while true; do
+    echo "run" > "$ACTION_FILE"
+
+    file=$(find "$BASE_DIR" -type f -name "*.sh" | \
+        awk -F/ '{print $NF "\t" $0}' | sort -t$'\t' -k1 | \
+        fzf --prompt="Script: " \
+            --with-nth=1 \
+            --delimiter='\t' \
+            --preview='bat --color=always {2} 2>/dev/null || cat {2}' \
+            --header="Enter: run | ctrl+x: delete | esc: exit" \
+            --bind "ctrl-x:execute-silent(echo del > $ACTION_FILE)+accept" | cut -f2)
+
+    action=$(cat "$ACTION_FILE")
+
+    [ -z "$file" ] && break
+
+    if [[ "$action" == "del" ]]; then
+        read -p "Delete $(basename "$file")? [y/N] " confirm
+        [[ "$confirm" =~ ^[Yy]$ ]] && rm "$file" && echo "Removed: $file"
+        continue
+    else
+        bash "$file"
+        break
+    fi
+done
+
+rm -f "$ACTION_FILE"
