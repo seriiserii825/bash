@@ -3,6 +3,7 @@
 PREFS="${PREFS:-/home/serii/.config/google-chrome/Default/Preferences}"
 PREFS_KEY='custom-emulated-device-list'
 PREFS_PATH=".devtools.preferences[\"$PREFS_KEY\"]"
+DEVICE_FILE="/home/serii/dotfiles/chrome/custom-device.txt"
 
 # ─── clipboard helpers ────────────────────────────────────────────────────────
 
@@ -56,11 +57,15 @@ do_export() {
         echo "Error: '$PREFS_KEY' not found in Preferences." >&2; exit 1
     fi
 
-    # pretty-print for clipboard readability
     count=$(echo "$value" | jq 'length' 2>/dev/null || echo "?")
+
+    mkdir -p "$(dirname "$DEVICE_FILE")"
+    echo "$value" | jq . > "$DEVICE_FILE"
     echo "$value" | jq . | clip_copy
 
-    echo "Exported $count device(s) to clipboard."
+    echo "Exported $count device(s)."
+    echo "  File:      $DEVICE_FILE"
+    echo "  Clipboard: also copied"
 }
 
 # ─── import ──────────────────────────────────────────────────────────────────
@@ -68,10 +73,18 @@ do_export() {
 do_import() {
     check_deps
 
-    clipboard=$(clip_paste)
-    if [[ -z "$clipboard" ]]; then
-        echo "Error: Clipboard is empty — copy device JSON first." >&2; exit 1
+    if [[ ! -f "$DEVICE_FILE" ]]; then
+        echo "Error: device file not found: $DEVICE_FILE" >&2
+        echo "Run export first to save devices there." >&2
+        exit 1
     fi
+
+    source_data=$(cat "$DEVICE_FILE")
+    if [[ -z "$source_data" ]]; then
+        echo "Error: device file is empty: $DEVICE_FILE" >&2; exit 1
+    fi
+
+    echo "Importing from: $DEVICE_FILE"
 
     if chrome_running; then
         echo "Chrome is running — killing all instances..."
@@ -79,9 +92,8 @@ do_import() {
         sleep 1
     fi
 
-    # strip pretty-printing in case the user copied it that way
-    if ! compact=$(echo "$clipboard" | jq -c . 2>/dev/null); then
-        echo "Error: Clipboard does not contain valid JSON." >&2; exit 1
+    if ! compact=$(echo "$source_data" | jq -c . 2>/dev/null); then
+        echo "Error: File does not contain valid JSON." >&2; exit 1
     fi
 
     # must be an array
