@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Sets or adds GitHub remote origin from clipboard URL (git@ or https)
 
 if command -v xclip &>/dev/null; then
   URL=$(xclip -selection clipboard -o 2>/dev/null)

@@ -1,4 +1,5 @@
 #!/bin/bash
+# Zips the current folder and saves the archive to ~/Downloads
 
 current_dir=$(pwd)
 folder_name=$(basename "$current_dir")

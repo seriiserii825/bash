@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Searches files for a word by extension (grep), lists matches, opens all in nvim
 
 read -rp "Word to search: " word
 [[ -z "$word" ]] && echo "No word provided." && exit 1

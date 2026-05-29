@@ -1,4 +1,5 @@
 #!/bin/bash
+# Converts all .webp files in current directory to .jpg with ImageMagick 7
 
 # Check if magick is installed 
 if ! [ -x "$(command -v magick)" ]; then

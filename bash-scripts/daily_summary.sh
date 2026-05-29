@@ -1,4 +1,5 @@
 #!/bin/bash
+# Uses Ollama/llama3 to summarize clipboard git commits into a short client update, copies result
 
 # Check if Ollama is installed
 if ! command -v ollama &> /dev/null; then

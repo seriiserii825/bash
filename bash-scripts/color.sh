@@ -1,4 +1,5 @@
 #!/bin/bash
+# Reads hex color from clipboard and lightens or darkens it by a percentage, copies result
 
 if [[ "$1" == "--help" || "$1" == "-h" ]]; then
     echo "Usage: color.sh [--help|-h]"

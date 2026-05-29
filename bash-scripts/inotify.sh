@@ -1,4 +1,5 @@
 #!/bin/bash
+# Polls ~/Downloads for new files every 2s; renames and jpegoptim-optimizes new JPGs
 
 # Directory to monitor
 directory="/home/$USER/Downloads"

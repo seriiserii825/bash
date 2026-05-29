@@ -1,4 +1,5 @@
 #!/bin/bash
+# Picks a file with fzf (excluding node_modules) and renames it interactively
 
 # Find a file excluding node_modules, let user pick one with fzf
 file_path=$(find . -type f ! -path "*/node_modules/*" | fzf --height 40% --reverse --preview 'head -n 100 {}' --preview-window=up:30%:wrap)

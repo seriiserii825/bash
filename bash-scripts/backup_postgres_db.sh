@@ -1,4 +1,5 @@
 #!/bin/bash
+# Creates a compressed PostgreSQL backup from a Docker container using .env credentials
 
 # Загрузить переменные из .env
 if [ -f .env ]; then

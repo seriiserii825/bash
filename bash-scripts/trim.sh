@@ -1,4 +1,5 @@
 #!/bin/bash
+# Converts text to music-friendly filename (spaces→dashes, removes commas/dots/colons)
 
 file_name=music.txt
 

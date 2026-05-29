@@ -1,4 +1,5 @@
 #!/bin/bash
+# Opens two fzf-selected images side by side with sxiv for visual comparison
 
 echo "Choose 2 images with fzf"
 

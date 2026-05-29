@@ -1,4 +1,6 @@
 #!/bin/bash
+# Removes a selected nginx site config and symlink using fzf, then restarts nginx
+
 set -e
 
 NGINX_SITES_AVAILABLE="/etc/nginx/sites-available"

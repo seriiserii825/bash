@@ -1,4 +1,5 @@
 #! /bin/bash 
+# Pads single-digit file/dir numbers to two digits (1→01) and replaces spaces with underscores
 
 function renameDigits(){
   echo "File or Directory? f/d"

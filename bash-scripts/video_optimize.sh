@@ -1,4 +1,5 @@
 #!/bin/bash
+# Optimizes a fzf-selected MP4 with ffmpeg (CRF quality slider, optional audio strip)
 
 choosed_video_with_fzf=$(find . -maxdepth 1 -type f -name "*.mp4" | fzf)
 

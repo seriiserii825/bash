@@ -1,4 +1,5 @@
 #! /bin/bash
+# Multi-action file manager: select file with fzf, then delete/rename/copy/read/open/multiply it
 
 function toFile(){
   read -p "${tgreen}Enter file name: ${treset}" file_name

@@ -1,5 +1,5 @@
-# ~/.local/bin/ff
 #!/usr/bin/env bash
+# Fuzzy symbol finder: searches all tokens with ripgrep, picks with fzf, opens in nvim at exact position
 set -euo pipefail
 
 # deps

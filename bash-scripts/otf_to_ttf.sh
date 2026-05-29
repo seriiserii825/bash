@@ -1,4 +1,5 @@
 #!/bin/bash
+# Converts all .otf fonts in current directory to .ttf with FontForge, removes originals
 
 # check if fontforge is installed
 if ! [ -x "$(command -v fontforge)" ]; then

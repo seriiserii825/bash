@@ -1,4 +1,5 @@
 #!/bin/bash
+# Downloads YouTube/VK/Zen video from clipboard as MP4 via yt-dlp
 
 youtube_url=$(xclip -o -selection clipboard)
 

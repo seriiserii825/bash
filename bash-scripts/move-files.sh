@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Moves fzf-selected files to an existing or new directory, copies new paths to clipboard
 
 echo "Select files to move (TAB to select multiple, ENTER to confirm):"
 mapfile -t selected_files < <(find . -mindepth 1 \( -name '.git' -o -name 'node_modules' \) -prune -o \( -type f -o -type d \) -print | sed 's|^\./||' | sort | fzf --multi --prompt="Files > ")

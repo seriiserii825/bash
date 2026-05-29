@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Picks a file with fzf (using fd) and opens it in Chrome
 set -euo pipefail
 
 # deps

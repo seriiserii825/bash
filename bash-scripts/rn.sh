@@ -1,4 +1,5 @@
 #! /bin/bash 
+# File renamer: replace spaces, pad digits, rename images with prefix using perl-rename
 
 # if not installed perl-rename
 if ! command -v perl-rename &> /dev/null

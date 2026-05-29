@@ -1,3 +1,5 @@
+# Pulls latest changes, pushing uncommitted ones first, then decrypts GPG files
+
 function gitPull(){
   script_dir=$1
   source "$script_dir/encrypt.sh"

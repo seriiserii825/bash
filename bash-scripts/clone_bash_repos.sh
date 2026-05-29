@@ -1,4 +1,5 @@
 #!/bin/bash
+# Clones all personal Chrome extension repos from GitHub into the chrome-extensions folder
 
 current_folder="chrome-extensions"
 

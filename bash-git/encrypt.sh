@@ -1,3 +1,5 @@
+# Encrypts/decrypts files listed in .gpgrc using GPG for the current user
+
 function encryptFiles(){
   # check for .gpgrc file if exists
   if [ -f ".gpgrc" ]; then

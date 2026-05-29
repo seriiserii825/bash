@@ -1,4 +1,5 @@
 #!/bin/bash
+# Clones all personal Python repos from GitHub into the python folder
 
 current_folder="python"
 

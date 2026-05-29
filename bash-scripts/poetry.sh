@@ -1,4 +1,5 @@
 #! /bin/bash
+# Poetry project manager: new/init/install/update/add packages menu
 
 echo "${tgreen}Init: In existing project${treset}"
 echo "${tblue}Install: Install venv${treset}"

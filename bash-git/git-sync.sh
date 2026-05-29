@@ -1,3 +1,5 @@
+# fzf menu to push all repos, pull all repos, view commits, or view repo lists
+
 function gitSync(){
   script_dir=$1
   source "$script_dir/sync-repos.sh"

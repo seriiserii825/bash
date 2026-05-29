@@ -1,4 +1,5 @@
 #!/bin/bash
+# Checks or kills process on a given port (Check/Kill menu)
 
 if ! command -v lsof &>/dev/null; then
   echo "lsof not found, installing..."

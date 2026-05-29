@@ -1,4 +1,5 @@
 #!/bin/bash
+# Opens FontAwesome free icon search for the entered name in a new Chrome window
 
 read -rp "🔍 Enter icon name to search on FontAwesome: " icon_name
 

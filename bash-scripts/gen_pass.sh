@@ -1,4 +1,5 @@
 #!/bin/bash
+# Generates a random password with optional special chars at a chosen length, copies to clipboard
 
 # Define the character set for the password
 CHARACTER_SET="AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789!@#$%^&*"

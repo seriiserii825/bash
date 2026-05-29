@@ -1,4 +1,5 @@
 #!/bin/bash
+# Compiles all .mjml files in ./projects to HTML in ./output using the mjml CLI
 
 # check if mjml is installed
 if ! [ -x "$(command -v mjml)" ]; then

@@ -1,4 +1,5 @@
 #! /bin/bash
+# Writes ISO from fzf-selected file to a selected block device with dd
 
 file_iso=$(fzf)
 

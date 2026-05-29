@@ -1,4 +1,5 @@
 #!/bin/bash
+# Screenshots a screen area, preprocesses with ImageMagick, runs Tesseract OCR, copies text
 
 read -p "Enter psm mode (0-13), by default is 6: " psm_mode
 if [[ -z "$psm_mode" ]]; then

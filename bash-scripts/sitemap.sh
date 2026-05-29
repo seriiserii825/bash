@@ -1,4 +1,5 @@
 #!/bin/bash
+# Fetches page sitemap from clipboard URL and shows meta titles, descriptions, and headings
 url=$(xclip -o)
 
 if ! [[ $url =~ ^https?://  ]]; then

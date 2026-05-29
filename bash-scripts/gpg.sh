@@ -1,4 +1,5 @@
 #!/bin/bash
+# GPG manager: encrypt/decrypt one file, multiple files, project dist folder, or .env file
 user=$(whoami)
 
 function toggleProject(){

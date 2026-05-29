@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Fixes ACF field menu_order in WP database to match field order in a JSON export file
 set -euo pipefail
 
 JSON="${1:?Usage: ./fix-order.sh path/to/file.json}"

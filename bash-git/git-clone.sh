@@ -1,3 +1,5 @@
+# Clones repo from clipboard URL (GitHub/Bitbucket/GitLab) and decrypts files after clone
+
 source "$(dirname "$0")/encrypt.sh"
 
 function gitClone() {

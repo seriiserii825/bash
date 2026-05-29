@@ -1,4 +1,5 @@
 #!/bin/bash 
+# Picks a Tailwind color from fzf list and copies its hex value to clipboard
 # set -x
 
 # check if is installed tailwind-colors-vars with npm

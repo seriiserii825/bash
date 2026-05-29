@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# clipboard-cyr2lat.sh — RU→LAT for clipboard (i3wm/X11)
+# Transliterates Cyrillic clipboard text to Latin; optionally creates a Markdown file from result
 # Deps: xclip (или xsel), libnotify (notify-send)
 
 set -euo pipefail

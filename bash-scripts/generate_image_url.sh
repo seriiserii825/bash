@@ -1,4 +1,5 @@
 #!/bin/bash
+# Generates a random picsum.photos image URL by dimensions and copies it to clipboard
 
 read -p "Enter dimensions (width,height) or just width: " input
 

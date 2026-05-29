@@ -1,4 +1,5 @@
 #!/bin/bash
+# i3 power menu: lock screen, logout, suspend, reboot, or shutdown
 
 lock() {
     i3lock -i ~/Pictures/wallpapers/i3lock.png -t

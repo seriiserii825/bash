@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# TikTok downloader: single/batch/live/avatar/sound modes via yt-dlp and ffmpeg
 
 # This script allows you to use download any TikToks, profile pictures, sounds and ongoing livestreams.
 # The script has both a mode for downloading a single video and a mode to bulk download all videos listed in a text file.

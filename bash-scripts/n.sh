@@ -1,3 +1,5 @@
+# Node/Bun project shortcuts (yd/bd/bb/ba...): auto-switches Node version per package.json engines
+
 closeScritpt(){
     echo "${tblue}Press Ctrl+C to restart or after 10 seconds terminal will close${treset}"
     sleep 10

@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copies files with Cyrillic names to ./cyr-to-lat/ subfolder with transliterated Latin filenames
 
 OUTPUT_DIR="cyr-to-lat"
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Installs NVIDIA 470xx drivers on Arch Linux with Xorg config, blacklist nouveau, initramfs rebuild
 set -euo pipefail
 
 ### ——— helpers ———

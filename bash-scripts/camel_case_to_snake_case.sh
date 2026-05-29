@@ -1,4 +1,5 @@
 #!/bin/sh
+# Watches clipboard and automatically converts camelCase text to snake_case
 
 toSnakeCase(){
   content_from_clipboard=$(xclip -selection clipboard -o)

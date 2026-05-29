@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Finds wp-config.php by searching parent directories and opens it in nvim
 
 TARGET="wp-config.php"
 DIR="$(pwd)"

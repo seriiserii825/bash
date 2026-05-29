@@ -1,4 +1,6 @@
 #!/bin/bash
+# Creates an nginx reverse-proxy config for a Node.js project with fzf port picker
+
 set -e
 
 # Configuration

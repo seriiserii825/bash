@@ -1,4 +1,5 @@
 #!/bin/bash
+# Mirrors a Bitbucket repo from blueline2025 workspace to blueline-wordpress-sites
 
 function from_bitbucket_radu_to_bludelego(){
   # in clipboard instead git clone, git clone --mirror

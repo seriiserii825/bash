@@ -1,4 +1,5 @@
-#! /bin/bash 
+#! /bin/bash
+# Picks a password-store entry with fzf and copies the password to clipboard
 
 cd ~/.password-store
 

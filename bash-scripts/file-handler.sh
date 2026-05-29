@@ -1,4 +1,5 @@
 #!/bin/bash
+# Watches ~/Downloads for new JPG files with inotifywait and auto-optimizes them with jpegoptim
 
 inotifywait -m /home/serii/Downloads -e create -e moved_to |
   while read dir action file; do

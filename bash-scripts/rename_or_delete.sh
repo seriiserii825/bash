@@ -1,4 +1,5 @@
 #!/bin/bash
+# SCSS pattern manager: delete lines matching a pattern or replace text across all .scss files
 
 # Colors for better readability
 RED='\033[0;31m'

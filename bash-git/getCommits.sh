@@ -1,3 +1,5 @@
+# Shows today's git commits across repos in git-repos.txt; copies selected project commits to clipboard
+
 selectProjectWithFzf(){
   today_projects=("$@")
   print -n "${tmagenta}Select a project, (y/n): ${treset}"

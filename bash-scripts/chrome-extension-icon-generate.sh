@@ -1,4 +1,5 @@
-#! /bin/bash 
+#! /bin/bash
+# Generates Chrome extension icon set (128/48/32/16px) from a fzf-selected image
 
 file_path=$(fzf)
 file_name=$(basename $file_path)

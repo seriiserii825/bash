@@ -1,4 +1,5 @@
 #!/bin/bash
+# Opens YouTube/Twitch/VK video from clipboard URL in mpv
 
 youtube_url=$(xclip -o -selection clipboard)
 

@@ -1,4 +1,5 @@
 #!/bin/bash
+# Converts px values in a fzf-selected CSS file to rem (divides by 10), formats with prettier
 #!/bin/bash
 css_file="$(fzf)"
 

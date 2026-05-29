@@ -1,4 +1,5 @@
 #!/bin/bash
+# Converts clipboard JSON to a TypeScript interface (IName) using quicktype, copies to clipboard
 
 function pretty_echo() {
   echo "================================"

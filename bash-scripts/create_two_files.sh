@@ -1,4 +1,5 @@
 #! /bin/bash
+# Creates two PHP files named old-<name>.php and new-<name>.php from clipboard content
 
 clipboard=$(xclip -o)
 file_name="$clipboard"

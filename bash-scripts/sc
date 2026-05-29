@@ -12,8 +12,9 @@ while true; do
             --with-nth=1 \
             --delimiter='\t' \
             --preview='bat --color=always {2} 2>/dev/null || cat {2}' \
-            --header="Enter: run | ctrl+x: delete | esc: exit" \
-            --bind "ctrl-x:execute-silent(echo del > $ACTION_FILE)+accept" | cut -f2)
+            --header="Enter: run | ctrl+x: delete | ctrl+r: rename | esc: exit" \
+            --bind "ctrl-x:execute-silent(echo del > $ACTION_FILE)+accept" \
+            --bind "ctrl-r:execute-silent(echo ren > $ACTION_FILE)+accept" | cut -f2)
 
     action=$(cat "$ACTION_FILE")
 
@@ -22,6 +23,12 @@ while true; do
     if [[ "$action" == "del" ]]; then
         read -p "Delete $(basename "$file")? [y/N] " confirm
         [[ "$confirm" =~ ^[Yy]$ ]] && rm "$file" && echo "Removed: $file"
+        continue
+    elif [[ "$action" == "ren" ]]; then
+        read -p "Rename $(basename "$file") to: " newname
+        if [[ -n "$newname" ]]; then
+            mv "$file" "$(dirname "$file")/$newname" && echo "Renamed to: $newname"
+        fi
         continue
     else
         bash "$file"

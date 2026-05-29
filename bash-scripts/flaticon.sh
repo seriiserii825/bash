@@ -1,4 +1,5 @@
 #!/bin/bash
+# Opens Flaticon search page for the entered icon name in a new Chrome window
 
 read -rp "🔍 Enter icon name to search on Flaticon: " icon_name
 

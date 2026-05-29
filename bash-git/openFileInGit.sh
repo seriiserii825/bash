@@ -1,3 +1,5 @@
+# Picks a file with fzf and opens it in the GitHub browser at the current branch URL
+
 openFileInGit(){
   ## select just any file from current dir with fzf
   file=$(find . -type f | fzf --height 40% --reverse --inline-info --preview 'bat --style=numbers --color=always {}' --preview-window=up:30%:wrap)

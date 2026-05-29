@@ -1,4 +1,5 @@
 #!/bin/bash
+# Interactive bun package searcher: search npm, pick with fzf, install as dep or devDep
 
 packages=()
 dev_mode=false

@@ -1,4 +1,5 @@
 #!/bin/bash
+# Laravel Docker helper: migrations, models, controllers, requests, artisan, composer, node
 
 COLUMNS=1
 function migrate(){

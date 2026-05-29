@@ -1,4 +1,5 @@
 #! /bin/bash
+# Converts .webm and .wav files in current directory to .mp3 with ffmpeg
 
 # Check if ffmpeg is installed
 if ! [ -x "$(command -v ffmpeg)" ]; then

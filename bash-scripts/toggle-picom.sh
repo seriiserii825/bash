@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Switches picom compositor between normal and hard config, stores state in a file
 
 # Paths to config files
 PICOM_CONF="$HOME/.config/picom/picom.conf"

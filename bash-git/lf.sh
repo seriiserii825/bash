@@ -1,3 +1,5 @@
+# Main git CLI: push/pull/sync/clone/log/clipboard/open-file-in-GitHub/resolve-conflict
+
 lf(){
   script_dir="$HOME/Documents/bash/bash-git"
   source "$script_dir/git-push.sh"

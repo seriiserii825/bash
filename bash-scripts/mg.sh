@@ -1,4 +1,5 @@
 #! /bin/bash
+# Image manager: optimize, resize, crop, rotate, flip images with fzf multi-select
 
 function removeSpaces(){
   perl-rename 's/ /-/g' *

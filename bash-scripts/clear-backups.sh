@@ -1,4 +1,5 @@
 #!/bin/bash
+# Removes .wpress backups and node_modules from ~/Local Sites with size summary
 
 SITES_DIR="/home/$USER/Local Sites"
 

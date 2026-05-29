@@ -1,4 +1,5 @@
 #!/bin/bash
+# Rewrites Bitbucket URL in clipboard to use SSH profile suffix (-b)
 
 clipboard=$(xclip -o -selection clipboard)
 if [[ $clipboard == *bitbucket.org* ]]; then

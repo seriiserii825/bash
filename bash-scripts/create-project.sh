@@ -1,4 +1,5 @@
 #! /bin/bash
+# Copies the bs-vite WordPress starter theme to a new project folder with name replacement
 
 # copy the folder /home/radu/Desktop/docs/ar-starter in current folder
 

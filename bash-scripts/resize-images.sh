@@ -1,4 +1,5 @@
 #!/bin/bash
+# Resizes/crops images to exact target dimensions with fzf multi-select, cover or fit mode
 
 tgreen='\e[32m'
 tblue='\e[34m'

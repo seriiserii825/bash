@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Arch pkg helper (looped menu)
+# Arch package manager helper: list, search, install, remove with fzf, save explicit package lists
 # - Show foreign (Qm)
 # - Show explicit official (QEN) and explicit foreign (QEM)
 # - Remove with fzf (optional regex filter)

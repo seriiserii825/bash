@@ -1,3 +1,5 @@
+# Commits and pushes with conventional commit type selection (feat/upd/fix), optionally opens lazygit
+
 function gitPush() {
   script_dir=$1
 

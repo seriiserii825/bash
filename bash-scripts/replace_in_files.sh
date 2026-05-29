@@ -1,4 +1,5 @@
 #!/bin/bash
+# Find-and-replace a string across files of a given extension, with optional folder exclusion
 
 read -p "Enter file_extension (e.g., .txt): " file_extension
 # Check if the file extension is empty

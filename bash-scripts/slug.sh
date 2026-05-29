@@ -1,4 +1,5 @@
 #!/bin/bash
+# Converts clipboard text to URL slug (lowercase, dashes), then watches clipboard in a loop
 
 echo "${tgreen}Starting nbsp.sh${treset}"
 echo "${tblue}Copy text with non-breaking spaces in clipboard and wait for the script to change them${treset}"

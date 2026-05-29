@@ -1,3 +1,5 @@
+# Scans home directory for git repos and saves paths to git-repos.txt (excludes configured dirs)
+
 makeSync(){
   excluded_dirs=(
     "*/autoload/*"

@@ -1,4 +1,5 @@
 #!/bin/bash
+# Cycles the active Hyprland window through tiled → floating → fullscreen states
 
 # Get the current state of the active window
 # floating: 0=false (tiled), 1=true (floating)

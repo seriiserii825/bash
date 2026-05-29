@@ -1,4 +1,5 @@
 #!/bin/bash
+# Pipenv manager: create Pipfile, install/uninstall packages, mypy type check, pre-commit hook
 
 function prettyEcho() {
   echo "=========================="

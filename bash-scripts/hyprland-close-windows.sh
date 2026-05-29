@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Closes all Hyprland windows on other workspaces, keeping the current workspace intact
 
 # Get ID of the current workspace
 current_ws=$(hyprctl activeworkspace -j | jq -r '.id')

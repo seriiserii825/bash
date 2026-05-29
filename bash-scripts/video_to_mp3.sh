@@ -1,4 +1,5 @@
 #!/bin/bash
+# Converts all .mp4 files in current directory to .mp3 with ffmpeg
 
 # get all mp4 in folder and convert to mp3
 for i in *.mp4; do

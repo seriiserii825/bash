@@ -1,4 +1,5 @@
 #!/usr/bin/bash
+# Downloads YouTube URLs from clipboard/file as MP3 via yt-dlp
 
 directory="$HOME/Downloads/youtube"
 file_path="$HOME/Downloads/youtube/yt.txt"

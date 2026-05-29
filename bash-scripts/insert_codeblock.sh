@@ -1,4 +1,5 @@
 #!/bin/bash
+# Wraps clipboard content in a Markdown code block with the specified language tag
 
 # get argument for language
 lang="$1"

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Resizes/optimizes SVG with rsvg-convert + svgo; result copied to clipboard
 set -euo pipefail
 
 # dependencies check (bat is optional)

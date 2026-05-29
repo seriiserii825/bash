@@ -1,4 +1,5 @@
 #!/bin/bash
+# Converts Markdown from clipboard to HTML using pandoc and copies result to clipboard
 
 # Detect clipboard tool
 if command -v xclip &>/dev/null; then

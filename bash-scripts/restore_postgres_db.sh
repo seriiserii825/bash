@@ -1,4 +1,5 @@
 #!/bin/bash
+# Restores PostgreSQL database from a fzf-selected .sql.gz backup inside a Docker container
 set -euo pipefail
 
 # Load .env

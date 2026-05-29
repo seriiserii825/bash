@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Prints ACF field keys/labels/types from a JSON file; pick file with fzf or pass as argument
 set -euo pipefail
 
 # Если передали путь — используем его, иначе выбираем *.json через fzf

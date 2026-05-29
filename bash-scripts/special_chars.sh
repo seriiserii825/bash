@@ -1,4 +1,5 @@
 #!/bin/bash
+# Watches clipboard, reports non-ASCII chars, and replaces non-breaking spaces
 
 
 

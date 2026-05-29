@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# fzf-2diff.sh
+# Picks two files with fzf and diffs them with meld (or vimdiff/nvim/delta)
 # Choose 2 files from current dir with fzf → diff them
 
 set -u

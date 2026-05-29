@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Downloads a Rutube video stream via rtmpdump from a URL argument
 # Зависимости: rtmpdump, wget, bash
 
 url="$1"

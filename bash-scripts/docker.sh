@@ -1,4 +1,5 @@
 #!/bin/bash
+# Docker image manager: list all images or remove selected ones by index
 
 function removeImages() {
   # Get image list once and store it

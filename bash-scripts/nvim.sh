@@ -1,4 +1,5 @@
 #!/bin/bash
+# Switches Neovim config between NvimCoc and NvimLua setups by swapping ~/.config/nvim
 
 select nvim in "Install NvimCoc" "Install NvimLua" "Quit"
 do

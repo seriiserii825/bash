@@ -1,4 +1,5 @@
 #!/bin/bash
+# Finds PHP files with whitespace before <?php tag and removes it
 
 # Array to store problematic file paths
 problematic_files=()

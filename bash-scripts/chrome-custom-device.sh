@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Exports or imports Chrome DevTools custom emulated device list to/from a file
 
 PREFS="${PREFS:-/home/serii/.config/google-chrome/Default/Preferences}"
 PREFS_KEY='custom-emulated-device-list'

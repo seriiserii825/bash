@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Syncs fzf-selected file/folder to a destination path with optional dry-run
 set -euo pipefail
 
 # Проверка зависимостей

@@ -1,4 +1,5 @@
 #!/bin/bash
+# Full WordPress Docker setup: clone docker-wp repo, configure nginx/hosts, install WP via WP-CLI
 
 set -e
 

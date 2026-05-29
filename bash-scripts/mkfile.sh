@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# mkfile-and-edit: ask for file path, create dirs, open in Neovim
+# Creates a file from clipboard path (creates parent dirs if needed), then opens in nvim
 
 set -Eeuo pipefail
 

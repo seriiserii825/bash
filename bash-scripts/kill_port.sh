@@ -1,4 +1,5 @@
 #!/bin/bash
+# Shows processes listening on a given port and optionally kills them
 
 read -p "Enter port number: " port
 sudo lsof -i:$port

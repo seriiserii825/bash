@@ -1,4 +1,5 @@
 #!/bin/bash
+# Draws a vertical center line on a fzf-selected JPG image with ImageMagick
 
 file_path=$(find . -maxdepth 1 -type f -iname "*.jpg" -printf "%f\n" | fzf --prompt="Select JPG: " --height=80% --reverse)
 file_name=$(basename $file_path)

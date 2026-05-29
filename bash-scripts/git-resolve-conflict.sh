@@ -1,4 +1,5 @@
 #!/bin/bash
+# Resolves git merge conflicts via --ours/--theirs strategy, file by file or all at once
 
 function gitResolveConflict() {
   STRATEGY="$1"

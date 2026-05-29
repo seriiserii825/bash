@@ -1,4 +1,5 @@
-#! /bin/bash 
+#! /bin/bash
+# Python pip/venv manager: create venv, install/uninstall packages, mypy check, pre-commit hook
 
 function prettyEcho(){
   echo "=========================="

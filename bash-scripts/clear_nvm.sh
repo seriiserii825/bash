@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Uninstalls selected Node.js versions with fzf and clears npm/yarn/bun/cache
 
 set -e
 

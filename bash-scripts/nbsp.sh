@@ -1,4 +1,5 @@
 #!/bin/bash
+# Watches clipboard and replaces non-breaking spaces with regular spaces
 
 echo "${tgreen}Starting nbsp.sh${treset}"
 echo "${tblue}Copy text with non-breaking spaces in clipboard and wait for the script to change them${treset}"

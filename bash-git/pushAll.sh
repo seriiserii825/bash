@@ -1,3 +1,5 @@
+# Pushes all git repos with uncommitted changes listed in ~/Documents/git-repos.txt
+
 pushAll(){
   script_dir=$1
   source "$script_dir/git-push.sh"

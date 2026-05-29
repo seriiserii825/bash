@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# UV Python project manager: sync, install/uninstall packages, ruff lint, pre-commit hook
 # ─────────────────────────────────────────────────────────────
 #  🌀  UV Project Manager  –  now with Ruff lint + format guard
 # ─────────────────────────────────────────────────────────────

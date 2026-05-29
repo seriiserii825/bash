@@ -1,5 +1,5 @@
 #!/bin/bash
-# ~/.local/bin/paste-next.sh
+# Pastes the next item from greenclip clipboard history and types it via xdotool
 
 INDEX_FILE="/tmp/paste_stack_index"
 INDEX=$(cat "$INDEX_FILE" 2>/dev/null || echo "0")

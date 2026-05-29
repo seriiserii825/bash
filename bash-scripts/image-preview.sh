@@ -1,4 +1,5 @@
 #!/bin/bash
+# Opens a fzf-selected image side by side on dark and light backgrounds with feh
 
 echo "Choose an image with fzf"
 sleep 1

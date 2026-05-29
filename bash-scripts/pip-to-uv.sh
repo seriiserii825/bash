@@ -1,4 +1,5 @@
 #!/bin/bash
+# Migrates Python project from requirements.txt/Poetry to uv-compatible pyproject.toml
 set -e
 
 

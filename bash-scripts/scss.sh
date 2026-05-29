@@ -1,4 +1,5 @@
 #!/bin/bash
+# Watches clipboard for CSS rules; converts px to rem and replaces CSS vars from project config
 
 if [[ ! -f front-page.php ]]; then
   echo "${tmagenta}Go to the root of the project${treset}"

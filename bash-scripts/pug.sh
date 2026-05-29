@@ -1,4 +1,5 @@
 #!/bin/bash
+# Converts clipboard Pug template to HTML using pug CLI, copies result to clipboard
 
 # Define colors (optional)
 tgreen='\e[32m'

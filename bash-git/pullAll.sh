@@ -1,3 +1,5 @@
+# Pulls all git repos listed in ~/Documents/git-repos-pull.txt, pushing uncommitted changes first
+
 pullAll(){
   current_dir=$(pwd)
   script_dir=$1

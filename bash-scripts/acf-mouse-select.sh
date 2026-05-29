@@ -1,4 +1,5 @@
 #!/bin/bash
+# Converts clipboard ACF field names to PHP variable extraction code and copies result
 
 source /home/serii/Documents/bash/bash-scripts/extract-text-from-image.sh
 

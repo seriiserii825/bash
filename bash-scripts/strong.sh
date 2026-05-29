@@ -1,4 +1,5 @@
 #!/bin/bash
+# Watches clipboard and wraps text in <strong> tags, copies result back
 while /home/serii/Documents/bash/bash-scripts/clipnotify;
 do
   sleep 2

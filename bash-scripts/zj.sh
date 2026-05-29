@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Lists zellij sessions with fzf and attaches to the selected one
 set -euo pipefail
 
 # Убираем escape-коды (цвета) из вывода

@@ -1,4 +1,5 @@
 #!/bin/bash
+# Sets engines.node version in package.json, searching up the directory tree to find it
 
 # Find package.json (prefer current dir, then search up)
 find_package_json() {

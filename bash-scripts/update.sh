@@ -1,4 +1,5 @@
 #!/bin/bash
+# Pulls latest git changes, switches Node version per package.json, runs bun install and build
 source ~/.nvm/nvm.sh
 
 # Colors

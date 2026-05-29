@@ -1,4 +1,5 @@
 #!/bin/bash
+# Toggles display:none comment in src/scss/partials/base.scss
 
 if [ ! -f "src/scss/partials/base.scss" ]; then
     echo "${tmagenta}⚠️ File src/scss/partials/base.scss not found. Exiting...${treset}"

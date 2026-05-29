@@ -1,4 +1,5 @@
 #!/bin/bash
+# Translates clipboard text line by line using trans-shell with optional slug conversion
 
 # Optional: quick dependency check
 if ! command -v trans &>/dev/null; then

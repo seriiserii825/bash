@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Generates a JWT HS256 token from clipboard secret key with custom expiry, copies to clipboard
 
 # ── clipboard read ────────────────────────────────────────────────────────────
 if [[ -n "$WAYLAND_DISPLAY" ]]; then

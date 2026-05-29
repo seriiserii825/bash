@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# WordPress image finder via WP-CLI: find by name, post parent, change alt text
 
 # Requirements:
 # - wp-cli installed and configured

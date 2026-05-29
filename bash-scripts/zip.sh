@@ -1,4 +1,5 @@
 #!/bin/bash
+# Zips a fzf-selected folder or unzips a fzf-selected archive, removes original after
 
 select actin in "zip" "unzip"; do
   case $actin in

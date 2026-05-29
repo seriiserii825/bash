@@ -1,4 +1,5 @@
 #!/bin/bash
+# Toggles between Python and Bash macros in Neovim init.vim by commenting/uncommenting lines
 
 init_file_path="$HOME/.config/nvim/init.vim"
 

@@ -1,4 +1,5 @@
 #!/bin/bash
+# Bulk renames all files of a given extension to a numbered sequence with a new base name
 
 # Ask for extension
 read -p "Extension (e.g. jpg, png): " ext

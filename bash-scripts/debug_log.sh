@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Finds debug.log in parent dirs; open in nvim, clear it, or watch it live with bat
 
 TARGET="debug.log"
 DIR="$(pwd)"

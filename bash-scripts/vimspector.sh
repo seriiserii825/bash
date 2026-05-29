@@ -1,4 +1,5 @@
 #!/bin/bash
+# Creates .vimspector.json debug config for Python in the current directory
 
 touch .vimspector.json
 
