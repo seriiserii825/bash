@@ -42,7 +42,7 @@ check_deps() {
 }
 
 chrome_running() {
-    pgrep -x "chrome\|google-chrome\|chromium" &>/dev/null
+    pgrep -x "chrome|google-chrome|chromium" &>/dev/null
 }
 
 # ─── export ──────────────────────────────────────────────────────────────────
@@ -68,16 +68,15 @@ do_export() {
 do_import() {
     check_deps
 
-    if chrome_running; then
-        echo "Warning: Chrome is running — it will overwrite Preferences on exit." >&2
-        read -r -p "Continue anyway? [y/N] " yn
-        [[ "${yn,,}" == "y" ]] || { echo "Aborted."; exit 0; }
+    clipboard=$(clip_paste)
+    if [[ -z "$clipboard" ]]; then
+        echo "Error: Clipboard is empty — copy device JSON first." >&2; exit 1
     fi
 
-    clipboard=$(clip_paste)
-
-    if [[ -z "$clipboard" ]]; then
-        echo "Error: Clipboard is empty." >&2; exit 1
+    if chrome_running; then
+        echo "Chrome is running — killing all instances..."
+        pkill -x "chrome|google-chrome|chromium"
+        sleep 1
     fi
 
     # strip pretty-printing in case the user copied it that way
@@ -115,11 +114,20 @@ do_import() {
 
 # ─── main ────────────────────────────────────────────────────────────────────
 
-case "${1:-}" in
+ask_action() {
+    printf "export\nimport" | fzf --prompt="action > " --height=5 --no-info
+}
+
+action="${1:-}"
+if [[ -z "$action" ]]; then
+    action=$(ask_action)
+fi
+
+case "$action" in
     export) do_export ;;
     import) do_import ;;
     *)
-        echo "Usage: $(basename "$0") <export|import>"
+        echo "Usage: $(basename "$0") [export|import]"
         echo ""
         echo "  export   Copy $PREFS_KEY from Preferences to clipboard"
         echo "  import   Read $PREFS_KEY from clipboard and update Preferences"
