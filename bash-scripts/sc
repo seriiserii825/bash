@@ -21,7 +21,41 @@ while true; do
     [ -z "$file" ] && break
 
     if [[ "$action" == "del" ]]; then
-        read -p "Delete $(basename "$file")? [y/N] " confirm
+        filename=$(basename "$file")
+        read -p "Search for usages of '$filename' before deleting? [y/N] " search_confirm
+        if [[ "$search_confirm" =~ ^[Yy]$ ]]; then
+            echo "Searching..."
+            usages=$(
+                {
+                    grep -rl "$filename" "$HOME" \
+                        --include="*.sh" --include="*.zsh" --include="*.bash" \
+                        --include="*.conf" --include="*.toml" --include="*.yaml" \
+                        --include="*.yml" --include="*.json" --include="*.lua" \
+                        --include="*.vim" --include="*.cfg" \
+                        --exclude-dir=node_modules --exclude-dir=".cache" \
+                        --exclude-dir=".antigen" --exclude-dir=".local" \
+                        --exclude-dir="google-chrome" --exclude-dir="coc" \
+                        2>/dev/null
+                    for dir in "$HOME/.config" "$HOME/dotfiles" "$HOME/.dotfiles"; do
+                        [[ -d "$dir" ]] && grep -rl "$filename" "$dir" \
+                            --exclude-dir=node_modules --exclude-dir="google-chrome" --exclude-dir="coc" \
+                            2>/dev/null
+                    done
+                    grep -rl "$filename" \
+                        "$HOME/.zshrc" "$HOME/.bashrc" "$HOME/.zshenv" \
+                        "$HOME/.profile" "$HOME/.aliases" \
+                        2>/dev/null
+                } | sort -u | grep -v "^$file$"
+            )
+            if [[ -n "$usages" ]]; then
+                echo "WARNING: '$filename' is referenced in:"
+                echo "$usages" | sed 's/^/  /'
+            else
+                echo "No usages found."
+            fi
+            echo ""
+        fi
+        read -p "Delete $filename? [y/N] " confirm
         [[ "$confirm" =~ ^[Yy]$ ]] && rm "$file" && echo "Removed: $file"
         continue
     elif [[ "$action" == "ren" ]]; then
