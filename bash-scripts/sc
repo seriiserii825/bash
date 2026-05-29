@@ -25,28 +25,8 @@ while true; do
         read -p "Search for usages of '$filename' before deleting? [y/N] " search_confirm
         if [[ "$search_confirm" =~ ^[Yy]$ ]]; then
             echo "Searching..."
-            usages=$(
-                {
-                    grep -rl "$filename" "$HOME" \
-                        --include="*.sh" --include="*.zsh" --include="*.bash" \
-                        --include="*.conf" --include="*.toml" --include="*.yaml" \
-                        --include="*.yml" --include="*.json" --include="*.lua" \
-                        --include="*.vim" --include="*.cfg" \
-                        --exclude-dir=node_modules --exclude-dir=".cache" \
-                        --exclude-dir=".antigen" --exclude-dir=".local" \
-                        --exclude-dir="google-chrome" --exclude-dir="coc" \
-                        2>/dev/null
-                    for dir in "$HOME/.config" "$HOME/dotfiles" "$HOME/.dotfiles"; do
-                        [[ -d "$dir" ]] && grep -rl "$filename" "$dir" \
-                            --exclude-dir=node_modules --exclude-dir="google-chrome" --exclude-dir="coc" \
-                            2>/dev/null
-                    done
-                    grep -rl "$filename" \
-                        "$HOME/.zshrc" "$HOME/.bashrc" "$HOME/.zshenv" \
-                        "$HOME/.profile" "$HOME/.aliases" \
-                        2>/dev/null
-                } | sort -u | grep -v "^$file$"
-            )
+            pattern="/${filename//./\\.}"
+            usages=$(ack -rl "$pattern" "$HOME/dotfiles" 2>/dev/null | grep -v "^$file$")
             if [[ -n "$usages" ]]; then
                 echo "WARNING: '$filename' is referenced in:"
                 echo "$usages" | sed 's/^/  /'
