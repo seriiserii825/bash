@@ -99,6 +99,39 @@ function moreFiles(){
   fi
 }
 
+function oneFolder(){
+  read -p "Encrypt or decrypt folder(e/d):"
+
+  if [ $REPLY == "e" ]; then
+    folder=$(find . -maxdepth 1 -mindepth 1 -type d ! -name ".git" | fzf)
+    if [ -z "$folder" ]; then
+      echo "${tmagenta}Error: no folder selected.${treset}"
+      exit 1
+    fi
+    folder_name=$(basename "$folder")
+    zip_path="${folder_name}.zip"
+    zip -r "$zip_path" "$folder"
+    gpg -e -r $user "$zip_path"
+    rm "$zip_path"
+    echo "${tgreen}File ${zip_path}.gpg created${treset}"
+  elif [ $REPLY == "d" ]; then
+    gpg_file=$(find . -maxdepth 1 -name "*.zip.gpg" -type f | fzf)
+    if [ -z "$gpg_file" ]; then
+      echo "${tmagenta}Error: no .zip.gpg file selected.${treset}"
+      exit 1
+    fi
+    zip_path=$(echo "$gpg_file" | sed 's/.gpg//')
+    gpg -d "$gpg_file" > "$zip_path"
+    unzip "$zip_path"
+    rm "$zip_path"
+    rm "$gpg_file"
+    echo "${tgreen}File $gpg_file decrypted${treset}"
+  else
+    echo "${tmagenta}Error: option not found.${treset}"
+    exit 1
+  fi
+}
+
 function envFile(){
   local action=$1
   local env_file=".env"
@@ -129,7 +162,8 @@ function menu(){
   echo "${tgreen}1. One file${treset}"
   echo "${tblue}2. More files${treset}"
   echo "${tyellow}3. Project${treset}"
-  echo "${tmagenta}4. Exit${treset}"
+  echo "${tcyan}4. Folder${treset}"
+  echo "${tmagenta}5. Exit${treset}"
 
   read -p "Choose option: " option
 
@@ -140,6 +174,8 @@ function menu(){
   elif [ $option == 3 ]; then
     toggleProject
   elif [ $option == 4 ]; then
+    oneFolder
+  elif [ $option == 5 ]; then
     exit 0
   else
     echo "${tmagenta}Error: option not found.${treset}"
