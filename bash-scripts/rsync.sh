@@ -24,11 +24,32 @@ fi
 [ -d "$BASE_PATH" ] || { echo "❌ Folder '$BASE_PATH' not found."; exit 1; }
 
 # ── 2. SEARCH METHOD ─────────────────────────────────────────────────────────
-METHOD=$(printf 'Search by name\nBrowse with fzf\n🚪 Exit' \
-  | fzf --height=40% --reverse --no-info \
-        --header="Select destination folder method") || quit
+while true; do
+  METHOD=$(printf 'Search by name\nBrowse with fzf\nFind path\n🚪 Exit' \
+    | fzf --height=40% --reverse --no-info \
+          --header="Select destination folder method  |  base: $BASE_PATH") || quit
 
-[[ "$METHOD" == "🚪"* ]] && quit
+  [[ "$METHOD" == "🚪"* ]] && quit
+
+  if [ "$METHOD" = "Find path" ]; then
+    read -r -p "Enter name to find (partial match): " QUERY
+    [ -n "$QUERY" ] || continue
+
+    mapfile -t RESULTS < <(find "$BASE_PATH" -mindepth 1 -type d -iname "*${QUERY}*" 2>/dev/null | sort)
+
+    if [ "${#RESULTS[@]}" -eq 0 ]; then
+      echo "❌ Nothing matching '$QUERY' in $BASE_PATH"
+      read -r -p "Press Enter to return to menu…" _
+      continue
+    fi
+
+    printf '%s\n' "${RESULTS[@]}"
+    read -r -p "Press Enter to return to menu…" _
+    continue
+  fi
+
+  break
+done
 
 # ── 3A. TEXT SEARCH ──────────────────────────────────────────────────────────
 if [ "$METHOD" = "Search by name" ]; then
