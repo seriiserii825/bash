@@ -9,6 +9,7 @@ BOLD='\033[1m'
 RESET='\033[0m'
 
 IP_FILE="/tmp/vps_ip.txt"
+CF_FILE="/tmp/vps_cf.txt"
 SERVERS_CSV="/home/serii/Documents/python/py-private/servers.csv"
 
 get_clipboard() {
@@ -36,12 +37,22 @@ extract_domain() {
   echo "$domain"
 }
 
+is_cloudflare() {
+  local domain="$1"
+  dig NS "$domain" +short 2>/dev/null | grep -qi "cloudflare"
+}
+
 find_ip() {
   local domain="$1"
   echo -e "\n${CYAN}Resolving domain:${RESET} ${BOLD}$domain${RESET}"
 
   local ip
-  ip=$(nslookup "$domain" 2>/dev/null | awk '/^Address:/ && !/#/ { print $2; exit }')
+  if command -v dig &>/dev/null; then
+    ip=$(dig +short "$domain" 2>/dev/null | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+  fi
+  if [[ -z "$ip" ]]; then
+    ip=$(nslookup "$domain" 2>/dev/null | awk '/^Address:/ && !/#/ { print $2; exit }')
+  fi
 
   if [[ -z "$ip" ]]; then
     echo -e "${RED}Could not resolve IP for $domain${RESET}"
@@ -50,6 +61,13 @@ find_ip() {
 
   echo "$ip" > "$IP_FILE"
   echo -e "${GREEN}IP found:${RESET} ${BOLD}$ip${RESET}"
+
+  if is_cloudflare "$domain"; then
+    echo "yes" > "$CF_FILE"
+    echo -e "${RED}Site is behind Cloudflare — IP is not the real server IP${RESET}"
+  else
+    echo "no" > "$CF_FILE"
+  fi
 
   check_servers "$ip"
 }
@@ -118,9 +136,12 @@ show_related() {
 }
 
 show_menu() {
-  local ip
+  local ip cf
   ip=$(cat "$IP_FILE" 2>/dev/null)
-  echo -e "${BOLD}${CYAN}VPS Hosting Checker${RESET} — IP: ${GREEN}${ip}${RESET}"
+  cf=$(cat "$CF_FILE" 2>/dev/null)
+  local cf_label=""
+  [[ "$cf" == "yes" ]] && cf_label=" ${RED}[Cloudflare — real IP hidden]${RESET}"
+  echo -e "${BOLD}${CYAN}VPS Hosting Checker${RESET} — IP: ${GREEN}${ip}${RESET}${cf_label}"
   echo -e "${YELLOW}────────────────────${RESET}"
   echo -e "  ${BOLD}1.${RESET} Get info"
   echo -e "  ${BOLD}2.${RESET} Show related sites"
