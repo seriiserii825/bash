@@ -29,6 +29,11 @@ function removeImages() {
   done
 }
 
+function findPort() {
+  read -rp "Enter port to search: " port
+  docker ps --format "table {{.Names}}\t{{.Ports}}" | grep "$port"
+}
+
 function showAutostart() {
   docker ps -a --format '{{.Names}}' \
     | xargs docker inspect --format '{{.Name}} -> {{.HostConfig.RestartPolicy.Name}}'
@@ -67,13 +72,14 @@ while true; do
   echo "${C_CONTAINER}--- Containers ---${C_RESET}"
   echo "${tgreen}1) Show all containers${C_RESET}"
   echo "${tgreen}2) Find containers with autostart${C_RESET}"
-  echo "${tblue}3) Set autostart=no (multi-select)${C_RESET}"
-  echo "${tblue}4) Stop containers (multi-select)${C_RESET}"
-  echo "${tred}5) Delete containers (multi-select)${C_RESET}"
+  echo "${tgreen}3) Find port${C_RESET}"
+  echo "${tblue}4) Set autostart=no (multi-select)${C_RESET}"
+  echo "${tblue}5) Stop containers (multi-select)${C_RESET}"
+  echo "${tred}6) Delete containers (multi-select)${C_RESET}"
   echo "${C_IMAGE}--- Images ---${C_RESET}"
-  echo "${tgreen}6) List all images${C_RESET}"
-  echo "${tred}7) Remove an image${C_RESET}"
-  echo "8) Exit"
+  echo "${tgreen}7) List all images${C_RESET}"
+  echo "${tred}8) Remove an image${C_RESET}"
+  echo "9) Exit"
 
   read -rp "Select an option: " option
   case $option in
@@ -84,21 +90,24 @@ while true; do
       showAutostart
       ;;
     3)
-      setAutostartNo
+      findPort
       ;;
     4)
-      stopContainers
+      setAutostartNo
       ;;
     5)
-      deleteContainers
+      stopContainers
       ;;
     6)
-      docker images
+      deleteContainers
       ;;
     7)
-      removeImages
+      docker images
       ;;
     8)
+      removeImages
+      ;;
+    9)
       exit 0
       ;;
     *)

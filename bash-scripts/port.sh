@@ -11,7 +11,8 @@ select action in "Check" "Kill" "Quit"; do
   case $action in
     Check)
       read -p "Enter port: " port
-      ss -tlnp "sport = :$port"
+      # ss -tlnp "sport = :$port"
+      sudo lsof "-iTCP:$port" -sTCP:LISTEN -Pn
       ;;
     Kill)
       read -p "Enter port: " port
