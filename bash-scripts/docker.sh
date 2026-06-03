@@ -1,22 +1,23 @@
 #!/bin/bash
-# Docker image manager: list all images or remove selected ones by index
+# Docker manager: images and containers
+
+source /home/serii/dotfiles/zsh_modules/zsh_colors
+
+C_IMAGE=$tcyan
+C_CONTAINER=$tyellow
+C_RESET=$treset
 
 function removeImages() {
-  # Get image list once and store it
   image_list=$(docker images --format "{{.ID}} {{.Repository}} {{.Tag}}")
   echo "$image_list" | nl
 
-  # Prompt user
   read -rp "Enter the index of the image to remove (comma separated for multiple): " indexes
 
-  # Convert input into array
   IFS=',' read -ra index_array <<< "$indexes"
 
-  # Remove selected images
   for index in "${index_array[@]}"; do
     image_id=$(echo "$image_list" | sed -n "${index}p" | awk '{print $1}')
     if [ -n "$image_id" ]; then
-      # Check if image is used by any container
       used_by=$(docker ps -a --filter "ancestor=$image_id" --format "{{.ID}}")
       if [ -n "$used_by" ]; then
         echo "⚠️  Image $image_id is used by container(s): $used_by"
@@ -28,24 +29,80 @@ function removeImages() {
   done
 }
 
-menu=(
-  "1) List all images",
-  "2) Remove an image",
+function showAutostart() {
+  docker ps -a --format '{{.Names}}' \
+    | xargs docker inspect --format '{{.Name}} -> {{.HostConfig.RestartPolicy.Name}}'
+}
+
+FZF_MULTI=(
+  --multi
+  --bind 'ctrl-a:select-all'
+  --bind 'ctrl-r:toggle-all'
+  --header $'ctrl-a: select all visible | ctrl-r: inverse | tab: toggle'
 )
 
-for i in "${menu[@]}"; do
-  echo "$i"
-done
+function setAutostartNo() {
+  selected=$(docker ps -a --format '{{.Names}}' \
+    | fzf "${FZF_MULTI[@]}" --prompt="Disable autostart: ")
+  [ -z "$selected" ] && echo "No containers selected." && return
+  echo "$selected" | xargs docker update --restart=no
+}
 
-read -rp "Select an option: " option
-case $option in
-  1)
-    docker images
-    ;;
-  2)
-    removeImages
-    ;;
-  *)
-    echo "Invalid option. Please try again."
-    ;;
-esac
+function stopContainers() {
+  selected=$(docker ps -a --format '{{.Names}}' \
+    | fzf "${FZF_MULTI[@]}" --prompt="Stop containers: ")
+  [ -z "$selected" ] && echo "No containers selected." && return
+  echo "$selected" | xargs docker stop
+}
+
+function deleteContainers() {
+  selected=$(docker ps -a --format '{{.Names}}' \
+    | fzf "${FZF_MULTI[@]}" --prompt="Delete containers: ")
+  [ -z "$selected" ] && echo "No containers selected." && return
+  echo "$selected" | xargs docker rm -f
+}
+
+while true; do
+  echo ""
+  echo "${C_CONTAINER}--- Containers ---${C_RESET}"
+  echo "${tgreen}1) Show all containers${C_RESET}"
+  echo "${tgreen}2) Find containers with autostart${C_RESET}"
+  echo "${tblue}3) Set autostart=no (multi-select)${C_RESET}"
+  echo "${tblue}4) Stop containers (multi-select)${C_RESET}"
+  echo "${tred}5) Delete containers (multi-select)${C_RESET}"
+  echo "${C_IMAGE}--- Images ---${C_RESET}"
+  echo "${tgreen}6) List all images${C_RESET}"
+  echo "${tred}7) Remove an image${C_RESET}"
+  echo "8) Exit"
+
+  read -rp "Select an option: " option
+  case $option in
+    1)
+      docker ps -a --format 'table {{.Names}}\t{{.Ports}}'
+      ;;
+    2)
+      showAutostart
+      ;;
+    3)
+      setAutostartNo
+      ;;
+    4)
+      stopContainers
+      ;;
+    5)
+      deleteContainers
+      ;;
+    6)
+      docker images
+      ;;
+    7)
+      removeImages
+      ;;
+    8)
+      exit 0
+      ;;
+    *)
+      echo "Invalid option. Please try again."
+      ;;
+  esac
+done
