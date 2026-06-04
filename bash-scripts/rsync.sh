@@ -138,16 +138,12 @@ fi
 echo "📦 Source: $SRC"
 echo "🛬 Destination: $DEST"
 
-# ── 5. DRY-RUN & RSYNC ───────────────────────────────────────────────────────
-read -r -p "Dry run first? [y/N]: " DRY
-DRY_FLAG=()
-[[ "$DRY" =~ ^[Yy]$ ]] && DRY_FLAG=(--dry-run)
-
+# ── 5. RSYNC ─────────────────────────────────────────────────────────────────
 echo
-echo "▶️  rsync -ah --info=progress2 ${DRY_FLAG[*]:-} --partial --inplace \"$SRC\" \"$DEST/\""
+echo "▶️  rsync -ah --info=progress2 --partial --inplace \"$SRC\" \"$DEST/\""
 echo
 
-rsync -ah --info=progress2 "${DRY_FLAG[@]}" --partial --inplace --human-readable \
+rsync -ah --info=progress2 --partial --inplace --human-readable \
   -- "$SRC" "$DEST/"
 
 echo "✅ Done."
