@@ -53,6 +53,7 @@ function startYtDownload(){
   convertToMp3
   rename 's/ /_/g' ~/Downloads/*.mp3
   id3v2 -D ~/Downloads/*.mp3
+  notify-send "yt_mp3" "Download complete" --icon=audio-x-generic
 }
 
 echo "${tblue}Start downloading from clipboard?${treset}"
