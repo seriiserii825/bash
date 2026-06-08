@@ -133,6 +133,7 @@ _do_select_key() {
     _clipboard_copy "$key"
     CURRENT_KEY="$key"
     _view_key
+    _time_end
   else
     echo "No key selected"
   fi
@@ -169,8 +170,7 @@ _inner_menu() {
     printf "  Key: ${CYAN}${BOLD}%s${RESET}\n" "$CURRENT_KEY"
     echo "========================================"
     echo "  1) Delete key"
-    echo "  2) View time  (TTL)"
-    echo "  3) Back"
+    echo "  2) Back"
     echo "  0) Exit"
     echo "========================================"
     printf "Choice: "
@@ -178,8 +178,7 @@ _inner_menu() {
 
     case "$choice" in
       1) _delete_current || return ;;
-      2) _time_end ;;
-      3) return ;;
+      2) return ;;
       0|exit|q|quit) echo "Bye."; exit 0 ;;
       *) echo "Unknown option: $choice" ;;
     esac
