@@ -2,9 +2,13 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/libs/fzf-multiselect.sh"
+
 REDIS_PATTERN="${REDIS_PATTERN:-sessions:*}"
 PROJECT_DIR="${PROJECT_DIR:-$PWD}"
 CURRENT_KEY=""
+KEYS_CACHE=""
 
 RESET='\033[0m'
 GRAY='\033[0;90m'
@@ -26,7 +30,7 @@ _redis() {
 }
 
 _keys() {
-  _redis --raw KEYS "$REDIS_PATTERN"
+  _redis --raw KEYS "$REDIS_PATTERN" || true
 }
 
 _keys_rich() {
@@ -46,7 +50,7 @@ _keys_rich() {
     os=$(     jq -r '.metadata.device.os      // "-"'       <<< "$val" 2>/dev/null)
     ip=$(     jq -r '.metadata.ip             // "-"'       <<< "$val" 2>/dev/null)
     printf '%s\t%s/%s\t%s\t%s\n' "$created" "$browser" "$os" "$ip" "$key"
-    (( i++ ))
+    (( ++i )) || true
   done | sort -r | awk -F'\t' '{
     sub(/T/, " ", $1); sub(/:..\..+$/, "", $1)
     printf "%-17s  %-20s  %-16s  %s\n", $1, $2, $3, $4
@@ -60,25 +64,7 @@ _clipboard_copy() {
     || { echo "Clipboard tool not found (xclip/xsel/wl-copy)"; return 1; }
 }
 
-_select_key() {
-  local line key
-  line=$(_keys_rich | fzf --prompt="Select key > " --height=50% --no-sort)
-  key=$(awk '{print $NF}' <<< "$line")
-  if [[ -n "$key" ]]; then
-    _clipboard_copy "$key"
-    CURRENT_KEY="$key"
-    _view_key
-  else
-    echo "No key selected"
-  fi
-}
-
 _view_key() {
-  if [[ -z "$CURRENT_KEY" ]]; then
-    printf "${YELLOW}No key selected${RESET}\n"
-    return
-  fi
-
   local raw
   raw=$(_redis --raw GET "$CURRENT_KEY" 2>/dev/null)
 
@@ -96,11 +82,6 @@ _view_key() {
 }
 
 _time_end() {
-  if [[ -z "$CURRENT_KEY" ]]; then
-    echo "No key selected"
-    return
-  fi
-
   local ms
   ms=$(_redis --raw PTTL "$CURRENT_KEY" 2>/dev/null)
 
@@ -130,54 +111,119 @@ _time_end() {
   printf "${GRAY}Expires at: ${RESET}${time_color}%s${RESET}\n" "$expires_at"
 }
 
-_delete_key() {
-  if [[ -z "$CURRENT_KEY" ]]; then
-    echo "No key selected"
-    return
-  fi
-
+_delete_current() {
   printf "${YELLOW}Delete '${BOLD}%s${RESET}${YELLOW}'? [y/N]: ${RESET}" "$CURRENT_KEY"
   read -r confirm
   if [[ "$confirm" =~ ^[Yy]$ ]]; then
     _redis DEL "$CURRENT_KEY" > /dev/null
     printf "${RED}Deleted: %s${RESET}\n" "$CURRENT_KEY"
     CURRENT_KEY=""
+    return 1
   else
     echo "Cancelled"
   fi
 }
 
-_print_menu() {
-  echo ""
-  echo "========================================"
-  if [[ -n "$CURRENT_KEY" ]]; then
-    printf "  Key: ${CYAN}${BOLD}%s${RESET}\n" "$CURRENT_KEY"
+_do_select_key() {
+  KEYS_CACHE=$(_keys_rich)
+  local line key
+  line=$(printf '%s\n' "$KEYS_CACHE" | fzf --prompt="Select key > " --height=50% --no-sort)
+  key=$(awk '{print $NF}' <<< "$line")
+  if [[ -n "$key" ]]; then
+    _clipboard_copy "$key"
+    CURRENT_KEY="$key"
+    _view_key
   else
-    printf "  Key: ${GRAY}(none)${RESET}\n"
+    echo "No key selected"
   fi
-  echo "========================================"
-  echo "  1) Select Key  (fzf → clipboard)"
-  echo "  2) Time End    (TTL)"
-  echo "  3) Delete Key"
-  echo "  0) Exit"
-  echo "========================================"
-  printf "Choice: "
 }
 
-main() {
-  _select_key
+_do_delete_keys() {
+  KEYS_CACHE=$(_keys_rich)
+  local selected keys=()
+  selected=$(printf '%s\n' "$KEYS_CACHE" | fzf_multiselect --prompt="Select keys to delete > " --height=50% --no-sort)
+
+  [[ -z "$selected" ]] && { echo "No keys selected"; return; }
+
+  while IFS= read -r line; do
+    keys+=( "$(awk '{print $NF}' <<< "$line")" )
+  done <<< "$selected"
+
+  printf "${YELLOW}Delete ${BOLD}%d${RESET}${YELLOW} key(s)?${RESET}\n" "${#keys[@]}"
+  for k in "${keys[@]}"; do printf "  ${CYAN}%s${RESET}\n" "$k"; done
+  printf "${YELLOW}[y/N]: ${RESET}"
+  read -r confirm
+  if [[ "$confirm" =~ ^[Yy]$ ]]; then
+    _redis DEL "${keys[@]}" > /dev/null
+    printf "${RED}Deleted %d key(s)${RESET}\n" "${#keys[@]}"
+    [[ " ${keys[*]} " == *" $CURRENT_KEY "* ]] && CURRENT_KEY=""
+  else
+    echo "Cancelled"
+  fi
+}
+
+_inner_menu() {
   while true; do
-    _print_menu
+    echo ""
+    echo "========================================"
+    printf "  Key: ${CYAN}${BOLD}%s${RESET}\n" "$CURRENT_KEY"
+    echo "========================================"
+    echo "  1) Delete key"
+    echo "  2) View time  (TTL)"
+    echo "  3) Back"
+    echo "  0) Exit"
+    echo "========================================"
+    printf "Choice: "
     read -r choice
 
     case "$choice" in
-      1) _select_key ;;
+      1) _delete_current || return ;;
       2) _time_end ;;
-      3) _delete_key ;;
-      0|exit|q|quit) echo "Bye."; break ;;
+      3) return ;;
+      0|exit|q|quit) echo "Bye."; exit 0 ;;
       *) echo "Unknown option: $choice" ;;
     esac
   done
 }
 
-main
+_main_menu() {
+  while true; do
+    echo ""
+    echo "========================================"
+    echo "  Redis CLI"
+    echo "========================================"
+    echo "  1) Select key"
+    echo "  2) Delete key(s)"
+    echo "  0) Exit"
+    echo "========================================"
+    printf "Choice: "
+    read -r choice
+
+    case "$choice" in
+      1)
+        _do_select_key
+        [[ -n "$CURRENT_KEY" ]] && _inner_menu
+        ;;
+      2) _do_delete_keys ;;
+      0|exit|q|quit) echo "Bye."; exit 0 ;;
+      *) echo "Unknown option: $choice" ;;
+    esac
+  done
+}
+
+_print_keys() {
+  KEYS_CACHE=$(_keys_rich)
+  if [[ -z "$KEYS_CACHE" ]]; then
+    printf "${YELLOW}No keys found (pattern: ${BOLD}%s${RESET}${YELLOW})${RESET}\n" "$REDIS_PATTERN"
+    exit 0
+  fi
+  echo ""
+  printf "${GRAY}────────────────────────────────────────${RESET}\n"
+  printf " ${GRAY}Pattern: ${RESET}${CYAN}%s${RESET}\n" "$REDIS_PATTERN"
+  printf "${GRAY}────────────────────────────────────────${RESET}\n"
+  printf '%s\n' "$KEYS_CACHE"
+  printf "${GRAY}────────────────────────────────────────${RESET}\n"
+}
+
+_print_keys
+_main_menu
