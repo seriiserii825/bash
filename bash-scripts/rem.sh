@@ -1,7 +1,7 @@
 #!/bin/bash
 # Converts px values in a fzf-selected CSS file to rem (divides by 10), formats with prettier
 #!/bin/bash
-css_file="$(fzf)"
+css_file="$(find . -name "*.scss" | fzf)"
 
 while read -r line; do
   if [[ $line == *"border:"* || $line == *"border-bottom:"* || $line == *"max-width"* || $line == *"linear-gradient"* || $line == *"&"* || $line == *"width: 1px;"* || $line == *"height: 1px;"* ]]; then
