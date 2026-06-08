@@ -1,6 +1,8 @@
 #!/bin/bash
 # Zips a fzf-selected folder or unzips a fzf-selected archive, removes original after
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/libs/fzf-multiselect.sh"
+
 current_dir=$(pwd)
 folder_name=$(basename "$current_dir")
 downloads_dir="$HOME/Downloads"
@@ -8,11 +10,7 @@ downloads_dir="$HOME/Downloads"
 select actin in "zip" "unzip" "zip_all_by_parent_folder_name"; do
   case $actin in
     zip)
-      files=$(find . -maxdepth 1 -mindepth 1 | fzf --multi \
-        --bind 'ctrl-a:select-all' \
-        --bind 'esc:deselect-all' \
-        --bind 'ctrl-r:toggle-all' \
-        --header 'ctrl-a: all | esc: none | ctrl-r: reverse | tab: select')
+      files=$(find . -maxdepth 1 -mindepth 1 | fzf_multiselect)
       if [[ -z $files ]]; then
         echo "No file selected"
         exit 1

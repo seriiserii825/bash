@@ -2,6 +2,7 @@
 # Docker manager: images and containers
 
 source /home/serii/dotfiles/zsh_modules/zsh_colors
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/libs/fzf-multiselect.sh"
 
 C_IMAGE=$tcyan
 C_CONTAINER=$tyellow
@@ -39,30 +40,23 @@ function showAutostart() {
     | xargs docker inspect --format '{{.Name}} -> {{.HostConfig.RestartPolicy.Name}}'
 }
 
-FZF_MULTI=(
-  --multi
-  --bind 'ctrl-a:select-all'
-  --bind 'ctrl-r:toggle-all'
-  --header $'ctrl-a: select all visible | ctrl-r: inverse | tab: toggle'
-)
-
 function setAutostartNo() {
   selected=$(docker ps -a --format '{{.Names}}' \
-    | fzf "${FZF_MULTI[@]}" --prompt="Disable autostart: ")
+    | fzf_multiselect --prompt="Disable autostart: ")
   [ -z "$selected" ] && echo "No containers selected." && return
   echo "$selected" | xargs docker update --restart=no
 }
 
 function stopContainers() {
   selected=$(docker ps -a --format '{{.Names}}' \
-    | fzf "${FZF_MULTI[@]}" --prompt="Stop containers: ")
+    | fzf_multiselect --prompt="Stop containers: ")
   [ -z "$selected" ] && echo "No containers selected." && return
   echo "$selected" | xargs docker stop
 }
 
 function deleteContainers() {
   selected=$(docker ps -a --format '{{.Names}}' \
-    | fzf "${FZF_MULTI[@]}" --prompt="Delete containers: ")
+    | fzf_multiselect --prompt="Delete containers: ")
   [ -z "$selected" ] && echo "No containers selected." && return
   echo "$selected" | xargs docker rm -f
 }
