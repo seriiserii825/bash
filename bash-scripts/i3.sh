@@ -9,6 +9,7 @@ select action in "lock" "logout" "suspend" "reboot" "shutdown" "cancel"; do
     case $action in
         "lock")
             lock
+            exit 0
             ;;
         "logout")
             read -p "Are you sure you want to logout? (y/n) " -n 1 -r
