@@ -1,5 +1,6 @@
 #!/bin/bash
 # GPG manager: encrypt/decrypt one file, multiple files, project dist folder, or .env file
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/libs/fzf-multiselect.sh"
 user=$(whoami)
 
 function toggleProject(){
@@ -132,6 +133,32 @@ function oneFolder(){
   fi
 }
 
+function checkKey(){
+  files=$(find . -maxdepth 1 -name "*.gpg" -type f | fzf_multiselect)
+  if [ -z "$files" ]; then
+    echo "${tmagenta}Error: no file selected.${treset}"
+    exit 1
+  fi
+
+  while IFS= read -r file; do
+    echo "${tcyan}File: $file${treset}"
+    keyids=$(gpg --list-packets "$file" 2>/dev/null | grep "keyid" | sed -E 's/.*keyid ([0-9A-F]+)/\1/')
+    if [ -z "$keyids" ]; then
+      echo "${tmagenta}  No public key found (symmetric encryption?)${treset}"
+    else
+      while IFS= read -r keyid; do
+        info=$(gpg --list-keys "$keyid" 2>/dev/null | grep -E "^pub|^uid")
+        if [ -z "$info" ]; then
+          echo "${tyellow}  KeyID: $keyid (not found in keyring)${treset}"
+        else
+          echo "$info" | sed 's/^/  /'
+        fi
+      done <<< "$keyids"
+    fi
+    echo ""
+  done <<< "$files"
+}
+
 function envFile(){
   local action=$1
   local env_file=".env"
@@ -163,7 +190,8 @@ function menu(){
   echo "${tblue}2. More files${treset}"
   echo "${tyellow}3. Project${treset}"
   echo "${tcyan}4. Folder${treset}"
-  echo "${tmagenta}5. Exit${treset}"
+  echo "${tyellow}5. Check key${treset}"
+  echo "${tmagenta}6. Exit${treset}"
 
   read -p "Choose option: " option
 
@@ -176,6 +204,8 @@ function menu(){
   elif [ $option == 4 ]; then
     oneFolder
   elif [ $option == 5 ]; then
+    checkKey
+  elif [ $option == 6 ]; then
     exit 0
   else
     echo "${tmagenta}Error: option not found.${treset}"
