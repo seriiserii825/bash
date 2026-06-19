@@ -5,6 +5,8 @@ need() { command -v "$1" >/dev/null 2>&1 || { echo "❌ Required: $1"; exit 1; }
 need fzf
 need rsync
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/libs/fzf-multiselect.sh"
+
 quit() { echo "Exit."; exit 0; }
 
 # ── 1. BASE PATH ─────────────────────────────────────────────────────────────
@@ -115,35 +117,35 @@ fi
 [ -n "${DEST:-}" ] || quit
 echo "🛬 Destination: $DEST"
 
-# ── 4. SELECT SOURCE ─────────────────────────────────────────────────────────
-echo "🔎 Select file or folder to send:"
-SELECTED=$(
+# ── 4. SELECT SOURCE(S) ──────────────────────────────────────────────────────
+echo "🔎 Select files or folders to send:"
+mapfile -t SELECTED < <(
   find . -mindepth 1 -maxdepth 1 -printf '%T@ %P\0' \
   | sort -rz -k1,1 \
   | sed -z 's/^[^ ]* //' \
-  | fzf --read0 --height=80% --reverse --no-info \
-        --header="Files in current directory → $(pwd)  |  Esc = exit" \
+  | fzf_multiselect --read0 --height=80% --reverse \
+        --prompt="$(pwd)/ > " \
         --preview 'p="{}"; if [ -d "$p" ]; then ls -la --color=always -- "$p"; else file -b -- "$p"; fi' \
         --preview-window=right,60%
-) || quit
+)
 
-[ -n "$SELECTED" ] || quit
+[ "${#SELECTED[@]}" -gt 0 ] || quit
 
-if [ -d "$SELECTED" ]; then
-  SRC="${SELECTED%/}"
-else
-  SRC="$SELECTED"
-fi
+SRCS=()
+for s in "${SELECTED[@]}"; do
+  SRCS+=("${s%/}")
+done
 
-echo "📦 Source: $SRC"
+echo "📦 Sources:"
+printf '   %s\n' "${SRCS[@]}"
 echo "🛬 Destination: $DEST"
 
 # ── 5. RSYNC ─────────────────────────────────────────────────────────────────
 echo
-echo "▶️  rsync -ah --info=progress2 --partial --inplace \"$SRC\" \"$DEST/\""
+echo "▶️  rsync -ah --info=progress2 --partial --inplace \"\${SRCS[@]}\" \"$DEST/\""
 echo
 
 rsync -ah --info=progress2 --partial --inplace --human-readable \
-  -- "$SRC" "$DEST/"
+  -- "${SRCS[@]}" "$DEST/"
 
 echo "✅ Done."
