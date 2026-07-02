@@ -34,8 +34,8 @@ function readKebabName(){
 function createIcon(){
   checkNg
   local name=$(readKebabName "Icon name")
-  ng generate component "icons/$name" --skip-tests --style=none
-  echo -e "${tgreen}Icon component icons/$name created${treset}"
+  ng generate component "icons/${name}-icon" --skip-tests --style=none
+  echo -e "${tgreen}Icon component icons/${name}-icon created${treset}"
 }
 
 function createComponent(){
