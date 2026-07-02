@@ -33,8 +33,39 @@ function readKebabName(){
 
 function createIcon(){
   checkNg
+
+  if ! [ -x "$(command -v xclip)" ]; then
+    echo -e "${tmagenta}Error: xclip is not installed.${treset}"
+    exit 1
+  fi
+
+  local svg
+  svg=$(xclip -o -selection clipboard 2>/dev/null)
+
+  if ! printf '%s' "$svg" | grep -qi '<svg[[:space:]>]'; then
+    echo -e "${tmagenta}Error: clipboard does not contain an SVG.${treset}"
+    exit 1
+  fi
+
+  if printf '%s' "$svg" | grep -qi 'fill="'; then
+    svg=$(printf '%s' "$svg" | perl -0777 -pe 's/fill="(?!none")[^"]*"/fill="currentColor"/gi')
+  else
+    svg=$(printf '%s' "$svg" | perl -0777 -pe 's/<svg(\s)/<svg fill="currentColor"$1/i')
+  fi
+
   local name=$(readKebabName "Icon name")
   ng generate component "icons/${name}-icon" --skip-tests --style=none
+
+  local html_file
+  html_file=$(find "icons/${name}-icon" -maxdepth 1 -name "*.html" | head -1)
+
+  if [ -z "$html_file" ]; then
+    echo -e "${tmagenta}Error: generated html file not found.${treset}"
+    exit 1
+  fi
+
+  printf '%s\n' "$svg" > "$html_file"
+
   echo -e "${tgreen}Icon component icons/${name}-icon created${treset}"
 }
 
