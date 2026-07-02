@@ -20,12 +20,8 @@ if [ -z "$chrome_path" ]; then
   exit 1
 fi
 
-# open in background (important for i3)
-# nohup "$chrome_path" \
-#   "https://fontawesome.com/search?q=$encoded_icon&o=r&ic=free" \
-#   >/dev/null 2>&1 &
-
+# open in background (important for i3), using the normal Chrome profile
 nohup "$chrome_path" \
   --new-window \
-  --user-data-dir=/tmp/chrome-fa-search \
-  "https://www.flaticon.com/search?word=$icon_name" &
+  "https://www.flaticon.com/search?word=$icon_name" \
+  >/dev/null 2>&1 &
