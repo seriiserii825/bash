@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Sets or adds GitHub remote origin from clipboard URL (git@ or https)
+# Sets or adds GitHub/Bitbucket remote origin from clipboard URL (git@ or https)
 
 if command -v xclip &>/dev/null; then
   URL=$(xclip -selection clipboard -o 2>/dev/null)
@@ -13,10 +13,13 @@ else
 fi
 
 URL=$(echo "$URL" | tr -d '\n\r' | xargs)
+# убрать префикс "git clone "
+URL="${URL#git clone }"
+URL=$(echo "$URL" | xargs)
 
 # нормальная проверка
-if [[ ! "$URL" =~ ^(git@github\.com:|https://github\.com/) ]]; then
-  echo "Not a GitHub URL: [$URL]"
+if [[ ! "$URL" =~ ^(git@github\.com:|https://github\.com/|git@bitbucket\.org:|https://bitbucket\.org/) ]]; then
+  echo "Not a GitHub/Bitbucket URL: [$URL]"
   exit 1
 fi
 
@@ -24,8 +27,8 @@ echo "Detected: $URL"
 
 echo ""
 echo "Action:"
-echo "  1) set-url"
-echo "  2) add"
+echo "  1) set-url  (меняет URL у существующего origin, напр. репо переехал/поменяли протокол)"
+echo "  2) add      (добавляет новый remote, напр. upstream, или когда origin ещё не задан)"
 read -rp "Choose [1/2]: " CHOICE
 
 case "$CHOICE" in
