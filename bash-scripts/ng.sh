@@ -72,8 +72,8 @@ function createIcon(){
 function createComponent(){
   checkNg
   local name=$(readKebabName "Component name")
-  ng generate component "components/${name}-component" --skip-tests --style=none
-  echo -e "${tgreen}Component components/${name}-component created${treset}"
+  ng generate component "components/${name}" --skip-tests --style=none
+  echo -e "${tgreen}Component components/${name} created${treset}"
 }
 
 function createPage(){
