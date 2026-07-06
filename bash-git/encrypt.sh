@@ -1,6 +1,6 @@
 # Encrypts/decrypts files listed in .gpgrc using GPG for the current user
 
-function encryptFiles(){
+function encryptFiles() {
   # check for .gpgrc file if exists
   if [ -f ".gpgrc" ]; then
     # read lines
@@ -17,12 +17,11 @@ function encryptFiles(){
       else
         echo "${tred}Error: $filename not found${treset}"
       fi
-    done < ".gpgrc"
+    done <".gpgrc"
   fi
 }
 
-
-function decryptFiles(){
+function decryptFiles() {
   # check for .gpgrc file if exists
   if [ -f ".gpgrc" ]; then
     # read lines
@@ -35,11 +34,10 @@ function decryptFiles(){
         # remove filename
         rm -f "$filename"
         # decrypt file
-        gpg -d "$line" > "$filename"
+        gpg -d "$line" >"$filename"
       else
         echo "${tred}Error: $filename not found${treset}"
       fi
-    done < ".gpgrc"
+    done <".gpgrc"
   fi
 }
-
