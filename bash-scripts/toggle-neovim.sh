@@ -28,6 +28,18 @@ fi
 
 CURRENT_TARGET="$(readlink -f "$NVIM_LINK")"
 
+if [ "$CURRENT_TARGET" = "$LUA_CONFIG" ]; then
+  echo "Current build: Lua (lazy.nvim)"
+elif [ "$CURRENT_TARGET" = "$COC_CONFIG" ]; then
+  echo "Current build: CoC"
+else
+  echo "~/.config/nvim points to an unrecognized target: $CURRENT_TARGET"
+  echo "Expected either $LUA_CONFIG or $COC_CONFIG"
+  exit 1
+fi
+
+read -r -p "Press Enter to toggle (Ctrl+C to cancel)..."
+
 # Points $link at $new_target. If $link is still a real directory (first run,
 # not yet split per-build), its contents belong to the build we're leaving,
 # so they're moved into $old_target before the symlink is created.
