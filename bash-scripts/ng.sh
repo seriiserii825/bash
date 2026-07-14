@@ -90,12 +90,20 @@ function createLayout(){
   echo -e "${tgreen}Layout layouts/${name}-layout created${treset}"
 }
 
+function createShared(){
+  checkNg
+  local name=$(readKebabName "Shared name")
+  ng generate component "shared/${name}-shared" --skip-tests --style=none
+  echo -e "${tgreen}Shared component shared/${name}-shared created${treset}"
+}
+
 function menu(){
   echo -e "${tgreen}1. Create icon${treset}"
   echo -e "${tgreen}2. Create component${treset}"
   echo -e "${tgreen}3. Create page${treset}"
   echo -e "${tgreen}4. Create layout${treset}"
-  echo -e "${tmagenta}5. Exit${treset}"
+  echo -e "${tgreen}5. Create shared${treset}"
+  echo -e "${tmagenta}6. Exit${treset}"
 
   read -p "Choose option: " option
 
@@ -108,6 +116,8 @@ function menu(){
   elif [ "$option" == "4" ]; then
     createLayout
   elif [ "$option" == "5" ]; then
+    createShared
+  elif [ "$option" == "6" ]; then
     exit 0
   else
     echo -e "${tmagenta}Error: option not found.${treset}"
