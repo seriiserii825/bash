@@ -1,5 +1,5 @@
 #!/bin/bash
-# Picks an image with fzf and creates 2 resized versions: height=1080 (proportional) and 250x350 (cropped cover)
+# Picks an image with fzf, creates 2 resized versions (height=1080 and 250x350 cropped cover), then deletes the original
 
 tgreen='\e[32m'
 tblue='\e[34m'
@@ -12,7 +12,8 @@ if [[ "$1" == "--help" ]]; then
   echo ""
   echo -e "  ${tblue}1.${treset} Pick image with ${tyellow}fzf${treset}    preview shows current size"
   echo -e "  ${tblue}2.${treset} Saves ${tgray}originalname-1080.ext${treset}      height resized to 1080, proportional width"
-  echo -e "  ${tblue}3.${treset} Saves ${tgray}originalname-250x350.ext${treset}   resized + center-cropped to exact 250x350  (original untouched)"
+  echo -e "  ${tblue}3.${treset} Saves ${tgray}originalname-250x350.ext${treset}   resized + center-cropped to exact 250x350"
+  echo -e "  ${tblue}4.${treset} Deletes the original"
   exit 0
 fi
 
@@ -60,3 +61,7 @@ convert "$image" \
   "$crop_output"
 echo "Saved:    $crop_output"
 identify -format "%f  %wx%h\n" "$crop_output"
+
+# Remove original
+rm "$image"
+echo "Removed:  $image"
