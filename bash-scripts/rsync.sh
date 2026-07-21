@@ -9,6 +9,53 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/libs/fzf-multiselect.sh"
 
 quit() { echo "Exit."; exit 0; }
 
+# ── 0. DIRECTION ─────────────────────────────────────────────────────────────
+MODE=$(printf 'To folder (choose destination)\nFrom Downloads here\n🚪 Exit' \
+  | fzf --height=40% --reverse --no-info \
+        --header="Select transfer direction") || quit
+
+[[ "$MODE" == "🚪"* ]] && quit
+
+# ── 0B. FROM DOWNLOADS HERE ──────────────────────────────────────────────────
+if [ "$MODE" = "From Downloads here" ]; then
+  SRC_BASE="$HOME/Downloads"
+  [ -d "$SRC_BASE" ] || { echo "❌ Folder '$SRC_BASE' not found."; exit 1; }
+  export SRC_BASE
+  DEST="$(pwd)"
+
+  echo "🔎 Select files or folders from Downloads to send here:"
+  mapfile -t SELECTED < <(
+    find "$SRC_BASE" -mindepth 1 -maxdepth 1 -printf '%T@ %P\0' \
+    | sort -rz -k1,1 \
+    | sed -z 's/^[^ ]* //' \
+    | fzf_multiselect --read0 --height=80% --reverse \
+          --prompt="$SRC_BASE/ > " \
+          --preview 'p="$SRC_BASE/{}"; if [ -d "$p" ]; then ls -la --color=always -- "$p"; else file -b -- "$p"; fi' \
+          --preview-window=right,60%
+  )
+
+  [ "${#SELECTED[@]}" -gt 0 ] || quit
+
+  SRCS=()
+  for s in "${SELECTED[@]}"; do
+    SRCS+=("$SRC_BASE/${s%/}")
+  done
+
+  echo "📦 Sources:"
+  printf '   %s\n' "${SRCS[@]}"
+  echo "🛬 Destination: $DEST"
+
+  echo
+  echo "▶️  rsync -ah --info=progress2 --partial --inplace \"\${SRCS[@]}\" \"$DEST/\""
+  echo
+
+  rsync -ah --info=progress2 --partial --inplace --human-readable \
+    -- "${SRCS[@]}" "$DEST/"
+
+  echo "✅ Done."
+  exit 0
+fi
+
 # ── 1. BASE PATH ─────────────────────────────────────────────────────────────
 BASE_CHOICE=$(printf '/mnt/Projects\nOther folder\n🚪 Exit' \
   | fzf --height=40% --reverse --no-info \

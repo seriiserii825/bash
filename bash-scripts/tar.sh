@@ -1,6 +1,11 @@
 #!/bin/bash
 # Archives/unarchives a fzf-selected folder or file as tar with progress, or views a tar's contents
 
+if ! command -v pv >/dev/null 2>&1; then
+  echo "pv not found, installing via pacman..."
+  sudo pacman -Sy --noconfirm pv
+fi
+
 select action in "archive" "unarchive" "view"; do
   case $action in
     archive)
