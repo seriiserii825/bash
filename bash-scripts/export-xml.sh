@@ -34,7 +34,7 @@ source "$ENV_FILE"
 declare -a AGENCIES=()
 for ENTRY in "${GI_AGENCIES[@]}"; do
   IFS='|' read -r LABEL AGENZIA_ID PUBLIC_KEY <<<"$ENTRY"
-  AGENCIES+=("${LABEL}|https://pannello.gestionaleimmobiliare.it/export_xml_annunci.html?agenzia_id=${AGENZIA_ID}&geo_id=1&agente=1&latlng=1&abstract=1&i18n=1&etichette=1&public_key=${PUBLIC_KEY}")
+  AGENCIES+=("${LABEL}|https://pannello.gestionaleimmobiliare.it/export_xml_annunci.html?agenzia_id=${AGENZIA_ID}&geo_id=1&agente=1&latlng=1&abstract=1&i18n=1&etichette=1&video=1&public_key=${PUBLIC_KEY}")
 done
 
 # Filename pattern produced by the download step
