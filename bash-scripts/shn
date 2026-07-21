@@ -61,7 +61,41 @@ else
 fi
 
 # ============================
-# 2) Mount checks (/mnt)
+# 2) local-cli (Local by Flywheel) checks
+# ============================
+
+if command -v local-cli >/dev/null 2>&1; then
+  sites="$(local-cli list 2>/dev/null || true)"
+
+  if [ -z "$sites" ]; then
+    echo "${tgreen}No Local sites (Local not running or no sites).${treset}"
+  else
+    running_sites="$(printf '%s\n' "$sites" | awk -F'\t' '$3=="running"')"
+
+    if [ -z "$running_sites" ]; then
+      echo "${tgreen}No running local-cli sites.${treset}"
+    else
+      echo "${tyellow}Found running local-cli sites:${treset}"
+      printf '%s\n' "$running_sites" | awk -F'\t' '{print "  " $2 " (" $3 ")"}'
+
+      echo
+      read -rp "Stop ALL running local-cli sites? [y/N]: " answer
+
+      if [[ "$answer" =~ ^[yY]$ ]]; then
+        echo "${tmagenta}Stopping local-cli sites...${treset}"
+        local-cli stop-all
+        echo "${tgreen}local-cli sites stopped.${treset}"
+      else
+        echo "${tyellow}local-cli stop skipped.${treset}"
+      fi
+    fi
+  fi
+else
+  echo "${tyellow}local-cli not installed.${treset}"
+fi
+
+# ============================
+# 3) Mount checks (/mnt)
 # ============================
 
 mounted_points="$(findmnt -rn -o TARGET | grep -E "^${MOUNT_BASE}(/|$)")"
@@ -91,7 +125,7 @@ else
 fi
 
 # ============================
-# 3) Reboot or Shutdown
+# 4) Reboot or Shutdown
 # ============================
 
 if [ "$ACTION" = "reboot" ]; then
