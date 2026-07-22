@@ -9,6 +9,39 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/libs/fzf-multiselect.sh"
 
 quit() { echo "Exit."; exit 0; }
 
+# Copies each source into $1 (destination dir). If a same-named file/folder
+# already exists at the destination, appends "-YYYY-MM-DD_HH-MM-SS" instead of overwriting.
+do_rsync() {
+  local dest="$1"; shift
+  local src base target name ext stamp
+  stamp="$(date +%Y-%m-%d_%H-%M-%S)"
+
+  for src in "$@"; do
+    src="${src%/}"
+    base="$(basename -- "$src")"
+    target="$dest/$base"
+
+    if [ -e "$target" ]; then
+      if [[ "$base" == *.* && "$base" != .* ]]; then
+        name="${base%.*}"
+        ext="${base##*.}"
+        target="$dest/${name}-${stamp}.${ext}"
+      else
+        target="$dest/${base}-${stamp}"
+      fi
+    fi
+
+    echo "▶️  rsync -ah --info=progress2 --partial --inplace -- \"$src\" \"$target\""
+
+    if [ -d "$src" ]; then
+      mkdir -p -- "$target"
+      rsync -ah --info=progress2 --partial --inplace --human-readable -- "$src/." "$target/"
+    else
+      rsync -ah --info=progress2 --partial --inplace --human-readable -- "$src" "$target"
+    fi
+  done
+}
+
 # ── 0. DIRECTION ─────────────────────────────────────────────────────────────
 MODE=$(printf 'To folder (choose destination)\nFrom Downloads here\n🚪 Exit' \
   | fzf --height=40% --reverse --no-info \
@@ -46,11 +79,7 @@ if [ "$MODE" = "From Downloads here" ]; then
   echo "🛬 Destination: $DEST"
 
   echo
-  echo "▶️  rsync -ah --info=progress2 --partial --inplace \"\${SRCS[@]}\" \"$DEST/\""
-  echo
-
-  rsync -ah --info=progress2 --partial --inplace --human-readable \
-    -- "${SRCS[@]}" "$DEST/"
+  do_rsync "$DEST" "${SRCS[@]}"
 
   echo "✅ Done."
   exit 0
@@ -191,10 +220,6 @@ echo "🛬 Destination: $DEST"
 
 # ── 5. RSYNC ─────────────────────────────────────────────────────────────────
 echo
-echo "▶️  rsync -ah --info=progress2 --partial --inplace \"\${SRCS[@]}\" \"$DEST/\""
-echo
-
-rsync -ah --info=progress2 --partial --inplace --human-readable \
-  -- "${SRCS[@]}" "$DEST/"
+do_rsync "$DEST" "${SRCS[@]}"
 
 echo "✅ Done."
