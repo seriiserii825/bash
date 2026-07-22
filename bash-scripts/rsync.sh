@@ -57,7 +57,7 @@ if [ "$MODE" = "From Downloads here" ]; then
 fi
 
 # ── 1. BASE PATH ─────────────────────────────────────────────────────────────
-BASE_CHOICE=$(printf '/mnt/Projects\nOther folder\n🚪 Exit' \
+BASE_CHOICE=$(printf '/mnt/Projects\nDownloads\nOther folder\n🚪 Exit' \
   | fzf --height=40% --reverse --no-info \
         --header="Select starting folder") || quit
 
@@ -66,6 +66,8 @@ BASE_CHOICE=$(printf '/mnt/Projects\nOther folder\n🚪 Exit' \
 if [ "$BASE_CHOICE" = "Other folder" ]; then
   read -r -p "Enter path: " BASE_PATH
   BASE_PATH="${BASE_PATH%/}"
+elif [ "$BASE_CHOICE" = "Downloads" ]; then
+  BASE_PATH="$HOME/Downloads"
 else
   BASE_PATH="/mnt/Projects"
 fi
