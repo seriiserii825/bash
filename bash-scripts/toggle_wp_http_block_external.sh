@@ -31,7 +31,26 @@ MATCH=$(grep -n "$TARGET" "$WP_CONFIG" | head -n1)
 
 if [ -z "$MATCH" ]; then
   echo "${tmagenta}⚠️ ${TARGET} not found in ${WP_CONFIG}${treset}"
-  exit 1
+
+  DEFINE_LINE="define( 'WP_HTTP_BLOCK_EXTERNAL', true );"
+
+  read -rp "${tblue}Add it now? (y/N): ${treset}" add_answer
+
+  if [[ "$add_answer" =~ ^[Yy]$ ]]; then
+    MARKER_LINE=$(grep -n "That's all, stop editing" "$WP_CONFIG" | head -n1 | cut -d: -f1)
+
+    if [ -n "$MARKER_LINE" ]; then
+      sed -i "${MARKER_LINE}i ${DEFINE_LINE}" "$WP_CONFIG"
+    else
+      printf '\n%s\n' "$DEFINE_LINE" >> "$WP_CONFIG"
+    fi
+
+    echo "${tgreen}🟢 Added: ${DEFINE_LINE}${treset}"
+  else
+    echo "Skipped"
+  fi
+
+  exit 0
 fi
 
 LINE_NUM=$(echo "$MATCH" | cut -d: -f1)
