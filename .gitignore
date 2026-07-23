@@ -2,3 +2,4 @@ bash-private
 node_modules
 wifi.sh
 bash-scripts/export-xml-env.sh
+.env

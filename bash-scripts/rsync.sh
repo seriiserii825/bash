@@ -5,7 +5,11 @@ need() { command -v "$1" >/dev/null 2>&1 || { echo "❌ Required: $1"; exit 1; }
 need fzf
 need rsync
 
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/libs/fzf-multiselect.sh"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/libs/fzf-multiselect.sh"
+
+ENV_FILE="$(cd "$SCRIPT_DIR/.." && pwd)/.env"
+[ -f "$ENV_FILE" ] && { set -a; source "$ENV_FILE"; set +a; }
 
 quit() { echo "Exit."; exit 0; }
 
@@ -42,12 +46,137 @@ do_rsync() {
   done
 }
 
+# Syncs the contents of $1 into $2 (creates $2 if missing).
+# Prompts for --delete (mirror mode: removes at destination what's gone at source).
+do_folder_sync() {
+  local src="$1" dest="$2"
+  [ -d "$src" ] || { echo "❌ Folder '$src' not found."; exit 1; }
+  mkdir -p -- "$dest"
+
+  echo
+  echo "[yellow]--delete: removes files at destination that no longer exist at source"
+  echo "Without --delete: destination keeps files even if removed at source"
+  read -r -p "Use --delete? (y/n, default n): " USE_DELETE
+  local delete_flag=()
+  [ "$USE_DELETE" = "y" ] && delete_flag=(--delete)
+
+  echo "📦 Source:      $src/"
+  echo "🛬 Destination: $dest/"
+  read -r -p "Proceed? (y/n): " CONFIRM
+  [ "$CONFIRM" = "y" ] || quit
+
+  echo "▶️  rsync -av --progress ${delete_flag[*]:-} -- \"$src/\" \"$dest/\""
+  rsync -av --progress "${delete_flag[@]}" -- "$src/" "$dest/"
+  echo "✅ Done."
+}
+
+GARDALIVE_LOCAL="/home/serii/Local Sites/lc-gardalive/app/public/uploads"
+GARDALIVE_MNT="/mnt/Projects/G/gardalive/uploads"
+GARDALIVE_MNT_ROOT="/mnt/Projects/G/gardalive"
+
+# Lets you pick a .wpress backup from $GARDALIVE_MNT_ROOT via fzf (newest first)
+# and copies it into ~/Downloads.
+do_wpress_to_downloads() {
+  local dir="$GARDALIVE_MNT_ROOT"
+  [ -d "$dir" ] || { echo "❌ Folder '$dir' not found."; exit 1; }
+
+  local dest="$HOME/Downloads"
+  mkdir -p -- "$dest"
+
+  local picked
+  picked=$(
+    find "$dir" -maxdepth 1 -type f -name "*.wpress" -printf '%T@ %p\0' \
+    | sort -rz -k1,1 \
+    | sed -z 's/^[^ ]* //' \
+    | tr '\0' '\n' \
+    | fzf --height=60% --reverse --no-info \
+          --header="Select .wpress backup (newest first) — Esc = exit" \
+          --preview 'ls -la --color=always -- "{}"' \
+          --preview-window=right,50%
+  ) || quit
+
+  [ -n "$picked" ] || quit
+
+  echo "📦 Source:      $picked"
+  echo "🛬 Destination: $dest/"
+  do_rsync "$dest" "$picked"
+}
+
+# Syncs between a local folder and a path on the gardalive VPS over rsync+ssh.
+# $1 = "to" (local -> vps) or "from" (vps -> local)
+do_vps_sync() {
+  local direction="$1"
+  need sshpass
+
+  : "${GARDALIVE_VPS_HOST:?Missing GARDALIVE_VPS_HOST in .env}"
+  : "${GARDALIVE_VPS_PORT:?Missing GARDALIVE_VPS_PORT in .env}"
+  : "${GARDALIVE_VPS_USER:?Missing GARDALIVE_VPS_USER in .env}"
+  : "${GARDALIVE_VPS_PASSWORD:?Missing GARDALIVE_VPS_PASSWORD in .env}"
+  : "${GARDALIVE_VPS_UPLOADS_PATH:?Missing GARDALIVE_VPS_UPLOADS_PATH in .env}"
+
+  local remote="${GARDALIVE_VPS_USER}@${GARDALIVE_VPS_HOST}:${GARDALIVE_VPS_UPLOADS_PATH}/"
+  local local_="$GARDALIVE_LOCAL/"
+  mkdir -p -- "$GARDALIVE_LOCAL"
+
+  local src dest
+  if [ "$direction" = "to" ]; then
+    src="$local_"; dest="$remote"
+  else
+    src="$remote"; dest="$local_"
+  fi
+
+  echo
+  echo "[yellow]--delete: removes files at destination that no longer exist at source"
+  echo "Without --delete: destination keeps files even if removed at source"
+  read -r -p "Use --delete? (y/n, default n): " USE_DELETE
+  local delete_flag=()
+  [ "$USE_DELETE" = "y" ] && delete_flag=(--delete)
+
+  echo "📦 Source:      $src"
+  echo "🛬 Destination: $dest"
+  read -r -p "Proceed? (y/n): " CONFIRM
+  [ "$CONFIRM" = "y" ] || quit
+
+  echo "▶️  rsync -av --progress ${delete_flag[*]:-} -- \"$src\" \"$dest\""
+  sshpass -p "$GARDALIVE_VPS_PASSWORD" rsync -av --progress \
+    -e "sshpass -p $GARDALIVE_VPS_PASSWORD ssh -p $GARDALIVE_VPS_PORT" \
+    "${delete_flag[@]}" -- "$src" "$dest"
+  echo "✅ Done."
+}
+
 # ── 0. DIRECTION ─────────────────────────────────────────────────────────────
-MODE=$(printf 'To folder (choose destination)\nFrom Downloads here\n🚪 Exit' \
+MODE=$(printf 'To folder (choose destination)\nFrom Downloads here\ngardalive uploads to mnt\ngardalive uploads from mnt\ngardalive uploads to vps\ngardalive uploads from vps\ngardalive from mnt to Downloads last wpress backup\n🚪 Exit' \
   | fzf --height=40% --reverse --no-info \
         --header="Select transfer direction") || quit
 
 [[ "$MODE" == "🚪"* ]] && quit
+
+# ── 0C. GARDALIVE UPLOADS ⇄ MNT ──────────────────────────────────────────────
+if [ "$MODE" = "gardalive uploads to mnt" ]; then
+  do_folder_sync "$GARDALIVE_LOCAL" "$GARDALIVE_MNT"
+  exit 0
+fi
+
+if [ "$MODE" = "gardalive uploads from mnt" ]; then
+  do_folder_sync "$GARDALIVE_MNT" "$GARDALIVE_LOCAL"
+  exit 0
+fi
+
+# ── 0D. GARDALIVE UPLOADS ⇄ VPS ──────────────────────────────────────────────
+if [ "$MODE" = "gardalive uploads to vps" ]; then
+  do_vps_sync "to"
+  exit 0
+fi
+
+if [ "$MODE" = "gardalive uploads from vps" ]; then
+  do_vps_sync "from"
+  exit 0
+fi
+
+if [ "$MODE" = "gardalive from mnt to Downloads last wpress backup" ]; then
+  do_wpress_to_downloads
+  exit 0
+fi
 
 # ── 0B. FROM DOWNLOADS HERE ──────────────────────────────────────────────────
 if [ "$MODE" = "From Downloads here" ]; then
