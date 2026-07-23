@@ -19,6 +19,7 @@ notify() {
 }
 
 text="$(clip_get)"
+text="${text#/}"
 
 if ! [[ "$text" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
   echo "Clipboard doesn't look like a slug: $text" >&2
