@@ -27,11 +27,13 @@ notify() {
 }
 
 select_file() {
-  find . -type f -name '*.json' \
+  local files
+  files="$(find . -type f -name '*.json')"
+  { echo "🚪  Exit"; [ -n "$files" ] && printf '%s\n' "$files"; } \
     | fzf --select-1 --exit-0 \
           --prompt='Select JSON file: ' \
           --height=90% --layout=reverse --border \
-          --preview='head -n 120 {}' --preview-window=up:40%
+          --preview='[ -f {} ] && head -n 120 {}' --preview-window=up:40%
 }
 
 # Root is either an array of field groups (standard ACF export — use group [0])
@@ -68,7 +70,8 @@ while true; do
     FILE="$(select_file)"
   fi
 
-  [ -z "${FILE:-}" ] && { echo "No file selected"; exit 1; }
+  [ -z "${FILE:-}" ] && { echo "Exit."; exit 0; }
+  [[ "$FILE" == "🚪"* ]] && { echo "Exit."; exit 0; }
   [ ! -f "$FILE" ] && { echo "Not a file: $FILE"; exit 1; }
   jq empty "$FILE" 2>/dev/null || { echo "❌ Invalid JSON: $FILE"; exit 1; }
 
