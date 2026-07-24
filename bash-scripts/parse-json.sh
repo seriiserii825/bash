@@ -3,7 +3,7 @@
 # groups, each with a "fields" array, fields nesting via "sub_fields") into
 # every field's dot-notation path built from its actual "name" value — not the
 # JSON schema keys — lets you fuzzy-search all of them at once via fzf, then
-# prints the selected path and copies it to the clipboard.
+# prints the selected path(s) and copies them to the clipboard.
 # Usage: bash-scripts/parse-json.sh [file.json]
 set -euo pipefail
 
@@ -11,7 +11,8 @@ need() { command -v "$1" >/dev/null 2>&1 || { echo "❌ Required: $1"; exit 1; }
 need jq
 need fzf
 
-quit() { echo "Exit."; exit 0; }
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/libs/fzf-multiselect.sh"
 
 copy_to_clipboard() {
   if command -v xclip >/dev/null 2>&1; then printf '%s' "$1" | xclip -selection clipboard
@@ -20,22 +21,19 @@ copy_to_clipboard() {
   fi
 }
 
-# ── 1. SELECT FILE ────────────────────────────────────────────────────────────
-if [[ $# -ge 1 ]]; then
-  FILE="$1"
-else
-  FILE="$(find . -type f -name '*.json' \
+notify() {
+  command -v notify-send >/dev/null 2>&1 && notify-send "parse-json.sh" "$1"
+  return 0
+}
+
+select_file() {
+  find . -type f -name '*.json' \
     | fzf --select-1 --exit-0 \
           --prompt='Select JSON file: ' \
           --height=90% --layout=reverse --border \
-          --preview='head -n 120 {}' --preview-window=up:40%)"
-fi
+          --preview='head -n 120 {}' --preview-window=up:40%
+}
 
-[ -z "${FILE:-}" ] && { echo "No file selected"; exit 1; }
-[ ! -f "$FILE" ] && { echo "Not a file: $FILE"; exit 1; }
-jq empty "$FILE" 2>/dev/null || { echo "❌ Invalid JSON: $FILE"; exit 1; }
-
-# ── 2. FLATTEN ────────────────────────────────────────────────────────────────
 # Root is either an array of field groups (standard ACF export — use group [0])
 # or a bare object with a "fields" array. Each field's path segment is its own
 # "name" value (falling back to "label" for nameless fields like tabs) — never
@@ -60,19 +58,59 @@ def walk(fields; path):
 | walk($root_fields // []; [])
 '
 
-ALL_PATHS="$(jq -r "$JQ_PROGRAM" "$FILE")"
-[ -n "$ALL_PATHS" ] || { echo "No fields found in $FILE"; exit 1; }
+CLI_FILE="${1:-}"
 
-# ── 3. PICK ───────────────────────────────────────────────────────────────────
-SELECTED=$(printf '🚪  Exit\n%s\n' "$ALL_PATHS" \
-  | fzf --height=90% --reverse --no-info \
-        --prompt="Select field path > " \
-        --header="$FILE") || quit
+# ── OUTER LOOP: file selection (⬅️ Back returns here to pick another file) ────
+while true; do
+  if [ -n "$CLI_FILE" ]; then
+    FILE="$CLI_FILE"
+  else
+    FILE="$(select_file)"
+  fi
 
-[ -n "$SELECTED" ] || quit
-[[ "$SELECTED" == "🚪"* ]] && quit
-PATH_CUR="${SELECTED%% │ *}"
+  [ -z "${FILE:-}" ] && { echo "No file selected"; exit 1; }
+  [ ! -f "$FILE" ] && { echo "Not a file: $FILE"; exit 1; }
+  jq empty "$FILE" 2>/dev/null || { echo "❌ Invalid JSON: $FILE"; exit 1; }
 
-# ── 4. OUTPUT ──────────────────────────────────────────────────────────────
-echo "$PATH_CUR"
-copy_to_clipboard "$PATH_CUR" && echo "📋 Copied to clipboard" >&2
+  CLEAN_FILE="${FILE#./}"
+
+  ALL_PATHS="$(jq -r "$JQ_PROGRAM" "$FILE")"
+  [ -n "$ALL_PATHS" ] || { echo "No fields found in $FILE"; exit 1; }
+
+  ITEMS=$'⬅️  Back (choose another file)\n🚪  Exit\n'"$ALL_PATHS"
+
+  DO_EXIT=false
+  DO_BACK=false
+
+  # ── INNER LOOP: pick field path(s), repeat until Back/Exit/empty Enter ─────
+  while true; do
+    SELECTED=$(printf '%s\n' "$ITEMS" \
+      | fzf_multiselect --height=90% --reverse \
+            --prompt="Select field path(s) > " \
+            --header="$FILE  |  Enter with nothing selected to exit")
+
+    [ -n "$SELECTED" ] || { echo "Exit."; DO_EXIT=true; break; }
+
+    PATHS=()
+    while IFS= read -r line; do
+      case "$line" in
+        "⬅️"*) DO_BACK=true ;;
+        "🚪"*) DO_EXIT=true ;;
+        *) [ -n "$line" ] && PATHS+=("${line%% │ *}") ;;
+      esac
+    done <<< "$SELECTED"
+
+    if [ "${#PATHS[@]}" -gt 0 ]; then
+      JOINED=$(IFS=,; echo "${PATHS[*]}")
+      RESULT="$CLEAN_FILE $JOINED"
+      echo "$RESULT"
+      copy_to_clipboard "$RESULT" && echo "📋 Copied to clipboard" >&2
+      notify "$RESULT"
+    fi
+
+    { [ "$DO_EXIT" = true ] || [ "$DO_BACK" = true ]; } && break
+  done
+
+  [ "$DO_EXIT" = true ] && break
+  CLI_FILE=""
+done
