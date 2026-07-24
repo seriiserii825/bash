@@ -157,6 +157,22 @@ PYEOF
   done
 }
 
+log_info "Agenzie configurate"
+printf "%-25s %s\n" "Nome" "ID"
+for ENTRY in "${AGENCIES[@]}"; do
+  LABEL="${ENTRY%%|*}"
+  URL="${ENTRY#*|}"
+  AGENZIA_ID=$(echo "$URL" | grep -oE 'agenzia_id=[0-9]+' | cut -d= -f2)
+  printf "%-25s %s\n" "$LABEL" "$AGENZIA_ID"
+done
+echo ""
+
+read -r -p "Procedere con l'export? [y/N] " EXPORT_ANSWER
+if [[ ! "$EXPORT_ANSWER" =~ ^[Yy]$ ]]; then
+  log_info "Export annullato."
+  exit 0
+fi
+
 read -r -p "Convertire gli XML scaricati in CSV? [y/N] " CONVERT_ANSWER
 
 download_all
