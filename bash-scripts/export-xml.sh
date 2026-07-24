@@ -158,4 +158,10 @@ PYEOF
 }
 
 download_all
-extract_all_csv
+
+read -r -p "Convertire gli XML scaricati in CSV? [y/N] " CONVERT_ANSWER
+if [[ "$CONVERT_ANSWER" =~ ^[Yy]$ ]]; then
+  extract_all_csv
+else
+  log_info "Conversione CSV saltata."
+fi
