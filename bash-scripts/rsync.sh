@@ -13,6 +13,9 @@ ENV_FILE="$(cd "$SCRIPT_DIR/.." && pwd)/.env"
 
 quit() { echo "Exit."; exit 0; }
 
+# Numbers each incoming line as "N) text" for menu display.
+number_lines() { awk '{printf "%d) %s\n", NR, $0}'; }
+
 # Copies each source into $1 (destination dir). If a same-named file/folder
 # already exists at the destination, appends "-YYYY-MM-DD_HH-MM-SS" instead of overwriting.
 do_rsync() {
@@ -89,11 +92,13 @@ do_wpress_to_downloads() {
     | sort -rz -k1,1 \
     | sed -z 's/^[^ ]* //' \
     | tr '\0' '\n' \
+    | number_lines \
     | fzf --height=60% --reverse --no-info \
           --header="Select .wpress backup (newest first) — Esc = exit" \
-          --preview 'ls -la --color=always -- "{}"' \
+          --preview 'p="{}"; p="${p#*) }"; ls -la --color=always -- "$p"' \
           --preview-window=right,50%
   ) || quit
+  picked="${picked#*) }"
 
   [ -n "$picked" ] || quit
 
@@ -146,8 +151,10 @@ do_vps_sync() {
 
 # ── 0. DIRECTION ─────────────────────────────────────────────────────────────
 MODE=$(printf 'To folder (choose destination)\nFrom Downloads here\ngardalive uploads to mnt\ngardalive uploads from mnt\ngardalive uploads to vps\ngardalive uploads from vps\ngardalive from mnt to Downloads last wpress backup\n🚪 Exit' \
+  | number_lines \
   | fzf --height=40% --reverse --no-info \
         --header="Select transfer direction") || quit
+MODE="${MODE#*) }"
 
 [[ "$MODE" == "🚪"* ]] && quit
 
@@ -216,8 +223,10 @@ fi
 
 # ── 1. BASE PATH ─────────────────────────────────────────────────────────────
 BASE_CHOICE=$(printf '/mnt/Projects\nDownloads\nOther folder\n🚪 Exit' \
+  | number_lines \
   | fzf --height=40% --reverse --no-info \
         --header="Select starting folder") || quit
+BASE_CHOICE="${BASE_CHOICE#*) }"
 
 [[ "$BASE_CHOICE" == "🚪"* ]] && quit
 
@@ -235,8 +244,10 @@ fi
 # ── 2. SEARCH METHOD ─────────────────────────────────────────────────────────
 while true; do
   METHOD=$(printf 'Search by name\nBrowse with fzf\nFind path\n🚪 Exit' \
+    | number_lines \
     | fzf --height=40% --reverse --no-info \
           --header="Select destination folder method  |  base: $BASE_PATH") || quit
+  METHOD="${METHOD#*) }"
 
   [[ "$METHOD" == "🚪"* ]] && quit
 
@@ -267,10 +278,12 @@ if [ "$METHOD" = "Search by name" ]; then
 
   DEST=$(find "$BASE_PATH" -mindepth 1 -type d -iname "*${QUERY}*" 2>/dev/null \
     | sort \
+    | number_lines \
     | fzf --height=60% --reverse --no-info \
           --header="Matching folders — select destination  |  Esc = exit" \
-          --preview '[ -d "{}" ] && ls -la --color=always -- "{}" || true' \
+          --preview 'p="{}"; p="${p#*) }"; [ -d "$p" ] && ls -la --color=always -- "$p" || true' \
           --preview-window=right,50%) || quit
+  DEST="${DEST#*) }"
 
   [[ "$DEST" == "🚪"* ]] && quit
 
@@ -288,10 +301,12 @@ else
     done < <(find "$CUR" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort)
 
     CHOICE=$(printf '%s\n' "${ITEMS[@]}" \
+      | number_lines \
       | fzf --height=70% --reverse --no-info \
             --header="📂 $CUR" \
-            --preview '[ -d "{}" ] && ls -la --color=always -- "{}" || true' \
+            --preview 'p="{}"; p="${p#*) }"; [ -d "$p" ] && ls -la --color=always -- "$p" || true' \
             --preview-window=right,50%) || quit
+    CHOICE="${CHOICE#*) }"
 
     case "$CHOICE" in
       "✅"*)
