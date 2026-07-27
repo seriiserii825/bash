@@ -107,6 +107,36 @@ do_wpress_to_downloads() {
   do_rsync "$dest" "$picked"
 }
 
+# Lets you pick a .wpress backup from ~/Downloads via fzf (newest first)
+# and copies it into $GARDALIVE_MNT_ROOT.
+do_wpress_to_mnt() {
+  local dir="$HOME/Downloads"
+  [ -d "$dir" ] || { echo "❌ Folder '$dir' not found."; exit 1; }
+
+  local dest="$GARDALIVE_MNT_ROOT"
+  mkdir -p -- "$dest"
+
+  local picked
+  picked=$(
+    find "$dir" -maxdepth 1 -type f -name "*.wpress" -printf '%T@ %p\0' \
+    | sort -rz -k1,1 \
+    | sed -z 's/^[^ ]* //' \
+    | tr '\0' '\n' \
+    | number_lines \
+    | fzf --height=60% --reverse --no-info \
+          --header="Select .wpress backup (newest first) — Esc = exit" \
+          --preview 'p="{}"; p="${p#*) }"; ls -la --color=always -- "$p"' \
+          --preview-window=right,50%
+  ) || quit
+  picked="${picked#*) }"
+
+  [ -n "$picked" ] || quit
+
+  echo "📦 Source:      $picked"
+  echo "🛬 Destination: $dest/"
+  do_rsync "$dest" "$picked"
+}
+
 # Syncs between a local folder and a path on the gardalive VPS over rsync+ssh.
 # $1 = "to" (local -> vps) or "from" (vps -> local)
 do_vps_sync() {
@@ -150,7 +180,7 @@ do_vps_sync() {
 }
 
 # ── 0. DIRECTION ─────────────────────────────────────────────────────────────
-MODE=$(printf 'To folder (choose destination)\nFrom Downloads here\ngardalive uploads to mnt\ngardalive uploads from mnt\ngardalive uploads to vps\ngardalive uploads from vps\ngardalive from mnt to Downloads last wpress backup\n🚪 Exit' \
+MODE=$(printf 'To folder (choose destination)\nFrom Downloads here\ngardalive uploads to mnt\ngardalive uploads from mnt\ngardalive uploads to vps\ngardalive uploads from vps\ngardalive from mnt to Downloads last wpress backup\ngardalive from Downloads last wpress backup to mnt\n🚪 Exit' \
   | number_lines \
   | fzf --height=40% --reverse --no-info \
         --header="Select transfer direction") || quit
@@ -182,6 +212,11 @@ fi
 
 if [ "$MODE" = "gardalive from mnt to Downloads last wpress backup" ]; then
   do_wpress_to_downloads
+  exit 0
+fi
+
+if [ "$MODE" = "gardalive from Downloads last wpress backup to mnt" ]; then
+  do_wpress_to_mnt
   exit 0
 fi
 
