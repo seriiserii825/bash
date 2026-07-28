@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Reads clipboard, checks it's a slug (kebab-case), converts to Title Case
+# Reads clipboard, checks it's a slug (kebab-case or snake_case), converts to Title Case
 # Deps: xclip (или xsel), libnotify (notify-send)
 
 set -euo pipefail
@@ -21,12 +21,12 @@ notify() {
 text="$(clip_get)"
 text="${text#/}"
 
-if ! [[ "$text" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+if ! [[ "$text" =~ ^[a-z0-9]+([_-][a-z0-9]+)*$ ]]; then
   echo "Clipboard doesn't look like a slug: $text" >&2
   exit 1
 fi
 
-title="$(printf '%s' "$text" | tr '-' ' ' | sed -E 's/^([a-z])/\u\1/')"
+title="$(printf '%s' "$text" | tr '_-' '  ' | sed -E 's/^([a-z])/\u\1/')"
 
 clip_set "$title"
 notify "$title"
