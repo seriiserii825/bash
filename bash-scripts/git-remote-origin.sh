@@ -33,14 +33,27 @@ read -rp "Choose [1/2]: " CHOICE
 
 case "$CHOICE" in
   1)
-    git remote set-url origin "$URL"
-    echo "Done: remote origin set to $URL"
+    if git remote set-url origin "$URL"; then
+      echo "Done: remote origin set to $URL"
+    else
+      echo "Failed to set remote origin"
+      exit 1
+    fi
     ;;
   2)
     read -rp "Remote name [origin]: " REMOTE_NAME
-    REMOTE_NAME="${REMOTE_NAME:-origin}"
-    git remote add "$REMOTE_NAME" "$URL"
-    echo "Done: added remote $REMOTE_NAME -> $URL"
+    # на случай, если случайно вставили "git clone ..." или сам URL вместо имени
+    REMOTE_NAME="${REMOTE_NAME#git clone }"
+    REMOTE_NAME=$(echo "$REMOTE_NAME" | xargs)
+    if [[ -z "$REMOTE_NAME" || "$REMOTE_NAME" =~ ^(git@|https?://) ]]; then
+      REMOTE_NAME="origin"
+    fi
+    if git remote add "$REMOTE_NAME" "$URL"; then
+      echo "Done: added remote $REMOTE_NAME -> $URL"
+    else
+      echo "Failed to add remote $REMOTE_NAME"
+      exit 1
+    fi
     ;;
   *)
     echo "Invalid choice"
