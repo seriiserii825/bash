@@ -5,6 +5,17 @@ function gitPush() {
 
   source "$script_dir/encrypt.sh"
 
+  # Check if local branch is behind remote (needs a pull first)
+  git fetch
+  local_ref=$(git rev-parse @)
+  remote_ref=$(git rev-parse @{u} 2>/dev/null)
+  base_ref=$(git merge-base @ @{u} 2>/dev/null)
+
+  if [ -n "$remote_ref" ] && [ "$local_ref" != "$remote_ref" ] && [ "$local_ref" == "$base_ref" ]; then
+    echo "${tred}Error: Remote has new commits. Please run git pull first.${treset}"
+    return 1
+  fi
+
   # Check for git changes
   if [ -z "$(git status --porcelain)" ]; then
     return 1
