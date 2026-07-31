@@ -13,7 +13,7 @@ function gitPush() {
 
   if [ -n "$remote_ref" ] && [ "$local_ref" != "$remote_ref" ] && [ "$local_ref" == "$base_ref" ]; then
     echo "${tred}Error: Remote has new commits. Please run git pull first.${treset}"
-    return 1
+    return 2
   fi
 
   # Check for git changes

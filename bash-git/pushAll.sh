@@ -23,6 +23,11 @@ pushAll(){
     if [[ -n $(git status --porcelain) ]]; then
       echo "Uncommitted changes in $line:"
       gitPush $script_dir
+      if [[ $? -eq 2 ]]; then
+        echo "${tred}Aborting pushAll: $line needs a pull first.${treset}"
+        cd "$current_dir" || return 1
+        return 1
+      fi
     fi
   done
   cd "$current_dir" || exit 1
