@@ -179,14 +179,86 @@ do_vps_sync() {
   echo "✅ Done."
 }
 
+MNT_PROJECTS_DIR="/mnt/Projects"
+MNT_PROJECTS_CACHE="$SCRIPT_DIR/.mnt_projects_cache"
+
+# Rebuilds the mnt projects cache (Letter/project-name, one per line) from disk.
+rescan_mnt_projects_cache() {
+  echo "🔄 Scanning $MNT_PROJECTS_DIR ..."
+  [ -d "$MNT_PROJECTS_DIR" ] || { echo "❌ Folder '$MNT_PROJECTS_DIR' not found."; exit 1; }
+  find "$MNT_PROJECTS_DIR" -mindepth 2 -maxdepth 2 -type d 2>/dev/null \
+    | sed "s|^$MNT_PROJECTS_DIR/||" | sort > "$MNT_PROJECTS_CACHE"
+  echo "✅ Cached $(wc -l < "$MNT_PROJECTS_CACHE") project(s) → $MNT_PROJECTS_CACHE"
+}
+
+# Creates $MNT_PROJECTS_DIR/<Letter>/<name> (Letter = uppercased first char of name),
+# adds it to the cache and sets PROJECT_DIR.
+create_mnt_project() {
+  local name="$1" letter rel dir
+  letter="$(printf '%s' "${name:0:1}" | tr '[:lower:]' '[:upper:]')"
+  rel="$letter/$name"
+  dir="$MNT_PROJECTS_DIR/$rel"
+  mkdir -p -- "$dir"
+  echo "$rel" >> "$MNT_PROJECTS_CACHE"
+  sort -u -o "$MNT_PROJECTS_CACHE" "$MNT_PROJECTS_CACHE"
+  echo "✅ Created: $dir"
+  PROJECT_DIR="$dir"
+}
+
+# Picks a project from the cache via fzf (fast — no live disk scan) or creates a new one.
+# Sets PROJECT_DIR.
+pick_or_create_mnt_project() {
+  [ -f "$MNT_PROJECTS_CACHE" ] || rescan_mnt_projects_cache
+  export MNT_PROJECTS_DIR
+
+  local choice rel
+  choice=$(
+    { printf '➕  Create new project\n'; cat "$MNT_PROJECTS_CACHE"; } \
+    | number_lines \
+    | fzf --height=60% --reverse --no-info \
+          --header="Select mnt project (cached — not live disk) — Esc = exit" \
+          --preview 'p="{}"; p="${p#*) }"; [ -d "$MNT_PROJECTS_DIR/$p" ] && ls -la --color=always -- "$MNT_PROJECTS_DIR/$p" || true' \
+          --preview-window=right,50%
+  ) || quit
+  choice="${choice#*) }"
+
+  if [[ "$choice" == "➕"* ]]; then
+    read -r -p "New project name: " NEW_NAME
+    [ -n "$NEW_NAME" ] || quit
+    create_mnt_project "$NEW_NAME"
+    return
+  fi
+
+  rel="$choice"
+  PROJECT_DIR="$MNT_PROJECTS_DIR/$rel"
+
+  if [ ! -d "$PROJECT_DIR" ]; then
+    echo "⚠️  '$rel' is in the cache but missing on disk — creating it."
+    mkdir -p -- "$PROJECT_DIR"
+    echo "✅ Created: $PROJECT_DIR"
+  fi
+}
+
 # ── 0. DIRECTION ─────────────────────────────────────────────────────────────
-MODE=$(printf 'To folder (choose destination)\nFrom Downloads here\ngardalive uploads to mnt\ngardalive uploads from mnt\ngardalive uploads to vps\ngardalive uploads from vps\ngardalive from mnt to Downloads last wpress backup\ngardalive from Downloads last wpress backup to mnt\n🚪 Exit' \
+MODE=$(printf 'To folder (choose destination)\nmnt to folder (fast project picker)\nRescan mnt projects\nFrom Downloads here\ngardalive uploads to mnt\ngardalive uploads from mnt\ngardalive uploads to vps\ngardalive uploads from vps\ngardalive from mnt to Downloads last wpress backup\ngardalive from Downloads last wpress backup to mnt\n🚪 Exit' \
   | number_lines \
   | fzf --height=40% --reverse --no-info \
         --header="Select transfer direction") || quit
 MODE="${MODE#*) }"
 
 [[ "$MODE" == "🚪"* ]] && quit
+
+if [ "$MODE" = "Rescan mnt projects" ]; then
+  rescan_mnt_projects_cache
+  exit 0
+fi
+
+# ── 0E. MNT TO FOLDER (fast project picker) ──────────────────────────────────
+if [ "$MODE" = "mnt to folder (fast project picker)" ]; then
+  pick_or_create_mnt_project
+  BASE_PATH="$PROJECT_DIR"
+  METHOD="Browse with fzf"
+fi
 
 # ── 0C. GARDALIVE UPLOADS ⇄ MNT ──────────────────────────────────────────────
 if [ "$MODE" = "gardalive uploads to mnt" ]; then
@@ -257,27 +329,29 @@ if [ "$MODE" = "From Downloads here" ]; then
 fi
 
 # ── 1. BASE PATH ─────────────────────────────────────────────────────────────
-BASE_CHOICE=$(printf '/mnt/Projects\nDownloads\nOther folder\n🚪 Exit' \
-  | number_lines \
-  | fzf --height=40% --reverse --no-info \
-        --header="Select starting folder") || quit
-BASE_CHOICE="${BASE_CHOICE#*) }"
+if [ -z "${BASE_PATH:-}" ]; then
+  BASE_CHOICE=$(printf '/mnt/Projects\nDownloads\nOther folder\n🚪 Exit' \
+    | number_lines \
+    | fzf --height=40% --reverse --no-info \
+          --header="Select starting folder") || quit
+  BASE_CHOICE="${BASE_CHOICE#*) }"
 
-[[ "$BASE_CHOICE" == "🚪"* ]] && quit
+  [[ "$BASE_CHOICE" == "🚪"* ]] && quit
 
-if [ "$BASE_CHOICE" = "Other folder" ]; then
-  read -r -p "Enter path: " BASE_PATH
-  BASE_PATH="${BASE_PATH%/}"
-elif [ "$BASE_CHOICE" = "Downloads" ]; then
-  BASE_PATH="$HOME/Downloads"
-else
-  BASE_PATH="/mnt/Projects"
+  if [ "$BASE_CHOICE" = "Other folder" ]; then
+    read -r -p "Enter path: " BASE_PATH
+    BASE_PATH="${BASE_PATH%/}"
+  elif [ "$BASE_CHOICE" = "Downloads" ]; then
+    BASE_PATH="$HOME/Downloads"
+  else
+    BASE_PATH="$MNT_PROJECTS_DIR"
+  fi
 fi
 
 [ -d "$BASE_PATH" ] || { echo "❌ Folder '$BASE_PATH' not found."; exit 1; }
 
 # ── 2. SEARCH METHOD ─────────────────────────────────────────────────────────
-while true; do
+while [ -z "${METHOD:-}" ]; do
   METHOD=$(printf 'Search by name\nBrowse with fzf\nFind path\n🚪 Exit' \
     | number_lines \
     | fzf --height=40% --reverse --no-info \
@@ -288,22 +362,22 @@ while true; do
 
   if [ "$METHOD" = "Find path" ]; then
     read -r -p "Enter name to find (partial match): " QUERY
-    [ -n "$QUERY" ] || continue
+    [ -n "$QUERY" ] || { METHOD=""; continue; }
 
     mapfile -t RESULTS < <(find "$BASE_PATH" -mindepth 1 -type d -iname "*${QUERY}*" 2>/dev/null | sort)
 
     if [ "${#RESULTS[@]}" -eq 0 ]; then
       echo "❌ Nothing matching '$QUERY' in $BASE_PATH"
       read -r -p "Press Enter to return to menu…" _
+      METHOD=""
       continue
     fi
 
     printf '%s\n' "${RESULTS[@]}"
     read -r -p "Press Enter to return to menu…" _
+    METHOD=""
     continue
   fi
-
-  break
 done
 
 # ── 3A. TEXT SEARCH ──────────────────────────────────────────────────────────

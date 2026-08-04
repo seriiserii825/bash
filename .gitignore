@@ -2,4 +2,5 @@ bash-private
 node_modules
 wifi.sh
 bash-scripts/export-xml-env.sh
+bash-scripts/.mnt_projects_cache
 .env
