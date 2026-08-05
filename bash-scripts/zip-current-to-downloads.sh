@@ -17,6 +17,11 @@ if [[ -f "$downloads_dir/$archive_name" ]]; then
   fi
 fi
 
+if [[ -d "$current_dir/node_modules" ]]; then
+  echo "Removing node_modules: $current_dir/node_modules"
+  rm -rf "$current_dir/node_modules"
+fi
+
 cd "$(dirname "$current_dir")" || exit 1
 zip -r "$archive_name" "$folder_name"
 if [[ $? -ne 0 ]]; then
