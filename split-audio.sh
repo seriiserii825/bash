@@ -12,15 +12,15 @@ fi
 CLIP=$(xclip -selection clipboard -o 2>/dev/null) || true
 
 # --- Validate timestamps ---
-TIMESTAMPS=$(echo "$CLIP" | grep -E '^[0-9]+:[0-9]{2}(:[0-9]{2})?[[:space:]]+\S') || true
+TIMESTAMPS=$(echo "$CLIP" | grep -E '^[0-9]+\.[[:space:]]+.+\([[:space:]]*[0-9]+:[0-9]{2}(:[0-9]{2})?[[:space:]]*\)[[:space:]]*$') || true
 
 if [[ -z "$TIMESTAMPS" ]]; then
     echo "Error: no timestamps found in clipboard."
     echo ""
     echo "Expected format (one per line):"
-    echo "  0:00 I. Moderato"
-    echo "  11:43 II. Adagio sostenuto"
-    echo "  23:34 III. Allegro scherzando"
+    echo "  01. Галина ( 00:00 )"
+    echo "  02. Трактористка ( 04:54 )"
+    echo "  03. Закружился снег шальной ( 08:45 )"
     exit 1
 fi
 
@@ -48,10 +48,11 @@ normalize_time() {
 declare -a TIMES TITLES
 while IFS= read -r line; do
     [[ -z "$line" ]] && continue
-    TIME=$(echo "$line" | grep -oE '^[0-9]+:[0-9]{2}(:[0-9]{2})?')
-    TITLE=$(echo "$line" | sed -E 's/^[0-9]+:[0-9]{2}(:[0-9]{2})?[[:space:]]+//')
+    NUM=$(echo "$line" | grep -oE '^[0-9]+')
+    TIME=$(echo "$line" | grep -oE '[0-9]+:[0-9]{2}(:[0-9]{2})?')
+    TITLE=$(echo "$line" | sed -E 's/^[0-9]+\.[[:space:]]*//; s/[[:space:]]*\([[:space:]]*[0-9]+:[0-9]{2}(:[0-9]{2})?[[:space:]]*\)[[:space:]]*$//')
     TIMES+=("$(normalize_time "$TIME")")
-    TITLES+=("$TITLE")
+    TITLES+=("$(printf "%02d - %s" "$NUM" "$TITLE")")
 done <<< "$TIMESTAMPS"
 
 echo "Found ${#TIMES[@]} timestamps:"
