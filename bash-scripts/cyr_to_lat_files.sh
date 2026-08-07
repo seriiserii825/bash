@@ -23,12 +23,15 @@ function compute_final_name {
     if [[ "$letter" == "-" ]]; then
       translated+="-"
     else
+      local matched=0
       for (( j=0; j<${#rus[@]}; j++ )); do
         if [[ "$letter" == "${rus[j]}" ]]; then
           translated+="${eng[j]}"
+          matched=1
           break
         fi
       done
+      [[ $matched -eq 0 ]] && translated+="$letter"
     fi
   done
   echo "$translated.$file_extension"
