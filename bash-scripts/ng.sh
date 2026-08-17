@@ -7,8 +7,21 @@ treset='\e[0m'
 
 function checkNg(){
   if ! [ -x "$(command -v ng)" ]; then
-    echo -e "${tmagenta}Error: Angular CLI (ng) is not installed.${treset}"
-    exit 1
+    echo -e "${tmagenta}Angular CLI (ng) is not installed. Installing...${treset}"
+
+    if ! [ -x "$(command -v npm)" ]; then
+      echo -e "${tmagenta}Error: npm is not installed.${treset}"
+      exit 1
+    fi
+
+    npm install -g @angular/cli
+
+    if ! [ -x "$(command -v ng)" ]; then
+      echo -e "${tmagenta}Error: failed to install Angular CLI (ng).${treset}"
+      exit 1
+    fi
+
+    echo -e "${tgreen}Angular CLI (ng) installed successfully.${treset}"
   fi
 }
 
