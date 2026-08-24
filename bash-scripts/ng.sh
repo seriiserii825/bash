@@ -44,6 +44,28 @@ function readKebabName(){
   echo "$name"
 }
 
+function readKebabPath(){
+  local label=$1
+  local path
+
+  read -p "$label (kebab-case, e.g. manager or apps/manager): " path
+
+  if [ -z "$path" ]; then
+    echo -e "${tmagenta}Error: name is required.${treset}"
+    exit 1
+  fi
+
+  path="${path#/}"
+  path="${path%/}"
+
+  if ! [[ "$path" =~ ^[a-z0-9]+(-[a-z0-9]+)*(/[a-z0-9]+(-[a-z0-9]+)*)*$ ]]; then
+    echo -e "${tmagenta}Error: path must be kebab-case segments separated by / (e.g. apps/manager).${treset}"
+    exit 1
+  fi
+
+  echo "$path"
+}
+
 function createIcon(){
   checkNg
 
@@ -91,9 +113,23 @@ function createComponent(){
 
 function createPage(){
   checkNg
-  local name=$(readKebabName "Page name")
-  ng generate component "pages/${name}-page" --skip-tests --style=none
-  echo -e "${tgreen}Page pages/${name}-page created${treset}"
+  local path=$(readKebabPath "Page path")
+  local dir="${path%/*}"
+  local name="${path##*/}"
+
+  if [ "$dir" == "$path" ]; then
+    dir=""
+  fi
+
+  local target
+  if [ -n "$dir" ]; then
+    target="pages/${dir}/${name}-page"
+  else
+    target="pages/${name}-page"
+  fi
+
+  ng generate component "$target" --skip-tests --style=none
+  echo -e "${tgreen}Page ${target} created${treset}"
 }
 
 function createLayout(){
@@ -113,7 +149,7 @@ function createShared(){
 function menu(){
   echo -e "${tgreen}1. Create icon${treset}"
   echo -e "${tgreen}2. Create component${treset}"
-  echo -e "${tgreen}3. Create page${treset}"
+  echo -e "${tgreen}3. Create page (supports nested paths, e.g. apps/manager)${treset}"
   echo -e "${tgreen}4. Create layout${treset}"
   echo -e "${tgreen}5. Create shared${treset}"
   echo -e "${tmagenta}6. Exit${treset}"
