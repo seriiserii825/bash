@@ -24,6 +24,8 @@ echo "${tmagenta}Press Ctrl+C to stop the script${treset}"
 
 function clipboardHandler() {
   clipboard=$(xclip -o -selection clipboard)
+  # trim leading/trailing whitespace
+  clipboard=$(echo "$clipboard" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
   echo "$clipboard"
   notify-send "$clipboard"
   slug_clipboard=$(echo "$clipboard" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -d '/()[]{}<>?|’')
