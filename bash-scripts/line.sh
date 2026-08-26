@@ -12,8 +12,8 @@ if [[ -z "$line_color" ]]; then
 fi
 echo "line color is $line_color"
 
-width=$(convert $file_path -format "%w" info:)
-height=$(convert $file_path -format "%h" info:)
+width=$(magick $file_path -format "%w" info:)
+height=$(magick $file_path -format "%h" info:)
 let w=width/2
-convert $file_path  -fill $line_color  -draw "line $w,0 $w,$height"  -quality 75%  $new_file_name
+magick $file_path  -fill $line_color  -draw "line $w,0 $w,$height"  -quality 75%  $new_file_name
 
