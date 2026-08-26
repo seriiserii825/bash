@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Toggles the dist entry between commented and uncommented in .gitignore
-# toggle_dist_in_gitignore
+# toggle-dist-in-gitignore
 
 set -e
 

@@ -1,21 +1,21 @@
 ---
 name: toggle-script
-description: Use when creating a new toggle_*.sh script in bash-scripts/ that comments/uncomments a line in a file (WP constants, .gitignore entries, config flags, etc). Standardizes colors, line detection, indentation-preserving sed toggle, and confirmation prompt.
+description: Use when creating a new toggle-*.sh script in bash-scripts/ that comments/uncomments a line in a file (WP constants, .gitignore entries, config flags, etc). Standardizes colors, line detection, indentation-preserving sed toggle, and confirmation prompt.
 ---
 
 # toggle-script
 
-Стандартный шаблон для новых `bash-scripts/toggle_*.sh` — скриптов, которые
+Стандартный шаблон для новых `bash-scripts/toggle-*.sh` — скриптов, которые
 комментируют/раскомментируют одну строку в файле (WP-константа, запись в
 `.gitignore`, scss-правило и т.п.). Основан на разборе существующих
-`toggle_dist_in_gitignore.sh`, `toggle_body_after.sh`, `toggle-neovim.sh`,
-`toggle-macros.sh` и `toggle_wp_http_block_external.sh` — последний считается
+`toggle-dist-in-gitignore.sh`, `toggle-body-after.sh`, `toggle-neovim.sh`,
+`toggle-macros.sh` и `toggle-wp-http-block-external.sh` — последний считается
 эталоном (самый полный и переносимый).
 
 ## Именование и права
 
-- Файл: `bash-scripts/toggle_<what>.sh`.
-- После создания: `chmod +x bash-scripts/toggle_<what>.sh`.
+- Файл: `bash-scripts/toggle-<what>.sh`.
+- После создания: `chmod +x bash-scripts/toggle-<what>.sh`.
 
 ## Шаблон
 
@@ -26,7 +26,7 @@ description: Use when creating a new toggle_*.sh script in bash-scripts/ that co
 set -e
 
 # Setup colors for output — самодостаточный блок, не полагаться на внешние
-# переменные $tmagenta/$tgreen (в отличие от toggle_body_after.sh, где они
+# переменные $tmagenta/$tgreen (в отличие от toggle-body-after.sh, где они
 # нигде не определяются).
 tblue=$(tput setaf 4)
 tgreen=$(tput setaf 2)
@@ -91,7 +91,7 @@ fi
    "раскомментировано".
 4. **sed с backreference** для отступа — никогда не заменять строку целиком
    фиксированным текстом (кроме блочных `/* ... */` комментариев, где
-   допустим фиксированный отступ, как в `toggle_body_after.sh`).
+   допустим фиксированный отступ, как в `toggle-body-after.sh`).
 5. **Подтверждение обязательно** (`read -rp ... (y/N)` + `[[ $answer =~ ^[Yy]$ ]]`).
 6. **Эмодзи-статусы**: 🟢 активно, 🔵 закомментировано, ⚠️ ошибка/предупреждение.
 
@@ -108,7 +108,7 @@ fi
 
 # В структуре Local by Flywheel (.../app/public/wp-content/themes/<theme>)
 # wp-config.php лежит на 3 уровня выше — проверено на реальном сайте
-# lc-gardalive. Не 4 (первая версия toggle_wp_http_block_external.sh
+# lc-gardalive. Не 4 (первая версия toggle-wp-http-block-external.sh
 # ошибочно использовала 4 уровня).
 WP_CONFIG="../../../wp-config.php"
 ```
