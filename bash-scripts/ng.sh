@@ -106,9 +106,23 @@ function createIcon(){
 
 function createComponent(){
   checkNg
-  local name=$(readKebabName "Component name")
-  ng generate component "components/${name}" --skip-tests --style=none
-  echo -e "${tgreen}Component components/${name} created${treset}"
+  local path=$(readKebabPath "Component path")
+  local dir="${path%/*}"
+  local name="${path##*/}"
+
+  if [ "$dir" == "$path" ]; then
+    dir=""
+  fi
+
+  local target
+  if [ -n "$dir" ]; then
+    target="components/${dir}/${name}"
+  else
+    target="components/${name}"
+  fi
+
+  ng generate component "$target" --skip-tests --style=none
+  echo -e "${tgreen}Component ${target} created${treset}"
 }
 
 function createPage(){
@@ -148,7 +162,7 @@ function createShared(){
 
 function menu(){
   echo -e "${tgreen}1. Create icon${treset}"
-  echo -e "${tgreen}2. Create component${treset}"
+  echo -e "${tgreen}2. Create component (supports nested paths, e.g. form/input)${treset}"
   echo -e "${tgreen}3. Create page (supports nested paths, e.g. apps/manager)${treset}"
   echo -e "${tgreen}4. Create layout${treset}"
   echo -e "${tgreen}5. Create shared${treset}"
