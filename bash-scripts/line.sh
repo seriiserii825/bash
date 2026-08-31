@@ -17,3 +17,5 @@ height=$(magick $file_path -format "%h" info:)
 let w=width/2
 magick $file_path  -fill $line_color  -draw "line $w,0 $w,$height"  -quality 75%  $new_file_name
 
+jpegoptim --strip-all --all-progressive -pt -m 80 "$new_file_name"
+
