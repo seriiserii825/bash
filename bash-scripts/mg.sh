@@ -73,6 +73,10 @@ function cropImage() {
   local imgs
   read -ra imgs <<< "$(filterImages "$@")"
   set -- "${imgs[@]}"
+  local before_sizes
+  before_sizes=$(showSizes $*)
+  echo "${tblue}Before:${treset}"
+  echo "$before_sizes"
   read -p "Pixels to crop top,right,bottom,left (comma separated, leave empty for 0): " crop_values
   top_crop=$(echo $crop_values | cut -d',' -f1)
   right_crop=$(echo $crop_values | cut -d',' -f2)
