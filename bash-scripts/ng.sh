@@ -104,8 +104,19 @@ function createIcon(){
   echo -e "${tgreen}Icon component icons/${name}-icon created${treset}"
 }
 
+function listTopLevel(){
+  local dir=$1
+
+  if [ -d "$dir" ]; then
+    echo -e "${tgreen}Existing in ${dir}/:${treset}"
+    ls -1 "$dir"
+    echo ""
+  fi
+}
+
 function createComponent(){
   checkNg
+  listTopLevel "src/app/components"
   local path=$(readKebabPath "Component path")
   local dir="${path%/*}"
   local name="${path##*/}"
@@ -127,6 +138,7 @@ function createComponent(){
 
 function createPage(){
   checkNg
+  listTopLevel "src/app/pages"
   local path=$(readKebabPath "Page path")
   local dir="${path%/*}"
   local name="${path##*/}"
