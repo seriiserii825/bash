@@ -169,12 +169,14 @@ function changeImage(){
       echo "$before_sizes"
       echo "${tblue}Enter the width: ${treset}"
       read  width
+      mkdir -p original
       new_files=()
       for img in $*; do
         base="${img%.*}"
         ext="${img##*.}"
         new_name="${base}-width-${width}.${ext}"
         cp "$img" "$new_name"
+        mv "$img" original/
         new_files+=("$new_name")
       done
       mogrify -resize "${width}x" "${new_files[@]}"
@@ -189,12 +191,14 @@ function changeImage(){
       echo "$before_sizes"
       echo "${tyellow}Enter the height: ${treset}"
       read  height
+      mkdir -p original
       new_files=()
       for img in $*; do
         base="${img%.*}"
         ext="${img##*.}"
         new_name="${base}-height-${height}.${ext}"
         cp "$img" "$new_name"
+        mv "$img" original/
         new_files+=("$new_name")
       done
       mogrify -auto-orient -resize "x${height}" "${new_files[@]}"
