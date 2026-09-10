@@ -147,16 +147,18 @@ function trimPngWhiteSpace() {
   read -p "Fuzz percent for near-white trimming (leave empty for 0): " fuzz
   fuzz=${fuzz:-0}
 
-  mkdir -p original
   local jpgs=()
   for img in "${pngs[@]}"; do
-    cp "$img" original/
-    mogrify -fuzz "${fuzz}%" -trim +repage "$img"
-    echo "Trimmed: $img"
-    jpgs+=("${img%.*}.jpg")
+    local base="${img%.*}"
+    local dup="${base}-trim-tmp.png"
+    cp "$img" "$dup"
+    mogrify -fuzz "${fuzz}%" -trim +repage "$dup"
+    mogrify -format jpg "$dup"
+    mv "${base}-trim-tmp.jpg" "${base}.jpg"
+    rm "$dup"
+    echo "Trimmed: $img -> ${base}.jpg"
+    jpgs+=("${base}.jpg")
   done
-
-  mogrify -format jpg "${pngs[@]}"
 
   echo "${tgreen}After:${treset}"
   showSizes "${jpgs[@]}"
