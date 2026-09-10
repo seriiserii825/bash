@@ -130,6 +130,38 @@ function cropImage() {
   echo "Cropping completed."
 }
 
+function trimPngWhiteSpace() {
+  local pngs=()
+  for f in "$@"; do
+    [[ "${f,,}" =~ \.png$ ]] && pngs+=("$f")
+  done
+
+  if [[ ${#pngs[@]} -eq 0 ]]; then
+    echo "No png files selected."
+    return
+  fi
+
+  echo "${tblue}Before:${treset}"
+  showSizes "${pngs[@]}"
+
+  read -p "Fuzz percent for near-white trimming (leave empty for 0): " fuzz
+  fuzz=${fuzz:-0}
+
+  mkdir -p original
+  local jpgs=()
+  for img in "${pngs[@]}"; do
+    cp "$img" original/
+    mogrify -fuzz "${fuzz}%" -trim +repage "$img"
+    echo "Trimmed: $img"
+    jpgs+=("${img%.*}.jpg")
+  done
+
+  mogrify -format jpg "${pngs[@]}"
+
+  echo "${tgreen}After:${treset}"
+  showSizes "${jpgs[@]}"
+}
+
 function changeImage(){
   local imgs
   read -ra imgs <<< "$(filterImages "$@")"
@@ -144,7 +176,8 @@ function changeImage(){
   echo "${tgreen}5.1 Flop current and copy${treset}"
   echo "${tblue}6. Rotate${treset}"
   echo "${tblue}7. Crop${treset}"
-  echo "${tmagenta}8. Exit${treset}"
+  echo "${tgreen}8. Trim png white space and convert to jpg${treset}"
+  echo "${tmagenta}9. Exit${treset}"
   read -p "${tgreen}Enter your choice: ${treset}" choice
   case $choice in
     1)
@@ -233,6 +266,9 @@ function changeImage(){
       changeImage $*
       ;;
     8)
+      trimPngWhiteSpace $*
+      ;;
+    9)
       exit 0
       ;;
     *)
