@@ -3,6 +3,8 @@
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/libs/fzf-multiselect.sh"
+
 err()  { printf "\e[31m%s\e[0m\n" "$*" >&2; }
 note() { printf "\e[33m%s\e[0m\n" "$*"; }
 ok()   { printf "\e[32m%s\e[0m\n" "$*"; }
@@ -22,6 +24,21 @@ install_ps_mem() {
   ok "ps_mem installed"
 }
 
-command -v ps_mem >/dev/null 2>&1 || install_ps_mem
+show_usage() {
+  command -v ps_mem >/dev/null 2>&1 || install_ps_mem
+  sudo ps_mem
+}
 
-sudo ps_mem
+kill_selected() {
+  selected=$(ps -eo pid,rss,%mem,comm --no-headers \
+    | awk '{printf "%-8s %8.1f MiB %5s%%  %s\n", $1, $2/1024, $3, $4}' \
+    | fzf_multiselect --prompt="Kill process: ")
+  [ -z "$selected" ] && return
+  echo "$selected" | awk '{print $1}' | xargs -r sudo kill -9
+}
+
+read -rp "Просмотреть процессы или убить? [p/k]: " action
+case "$action" in
+  k) kill_selected ;;
+  *) show_usage ;;
+esac
