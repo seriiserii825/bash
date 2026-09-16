@@ -21,7 +21,7 @@ CLIP=$(xclip -selection clipboard -o 2>/dev/null) || true
 # To add a new format, just add all four pieces.
 # =============================================================
 
-FORMATS=(classic plain)
+FORMATS=(classic plain bracket)
 
 declare -A FORMAT_DESC=(
     [classic]='01. Галина ( 00:00 )
@@ -30,6 +30,9 @@ declare -A FORMAT_DESC=(
     [plain]='01. Кабриолет 00:00
 02. Вояж 02:43
 03. В Питере — пить 06:23'
+    [bracket]='[00:00:00] - 01. The Road To Hell
+[00:04:01] - 02. On The Beach
+[00:08:06] - 03. Fool'
 )
 
 # --- Convert M:SS or H:MM:SS → HH:MM:SS ---
@@ -76,6 +79,28 @@ parse_format_plain() {
         title=$(echo "$line" | sed -E 's/^[0-9]+\.[[:space:]]*//; s/[[:space:]]+[0-9]+:[0-9]{2}(:[0-9]{2})?[[:space:]]*$//')
         TIMES+=("$(normalize_time "$time")")
         TITLES+=("$(printf "%02d - %s" "$((10#$num))" "$title")")
+    done <<< "$lines"
+}
+
+# --- Format: bracket ("[00:00:00] - 01. Title", title may use combining
+#     underline chars U+0300–U+036F for stylized text, e.g. YouTube "fancy" titles) ---
+match_format_bracket() {
+    echo "$1" | grep -E '^\[[0-9]+:[0-9]{2}(:[0-9]{2})?\][[:space:]]*-[[:space:]]*[0-9]+\.[[:space:]]+.+$'
+}
+
+parse_format_bracket() {
+    local lines="$1"
+    while IFS= read -r line; do
+        [[ -z "$line" ]] && continue
+        local time rest num title clean_title
+        time=$(echo "$line" | grep -oE '^\[[0-9]+:[0-9]{2}(:[0-9]{2})?\]' | tr -d '[]')
+        rest=$(echo "$line" | sed -E 's/^\[[0-9]+:[0-9]{2}(:[0-9]{2})?\][[:space:]]*-[[:space:]]*//')
+        num=$(echo "$rest" | grep -oE '^[0-9]+')
+        title=$(echo "$rest" | sed -E 's/^[0-9]+\.[[:space:]]*//')
+        # strip combining diacritical marks (U+0300–U+036F) used for stylized underline text
+        clean_title=$(LC_ALL=C printf '%s' "$title" | LC_ALL=C sed -E 's/\xcc[\x80-\xbf]//g; s/\xcd[\x80-\xaf]//g')
+        TIMES+=("$(normalize_time "$time")")
+        TITLES+=("$(printf "%02d - %s" "$((10#$num))" "$clean_title")")
     done <<< "$lines"
 }
 
