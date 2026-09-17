@@ -11,6 +11,10 @@ fi
 # --- 2. Clipboard ---
 CLIP=$(xclip -selection clipboard -o 2>/dev/null) || true
 
+# --- Known-formats folder (persisted examples, one per file: format-1.txt, format-2.txt, ...) ---
+FORMATS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/audio-formats"
+mkdir -p "$FORMATS_DIR"
+
 # =============================================================
 # Formats registry.
 # Each format needs:
@@ -104,6 +108,30 @@ parse_format_bracket() {
     done <<< "$lines"
 }
 
+# --- Persist known formats to audio-formats/format-N.txt (created if missing) ---
+sync_known_formats() {
+    local i=1
+    for fmt in "${FORMATS[@]}"; do
+        local file="$FORMATS_DIR/format-$i.txt"
+        [[ -f "$file" ]] || printf '%s\n' "${FORMAT_DESC[$fmt]}" > "$file"
+        ((i++))
+    done
+}
+sync_known_formats
+
+# --- Save an unrecognized clipboard format to a new audio-formats/format-N.txt ---
+save_unknown_format() {
+    local content="$1"
+    local n=1
+    while [[ -f "$FORMATS_DIR/format-$n.txt" ]]; do
+        ((n++))
+    done
+    local file="$FORMATS_DIR/format-$n.txt"
+    printf '%s\n' "$content" > "$file"
+    echo "Saved new/unrecognized format to: $file"
+    echo "Add match_format_<id>/parse_format_<id> functions in $(basename "${BASH_SOURCE[0]}") to support it, then re-run."
+}
+
 # --- Detect which format(s) match the clipboard ---
 declare -A MATCHED_LINES
 MATCHED_FORMATS=()
@@ -129,6 +157,8 @@ if [[ ${#MATCHED_FORMATS[@]} -eq 0 ]]; then
     echo "Error: no timestamps found in clipboard matching any known format."
     echo ""
     print_all_formats
+    echo ""
+    save_unknown_format "$CLIP"
     exit 1
 fi
 
