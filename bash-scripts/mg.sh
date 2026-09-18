@@ -121,7 +121,7 @@ function cropImage() {
 
     base="${img%.*}"
     ext="${img##*.}"
-    new_name="${base}-${top_crop}-${right_crop}-${bottom_crop}-${left_crop}.${ext}"
+    new_name="${base}-crop-${top_crop}-${right_crop}-${bottom_crop}-${left_crop}.${ext}"
     cp "$img" "$new_name"
     mogrify -crop "${new_width}x${new_height}+${left_crop}+${top_crop}" +repage "$new_name"
     echo "Created: $new_name"
@@ -175,7 +175,6 @@ function changeImage(){
   echo "${tgreen}3. Width${treset}"
   echo "${tblue}4. Height${treset}"
   echo "${tgreen}5. Flop${treset}"
-  echo "${tgreen}5.1 Flop current and copy${treset}"
   echo "${tblue}6. Rotate${treset}"
   echo "${tblue}7. Crop${treset}"
   echo "${tgreen}8. Trim png white space and convert to jpg${treset}"
@@ -187,19 +186,24 @@ function changeImage(){
       changeImage $*
       ;;
     2)
-      for i in ls $*; do
-        # check if i has ext jpg
+      new_files=()
+      for i in $*; do
+        base="${i%.*}"
+        ext="${i##*.}"
+        new_name="${base}-optimized.${ext}"
+        cp "$i" "$new_name"
         if [[ $i == *.jpg ]]; then
-          jpegoptim --strip-all --all-progressive -ptm 80 $i
+          jpegoptim --strip-all --all-progressive -ptm 80 "$new_name"
         elif [[ $i == *.png ]]; then
-          pngquant $i --quality 80-90 --speed 1
+          pngquant --quality 80-90 --speed 1 --force --output "$new_name" "$new_name"
         fi
+        new_files+=("$new_name")
       done
-      # jpegoptim --strip-all --all-progressive -ptm 80 $*
+      echo "${tgreen}Created: ${new_files[*]}${treset}"
       changeImage $*
       ;;
     2.1)
-      mogrify -format jpg $* && rm $*
+      mogrify -format jpg $*
       ;;
     3)
       local before_sizes
@@ -246,20 +250,31 @@ function changeImage(){
       changeImage $*
       ;;
     5)
-      mogrify -flop $*
-      changeImage $*
-      ;;
-    5.1)
-      current_file=$*
-      new_file=$(echo $current_file | sed 's/\(.*\)\.\(.*\)/\1-flop.\2/')
-      cp $current_file $new_file
-      mogrify -flop $new_file
+      new_files=()
+      for img in $*; do
+        base="${img%.*}"
+        ext="${img##*.}"
+        new_name="${base}-flop.${ext}"
+        cp "$img" "$new_name"
+        new_files+=("$new_name")
+      done
+      mogrify -flop "${new_files[@]}"
+      echo "${tgreen}Created: ${new_files[*]}${treset}"
       changeImage $*
       ;;
     6)
       echo "${tblue}Enter the angle: ${treset}"
       read  angle
-      mogrify -rotate $angle $*
+      new_files=()
+      for img in $*; do
+        base="${img%.*}"
+        ext="${img##*.}"
+        new_name="${base}-rotate-${angle}.${ext}"
+        cp "$img" "$new_name"
+        new_files+=("$new_name")
+      done
+      mogrify -rotate "$angle" "${new_files[@]}"
+      echo "${tgreen}Created: ${new_files[*]}${treset}"
       changeImage $*
       ;;
     7)
