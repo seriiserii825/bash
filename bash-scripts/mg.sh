@@ -212,14 +212,19 @@ function changeImage(){
       echo "$before_sizes"
       echo "${tblue}Enter the width: ${treset}"
       read  width
+      read -p "${tblue}Add postfix -width-${width}? (Y/n): ${treset}" add_postfix
       mkdir -p original
       new_files=()
       for img in $*; do
         base="${img%.*}"
         ext="${img##*.}"
-        new_name="${base}-width-${width}.${ext}"
-        cp "$img" "$new_name"
+        if [[ "$add_postfix" =~ ^[Nn]$ ]]; then
+          new_name="$img"
+        else
+          new_name="${base}-width-${width}.${ext}"
+        fi
         mv "$img" original/
+        cp "original/$img" "$new_name"
         new_files+=("$new_name")
       done
       mogrify -resize "${width}x" "${new_files[@]}"
@@ -234,14 +239,19 @@ function changeImage(){
       echo "$before_sizes"
       echo "${tyellow}Enter the height: ${treset}"
       read  height
+      read -p "${tyellow}Add postfix -height-${height}? (Y/n): ${treset}" add_postfix
       mkdir -p original
       new_files=()
       for img in $*; do
         base="${img%.*}"
         ext="${img##*.}"
-        new_name="${base}-height-${height}.${ext}"
-        cp "$img" "$new_name"
+        if [[ "$add_postfix" =~ ^[Nn]$ ]]; then
+          new_name="$img"
+        else
+          new_name="${base}-height-${height}.${ext}"
+        fi
         mv "$img" original/
+        cp "original/$img" "$new_name"
         new_files+=("$new_name")
       done
       mogrify -auto-orient -resize "x${height}" "${new_files[@]}"
