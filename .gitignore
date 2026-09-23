@@ -5,3 +5,6 @@ bash-scripts/export-xml-env.sh
 bash-scripts/set-smtp-to-wp-config-env.sh
 bash-scripts/.mnt_projects_cache
 .env
+bash-scripts/export-xml-env.sh.sha256
+bash-scripts/set-smtp-to-wp-config-env.sh.sha256
+.env.sha256

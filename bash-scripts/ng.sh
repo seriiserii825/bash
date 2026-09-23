@@ -104,12 +104,38 @@ function createIcon(){
   echo -e "${tgreen}Icon component icons/${name}-icon created${treset}"
 }
 
+function _treeDir(){
+  local dir=$1
+  local prefix=$2
+
+  local items=()
+  while IFS= read -r item; do
+    [ -d "$dir/$item" ] && items+=("$item")
+  done < <(ls -1 "$dir" 2>/dev/null)
+
+  local total=${#items[@]}
+  for ((i=0; i<total; i++)); do
+    local item="${items[$i]}"
+    if [ $((i + 1)) -eq $total ]; then
+      echo "${prefix}└── ${item}"
+      _treeDir "$dir/$item" "${prefix}    "
+    else
+      echo "${prefix}├── ${item}"
+      _treeDir "$dir/$item" "${prefix}│   "
+    fi
+  done
+}
+
 function listTopLevel(){
   local dir=$1
 
   if [ -d "$dir" ]; then
     echo -e "${tgreen}Existing in ${dir}/:${treset}"
-    ls -1 "$dir"
+    if command -v tree &>/dev/null; then
+      tree -d --noreport "$dir" | tail -n +2
+    else
+      _treeDir "$dir" ""
+    fi
     echo ""
   fi
 }
