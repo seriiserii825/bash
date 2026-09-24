@@ -5,6 +5,21 @@ tgreen='\e[32m'
 tmagenta='\e[35m'
 treset='\e[0m'
 
+function goToProjectRoot(){
+  local dir="$PWD"
+
+  while [ "$dir" != "/" ]; do
+    if [ -f "$dir/angular.json" ]; then
+      cd "$dir" || exit 1
+      return
+    fi
+    dir=$(dirname "$dir")
+  done
+
+  echo -e "${tmagenta}Error: angular.json not found (not inside an Angular project).${treset}"
+  exit 1
+}
+
 function checkNg(){
   if ! [ -x "$(command -v ng)" ]; then
     echo -e "${tmagenta}Angular CLI (ng) is not installed. Installing...${treset}"
@@ -44,26 +59,67 @@ function readKebabName(){
   echo "$name"
 }
 
-function readKebabPath(){
-  local label=$1
-  local path
+function chooseOrCreateDirectory(){
+  local base=$1
 
-  read -p "$label (kebab-case, e.g. manager or apps/manager): " path
+  mkdir -p "$base"
 
-  if [ -z "$path" ]; then
-    echo -e "${tmagenta}Error: name is required.${treset}"
-    exit 1
+  local need_folder
+  need_folder=$(printf "No, create in root\nYes, choose or create a folder\nExit" | fzf --prompt="Use a subfolder? > " --height=6 --no-info)
+
+  if [ -z "$need_folder" ] || [ "$need_folder" == "Exit" ]; then
+    echo -e "${tmagenta}Exiting.${treset}" >&2
+    exit 0
   fi
 
-  path="${path#/}"
-  path="${path%/}"
-
-  if ! [[ "$path" =~ ^[a-z0-9]+(-[a-z0-9]+)*(/[a-z0-9]+(-[a-z0-9]+)*)*$ ]]; then
-    echo -e "${tmagenta}Error: path must be kebab-case segments separated by / (e.g. apps/manager).${treset}"
-    exit 1
+  if [ "$need_folder" == "No, create in root" ]; then
+    echo ""
+    return
   fi
 
-  echo "$path"
+  local dirs
+  dirs=$(find "$base" -mindepth 1 -type d | sed "s|^${base}/||" | sort)
+
+  local options="+ Create new folder"
+  if [ -n "$dirs" ]; then
+    options="${options}"$'\n'"${dirs}"
+  fi
+  options="${options}"$'\n'"Exit"
+
+  local choice
+  choice=$(printf '%s\n' "$options" | fzf --prompt="Directory > " --height=40% --reverse)
+
+  if [ -z "$choice" ] || [ "$choice" == "Exit" ]; then
+    echo -e "${tmagenta}Exiting.${treset}" >&2
+    exit 0
+  fi
+
+  if [ "$choice" == "+ Create new folder" ]; then
+    local parent_options="."
+    if [ -n "$dirs" ]; then
+      parent_options="${parent_options}"$'\n'"${dirs}"
+    fi
+    parent_options="${parent_options}"$'\n'"Exit"
+
+    local parent
+    parent=$(printf '%s\n' "$parent_options" | fzf --prompt="Parent for new folder > " --height=40% --reverse)
+
+    if [ -z "$parent" ] || [ "$parent" == "Exit" ]; then
+      echo -e "${tmagenta}Exiting.${treset}" >&2
+      exit 0
+    fi
+
+    local new_name
+    new_name=$(readKebabName "New folder name")
+
+    if [ "$parent" == "." ]; then
+      echo "$new_name"
+    else
+      echo "${parent}/${new_name}"
+    fi
+  else
+    echo "$choice"
+  fi
 }
 
 function createIcon(){
@@ -147,12 +203,23 @@ function createNested(){
   local label=$3
 
   checkNg
+
   listTopLevel "src/app/${folder}"
-  local path=$(readKebabPath "${label} path")
 
-  local target="${folder}/${path}${suffix}"
+  local dir_path
+  dir_path=$(chooseOrCreateDirectory "src/app/${folder}")
 
-  ng generate component "$target" --skip-tests --style=none
+  local entity_name
+  entity_name=$(readKebabName "${label} name")
+
+  local target
+  if [ -z "$dir_path" ]; then
+    target="${folder}/${entity_name}${suffix}"
+  else
+    target="${folder}/${dir_path}/${entity_name}${suffix}"
+  fi
+
+  ng generate component "$target" --skip-tests --style=none --flat
   echo -e "${tgreen}${label} ${target} created${treset}"
 }
 
@@ -173,6 +240,8 @@ function createShared(){
 }
 
 function menu(){
+  goToProjectRoot
+
   echo -e "${tgreen}1. Create icon${treset}"
   echo -e "${tgreen}2. Create component (supports nested paths, e.g. form/input)${treset}"
   echo -e "${tgreen}3. Create page (supports nested paths, e.g. apps/manager)${treset}"
