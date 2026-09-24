@@ -24,7 +24,7 @@ function convertToMp3(){
   while read -r line; do
     new_line=$(echo "$line" | sed 's/&list.*//g')
     yt-dlp -x --audio-quality 0 --audio-format mp3 --embed-thumbnail --embed-metadata \
-      --cookies-from-browser firefox --extractor-args "youtube:player_client=mweb" \
+      --cookies-from-browser firefox \
       -o "%(title)s.%(ext)s" "$new_line"
   done < yt.txt
   cp "$directory"/*.mp3 "$HOME/Downloads"
@@ -68,13 +68,29 @@ function downloadMp4(){
   local youtube_url
   youtube_url=$(xclip -o -selection clipboard)
 
-  if [[ $youtube_url == *youtube* || $youtube_url == *zen* || $youtube_url == *vkvideo* || $youtube_url == *vk.com/video* ]]; then
-    yt-dlp -o '%(title)s.%(ext)s' --format "bestvideo+bestaudio[ext=m4a]/bestvideo+bestaudio/best" --merge-output-format mp4 \
-      --cookies-from-browser firefox --extractor-args "youtube:player_client=mweb" "$youtube_url"
-  else
+  if [[ $youtube_url != *youtube* && $youtube_url != *zen* && $youtube_url != *vkvideo* && $youtube_url != *vk.com/video* ]]; then
     echo "${tmagenta}Error: Invalid YouTube/VK/Zen URL.${treset}"
     return 1
   fi
+
+  local quality height
+  echo "${tgreen}1) 1080p${treset}"
+  echo "${tgreen}2) 2K (1440p)${treset}"
+  echo "${tgreen}3) 4K (2160p)${treset}"
+  read -rp "Select quality: " quality
+  case $quality in
+    1) height=1080 ;;
+    2) height=1440 ;;
+    3) height=2160 ;;
+    *)
+      echo "${tmagenta}Invalid quality.${treset}"
+      return 1
+      ;;
+  esac
+
+  yt-dlp -o '%(title)s.%(ext)s' \
+    --format "bestvideo[height<=$height]+bestaudio[ext=m4a]/bestvideo[height<=$height]+bestaudio/best[height<=$height]" \
+    --merge-output-format mp4 --cookies-from-browser firefox "$youtube_url"
 
   notify-send "yt_mp4" "Download complete" --icon=video-x-generic
 }
