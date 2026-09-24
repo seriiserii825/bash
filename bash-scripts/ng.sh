@@ -88,6 +88,7 @@ function createIcon(){
     svg=$(printf '%s' "$svg" | perl -0777 -pe 's/<svg(\s)/<svg fill="currentColor"$1/i')
   fi
 
+  listTopLevel "src/app/icons"
   local name=$(readKebabName "Icon name")
   ng generate component "icons/${name}-icon" --skip-tests --style=none
 
@@ -140,70 +141,43 @@ function listTopLevel(){
   fi
 }
 
-function createComponent(){
+function createNested(){
+  local folder=$1
+  local suffix=$2
+  local label=$3
+
   checkNg
-  listTopLevel "src/app/components"
-  local path=$(readKebabPath "Component path")
-  local dir="${path%/*}"
-  local name="${path##*/}"
+  listTopLevel "src/app/${folder}"
+  local path=$(readKebabPath "${label} path")
 
-  if [ "$dir" == "$path" ]; then
-    dir=""
-  fi
-
-  local target
-  if [ -n "$dir" ]; then
-    target="components/${dir}/${name}"
-  else
-    target="components/${name}"
-  fi
+  local target="${folder}/${path}${suffix}"
 
   ng generate component "$target" --skip-tests --style=none
-  echo -e "${tgreen}Component ${target} created${treset}"
+  echo -e "${tgreen}${label} ${target} created${treset}"
+}
+
+function createComponent(){
+  createNested "components" "" "Component"
 }
 
 function createPage(){
-  checkNg
-  listTopLevel "src/app/pages"
-  local path=$(readKebabPath "Page path")
-  local dir="${path%/*}"
-  local name="${path##*/}"
-
-  if [ "$dir" == "$path" ]; then
-    dir=""
-  fi
-
-  local target
-  if [ -n "$dir" ]; then
-    target="pages/${dir}/${name}-page"
-  else
-    target="pages/${name}-page"
-  fi
-
-  ng generate component "$target" --skip-tests --style=none
-  echo -e "${tgreen}Page ${target} created${treset}"
+  createNested "pages" "-page" "Page"
 }
 
 function createLayout(){
-  checkNg
-  local name=$(readKebabName "Layout name")
-  ng generate component "layouts/${name}-layout" --skip-tests --style=none
-  echo -e "${tgreen}Layout layouts/${name}-layout created${treset}"
+  createNested "layouts" "-layout" "Layout"
 }
 
 function createShared(){
-  checkNg
-  local name=$(readKebabName "Shared name")
-  ng generate component "shared/${name}-shared" --skip-tests --style=none
-  echo -e "${tgreen}Shared component shared/${name}-shared created${treset}"
+  createNested "shared" "-shared" "Shared"
 }
 
 function menu(){
   echo -e "${tgreen}1. Create icon${treset}"
   echo -e "${tgreen}2. Create component (supports nested paths, e.g. form/input)${treset}"
   echo -e "${tgreen}3. Create page (supports nested paths, e.g. apps/manager)${treset}"
-  echo -e "${tgreen}4. Create layout${treset}"
-  echo -e "${tgreen}5. Create shared${treset}"
+  echo -e "${tgreen}4. Create layout (supports nested paths, e.g. admin/main)${treset}"
+  echo -e "${tgreen}5. Create shared (supports nested paths, e.g. ui/button)${treset}"
   echo -e "${tmagenta}6. Exit${treset}"
 
   read -p "Choose option: " option
