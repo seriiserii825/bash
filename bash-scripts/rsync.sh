@@ -38,6 +38,7 @@ do_rsync() {
       fi
     fi
 
+    echo "📏 Size: $(du -sh --apparent-size -- "$src" | cut -f1)  ($base)"
     echo "▶️  rsync -ah --info=progress2 --partial --inplace -- \"$src\" \"$target\""
 
     if [ -d "$src" ]; then

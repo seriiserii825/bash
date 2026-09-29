@@ -39,7 +39,10 @@ if [ -z "$file_iso" ]; then
   echo -e "${red}No ISO file selected${reset}"
   exit 1
 fi
+iso_bytes=$(stat -c %s "$file_iso")
+iso_size="$(numfmt --to=iec-i --suffix=B "$iso_bytes") ($iso_bytes bytes)"
 echo -e "ISO: ${green}$file_iso${reset}"
+echo -e "Size: ${green}$iso_size${reset}"
 echo
 
 if [ -z "$usb_list" ]; then
@@ -69,5 +72,6 @@ for part in $(lsblk -lnpo NAME,MOUNTPOINTS "$device" | awk 'NF > 1 {print $1}');
   sudo umount "$part" || exit 1
 done
 
+echo -e "${bold}Writing ${green}$iso_size${reset}${bold} — compare with 'bytes copied' below:${reset}"
 sudo dd if="$file_iso" of="$device" bs=4M status=progress oflag=sync && sync
 echo -e "${green}Done${reset}"
