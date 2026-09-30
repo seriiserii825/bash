@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-# YouTube/VK/Zen/Twitch helper: download as mp3/mp4 or open in mpv
+# YouTube/VK/Zen/Twitch/Rutube helper: download as mp3/mp4 or open in mpv
 
 source /home/serii/dotfiles/zsh_modules/zsh_colors
 
@@ -64,12 +64,17 @@ function downloadMp3(){
   notify-send "yt_mp3" "Download complete" --icon=audio-x-generic
 }
 
+function getClipboardUrl(){
+  # clipboard may contain extra text (e.g. copied terminal output) — take the last URL, unescape zsh backslashes
+  xclip -o -selection clipboard | tr -d '\\' | grep -oE 'https?://[^[:space:]]+' | tail -n 1
+}
+
 function downloadMp4(){
   local youtube_url
-  youtube_url=$(xclip -o -selection clipboard)
+  youtube_url=$(getClipboardUrl)
 
-  if [[ $youtube_url != *youtube* && $youtube_url != *zen* && $youtube_url != *vkvideo* && $youtube_url != *vk.com/video* ]]; then
-    echo "${tmagenta}Error: Invalid YouTube/VK/Zen URL.${treset}"
+  if [[ $youtube_url != *youtube* && $youtube_url != *zen* && $youtube_url != *vkvideo* && $youtube_url != *vk.com/video* && $youtube_url != *rutube* ]]; then
+    echo "${tmagenta}Error: Invalid YouTube/VK/Zen/Rutube URL.${treset}"
     return 1
   fi
 
@@ -97,7 +102,7 @@ function downloadMp4(){
 
 function openInMpv(){
   local youtube_url
-  youtube_url=$(xclip -o -selection clipboard)
+  youtube_url=$(getClipboardUrl)
 
   if [[ $youtube_url == *youtube* ]]; then
     echo "YouTube URL is valid."
@@ -106,8 +111,10 @@ function openInMpv(){
     mpv --msg-level=ffmpeg=no,cplayer=warn "$youtube_url" &
   elif [[ $youtube_url == *vkvideo* ]]; then
     mpv --msg-level=ffmpeg=no,cplayer=warn "$youtube_url" &
+  elif [[ $youtube_url == *rutube* ]]; then
+    mpv --msg-level=ffmpeg=no,cplayer=warn "$youtube_url" &
   else
-    echo "${tmagenta}Error: Invalid YouTube/Twitch/VK URL.${treset}"
+    echo "${tmagenta}Error: Invalid YouTube/Twitch/VK/Rutube URL.${treset}"
   fi
 }
 
@@ -115,8 +122,8 @@ while true; do
   echo ""
   echo "${tblue}--- yt ---${treset}"
   echo "${tgreen}1) Download from clipboard as MP3${treset}"
-  echo "${tgreen}2) Download from clipboard as MP4 (YouTube/VK/Zen)${treset}"
-  echo "${tgreen}3) Open clipboard URL in mpv (YouTube/Twitch/VK)${treset}"
+  echo "${tgreen}2) Download from clipboard as MP4 (YouTube/VK/Zen/Rutube)${treset}"
+  echo "${tgreen}3) Open clipboard URL in mpv (YouTube/Twitch/VK/Rutube)${treset}"
   echo "4) Exit"
 
   read -rp "Select an option: " option
