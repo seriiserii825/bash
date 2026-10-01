@@ -5,7 +5,7 @@ set -euo pipefail
 # Load .env
 if [ -f .env ]; then
   set -a
-  source .env
+  source ./.env
   set +a
 else
   echo "Error: .env file not found!"
