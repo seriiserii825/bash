@@ -331,7 +331,7 @@ fi
 
 # ── 1. BASE PATH ─────────────────────────────────────────────────────────────
 if [ -z "${BASE_PATH:-}" ]; then
-  BASE_CHOICE=$(printf '/mnt/Projects\nDownloads\nOther folder\n🚪 Exit' \
+  BASE_CHOICE=$(printf '/mnt/Projects\n/mnt\nDownloads\nOther folder\n🚪 Exit' \
     | number_lines \
     | fzf --height=40% --reverse --no-info \
           --header="Select starting folder") || quit
@@ -344,6 +344,8 @@ if [ -z "${BASE_PATH:-}" ]; then
     BASE_PATH="${BASE_PATH%/}"
   elif [ "$BASE_CHOICE" = "Downloads" ]; then
     BASE_PATH="$HOME/Downloads"
+  elif [ "$BASE_CHOICE" = "/mnt" ]; then
+    BASE_PATH="/mnt"
   else
     BASE_PATH="$MNT_PROJECTS_DIR"
   fi
