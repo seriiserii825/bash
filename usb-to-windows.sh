@@ -8,8 +8,7 @@ CYA='\033[0;36m'
 NC='\033[0m'
 
 if [[ $EUID -ne 0 ]]; then
-  echo -e "${RED}Run as root: sudo $0${NC}"
-  exit 1
+  exec sudo "$(realpath "$0")" "$@"
 fi
 
 echo -e "${CYA}Available disks:${NC}"
@@ -35,21 +34,60 @@ read -rp "Type 'yes' to confirm: " confirm
 
 [[ "$confirm" != "yes" ]] && echo "Cancelled." && exit 0
 
+echo ""
+echo "Filesystem:"
+echo "  1) FAT32 (max 4GB per file, max label 11 chars)"
+echo "  2) exFAT (no 4GB limit, max label 15 chars)"
+read -rp "Choose [1/2] (default 1): " fs_choice
+
+case "${fs_choice:-1}" in
+  1) fs="fat32"; max_label=11 ;;
+  2) fs="exfat"; max_label=15 ;;
+  *) echo -e "${RED}Invalid choice!${NC}"; exit 1 ;;
+esac
+
+if [[ "$fs" == "exfat" ]] && ! pacman -Qi exfatprogs &>/dev/null; then
+  echo -e "${YEL}exfatprogs not installed, installing...${NC}"
+  pacman -S --needed --noconfirm exfatprogs
+fi
+
+read -rp "Label (default USB, max $max_label chars): " label
+label="${label:-USB}"
+if (( ${#label} > max_label )); then
+  echo -e "${RED}Label too long (${#label} > $max_label)!${NC}"
+  exit 1
+fi
+[[ "$fs" == "fat32" ]] && label="${label^^}"
+
 lsblk -ln -o MOUNTPOINT "/dev/$disk" | grep -v '^$' | while read -r mp; do
   umount "$mp" && echo "Unmounted: $mp"
 done || true
 
 echo -e "\n${YEL}Creating MBR partition table...${NC}"
+wipefs -a "/dev/$disk" >/dev/null
 parted -s "/dev/$disk" mklabel msdos
 
-echo -e "${YEL}Creating FAT32 partition...${NC}"
-parted -s "/dev/$disk" mkpart primary fat32 1MiB 100%
+echo -e "${YEL}Creating partition...${NC}"
+if [[ "$fs" == "fat32" ]]; then
+  parted -s "/dev/$disk" mkpart primary fat32 1MiB 100%
+else
+  # partition type 0x07 (ntfs) is the correct MBR id for exFAT
+  parted -s "/dev/$disk" mkpart primary ntfs 1MiB 100%
+fi
 
 partprobe "/dev/$disk" 2>/dev/null || true
 sleep 1
 
-echo -e "${YEL}Formatting as FAT32...${NC}"
-mkfs.fat -F 32 -n "USB" "/dev/${disk}1"
+# new partition starts at the same offset as the old one — clear leftover fs signatures
+wipefs -a "/dev/${disk}1" >/dev/null
+
+if [[ "$fs" == "fat32" ]]; then
+  echo -e "${YEL}Formatting as FAT32 (label: $label)...${NC}"
+  mkfs.fat -F 32 -n "$label" "/dev/${disk}1"
+else
+  echo -e "${YEL}Formatting as exFAT (label: $label)...${NC}"
+  mkfs.exfat -L "$label" "/dev/${disk}1"
+fi
 
 echo -e "\n${GRN}Done! Windows will now see the drive.${NC}"
 lsblk -o NAME,SIZE,FSTYPE,LABEL "/dev/$disk"
