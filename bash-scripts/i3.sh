@@ -8,6 +8,7 @@ lock() {
         --indicator \
         --radius=140 \
         --ring-width=8 \
+        --keylayout=1 \
         --clock \
         --time-str="%H:%M:%S" \
         --date-str="%A, %d %B %Y" \
@@ -22,6 +23,7 @@ lock() {
         --lockfailed-text="Lock failed!" \
         --greeter-text="$USER" \
         --greeter-size=24 \
+        --greeter-pos="ix:iy-70" \
         --ignore-empty-password \
         --show-failed-attempts \
         --inside-color=1e1e2eee \
