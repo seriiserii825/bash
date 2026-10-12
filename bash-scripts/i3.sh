@@ -2,6 +2,12 @@
 # i3 power menu: lock screen, logout, suspend, reboot, or shutdown
 
 lock() {
+    # Options below require i3lock-color (AUR); plain i3lock doesn't support them
+    if ! pacman -Q i3lock-color &>/dev/null; then
+        echo "i3lock-color is not installed, installing..."
+        yay -S i3lock-color || exit 1
+    fi
+
     i3lock \
         --image="$HOME/Pictures/wallpapers/i3lock.png" \
         --tiling \
@@ -23,7 +29,9 @@ lock() {
         --lockfailed-text="Lock failed!" \
         --greeter-text="$USER" \
         --greeter-size=24 \
-        --greeter-pos="ix:iy-70" \
+        --greeter-pos="ix:iy-80" \
+        --keylayout 0 \
+        --layout-size=18 \
         --ignore-empty-password \
         --show-failed-attempts \
         --inside-color=1e1e2eee \
