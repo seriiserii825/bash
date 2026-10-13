@@ -64,6 +64,51 @@ function downloadMp3(){
   notify-send "yt_mp3" "Download complete" --icon=audio-x-generic
 }
 
+# split into tracks by YouTube chapters: ~/Downloads/<title>/01 - <chapter>.mp3
+# tags are kept (no id3v2 -D) so each track has its title/cover
+function downloadMp3Chapters(){
+  local youtube_url chapters info title
+  youtube_url=$(getClipboardUrl | sed 's/&list.*//g')
+
+  if [[ $youtube_url != *youtube* ]]; then
+    echo "${tmagenta}Error: Invalid YouTube URL.${treset}"
+    return 1
+  fi
+
+  # line 1: chapters json, line 2: sanitized title (same as the tracks folder name)
+  info=$(yt-dlp --skip-download --no-playlist --cookies-from-browser firefox \
+    --print '%(chapters)j' --print filename -o "%(title)s" "$youtube_url")
+  chapters=$(sed -n 1p <<< "$info")
+  title=$(sed -n 2p <<< "$info")
+
+  if [[ -z $chapters || $chapters == NA || $chapters == null || $chapters == "[]" ]]; then
+    echo "${tmagenta}Error: Video has no chapters.${treset}"
+    return 1
+  fi
+
+  ensureDirAndFile
+  # the full mp3 goes to $directory, tracks to ~/Downloads/<title>/
+  yt-dlp -x --audio-quality 0 --audio-format mp3 --embed-thumbnail --embed-metadata \
+    --split-chapters --no-playlist --cookies-from-browser firefox \
+    -P "$directory" \
+    -o "%(title)s.%(ext)s" \
+    -o "chapter:$HOME/Downloads/%(title)s/%(section_number)02d - %(section_title)s.%(ext)s" \
+    "$youtube_url"
+
+  # tracks inherit the video title tag — set each one to its chapter name and number
+  local track tmp name
+  for track in "$HOME/Downloads/$title"/*.mp3; do
+    name=$(basename "$track" .mp3)
+    tmp="${track%.mp3}.tmp.mp3"
+    ffmpeg -nostdin -hide_banner -loglevel error -i "$track" -map 0 -c copy -id3v2_version 3 \
+      -metadata title="${name#* - }" -metadata track="${name%% - *}" -metadata album="$title" \
+      "$tmp" && mv -f "$tmp" "$track"
+  done
+  ls -1 "$HOME/Downloads/$title"
+
+  notify-send "yt_mp3" "Split by chapters complete" --icon=audio-x-generic
+}
+
 function getClipboardUrl(){
   # clipboard may contain extra text (e.g. copied terminal output) — take the last URL, unescape zsh backslashes
   xclip -o -selection clipboard | tr -d '\\' | grep -oE 'https?://[^[:space:]]+' | tail -n 1
@@ -126,7 +171,8 @@ while true; do
   echo "${tgreen}1) Download from clipboard as MP3${treset}"
   echo "${tgreen}2) Download from clipboard as MP4 (YouTube/VK/Zen/Rutube)${treset}"
   echo "${tgreen}3) Open clipboard URL in mpv (YouTube/Twitch/VK/Rutube)${treset}"
-  echo "4) Exit"
+  echo "${tgreen}4) Download from clipboard as MP3 split by chapters (YouTube)${treset}"
+  echo "5) Exit"
 
   read -rp "Select an option: " option
   case $option in
@@ -140,6 +186,9 @@ while true; do
       openInMpv
       ;;
     4)
+      downloadMp3Chapters
+      ;;
+    5)
       exit 0
       ;;
     *)
