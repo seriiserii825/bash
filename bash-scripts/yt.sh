@@ -97,7 +97,7 @@ function downloadMp4(){
 
   yt-dlp -o '%(title)s.%(ext)s' \
     --format "bestvideo[height<=$height]+bestaudio[ext=m4a]/bestvideo[height<=$height]+bestaudio/best[height<=$height]" \
-    --merge-output-format mp4 --cookies-from-browser firefox "$youtube_url"
+    --merge-output-format mp4 --embed-chapters --cookies-from-browser firefox "$youtube_url"
 
   notify-send "yt_mp4" "Download complete" --icon=video-x-generic
 }

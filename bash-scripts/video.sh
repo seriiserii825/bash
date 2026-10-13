@@ -46,6 +46,25 @@ function splitVideo(){
     return 1
   fi
 
+  splitAt "$input"
+}
+
+function splitByChapters(){
+  local times
+  # chapter start times except the first (0), e.g. 92.500000,301.000000
+  times=$(ffprobe -v error -show_entries chapter=start_time -of csv=p=0 "$video" | tail -n +2 | paste -sd,)
+
+  if [[ -z "$times" ]]; then
+    echo "${tmagenta}No chapters in $video (download with yt.sh --embed-chapters).${treset}"
+    return 1
+  fi
+
+  splitAt "$times"
+}
+
+# $1 — comma separated split points
+function splitAt(){
+  local input="$1"
   local name="${video%.*}"
   local tmp_dir
   tmp_dir=$(mktemp -d)
@@ -82,7 +101,8 @@ while true; do
   echo "${tblue}--- video: $video ---${treset}"
   echo "${tgreen}1) Show video info${treset}"
   echo "${tgreen}2) Split video by timecodes (comma separated)${treset}"
-  echo "3) Exit"
+  echo "${tgreen}3) Split video by chapters${treset}"
+  echo "4) Exit"
 
   read -rp "Select an option: " option
   case $option in
@@ -93,6 +113,9 @@ while true; do
       splitVideo
       ;;
     3)
+      splitByChapters
+      ;;
+    4)
       exit 0
       ;;
     *)
