@@ -79,14 +79,16 @@ function downloadMp4(){
   fi
 
   local quality height
-  echo "${tgreen}1) 1080p${treset}"
-  echo "${tgreen}2) 2K (1440p)${treset}"
-  echo "${tgreen}3) 4K (2160p)${treset}"
+  echo "${tgreen}1) 720p${treset}"
+  echo "${tgreen}2) 1080p${treset}"
+  echo "${tgreen}3) 2K (1440p)${treset}"
+  echo "${tgreen}4) 4K (2160p)${treset}"
   read -rp "Select quality: " quality
   case $quality in
-    1) height=1080 ;;
-    2) height=1440 ;;
-    3) height=2160 ;;
+    1) height=720 ;;
+    2) height=1080 ;;
+    3) height=1440 ;;
+    4) height=2160 ;;
     *)
       echo "${tmagenta}Invalid quality.${treset}"
       return 1
