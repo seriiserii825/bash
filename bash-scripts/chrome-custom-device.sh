@@ -6,6 +6,9 @@ PREFS_KEY='custom-emulated-device-list'
 PREFS_PATH=".devtools.preferences[\"$PREFS_KEY\"]"
 DEVICE_FILE="/home/serii/dotfiles/chrome/custom-device.txt"
 
+STANDARD_KEY='standard-emulated-device-list'
+STANDARD_PATH=".devtools.preferences[\"$STANDARD_KEY\"]"
+
 # ─── clipboard helpers ────────────────────────────────────────────────────────
 
 clip_copy() {
@@ -125,10 +128,44 @@ do_import() {
     echo "Backup saved to ${PREFS}.bak"
 }
 
+# ─── hide/show standard (built-in) devices ────────────────────────────────────
+
+set_standard_show() {
+    local new_show="$1"
+    check_deps
+
+    value=$(jq -r "$STANDARD_PATH" "$PREFS")
+    if [[ -z "$value" || "$value" == "null" ]]; then
+        echo "Error: '$STANDARD_KEY' not found in Preferences." >&2; exit 1
+    fi
+
+    if chrome_running; then
+        echo "Chrome is running — killing all instances..."
+        pkill -x "chrome|google-chrome|chromium"
+        sleep 1
+    fi
+
+    cp "$PREFS" "${PREFS}.bak"
+
+    updated=$(echo "$value" | jq -c --arg show "$new_show" 'map(.show = $show)')
+
+    tmp=$(mktemp)
+    jq --arg val "$updated" "$STANDARD_PATH = \$val" "$PREFS" > "$tmp" \
+        && mv "$tmp" "$PREFS" \
+        || { echo "Error: Failed to write Preferences." >&2; rm -f "$tmp"; exit 1; }
+
+    count=$(echo "$updated" | jq 'length')
+    echo "Set show=\"$new_show\" for $count built-in device(s)."
+    echo "Backup saved to ${PREFS}.bak"
+}
+
+do_hide_standard() { set_standard_show "Never"; }
+do_show_standard() { set_standard_show "Default"; }
+
 # ─── main ────────────────────────────────────────────────────────────────────
 
 ask_action() {
-    printf "export\nimport" | fzf --prompt="action > " --height=5 --no-info
+    printf "export\nimport\nhide-standard\nshow-standard" | fzf --prompt="action > " --height=5 --no-info
 }
 
 action="${1:-}"
@@ -139,11 +176,15 @@ fi
 case "$action" in
     export) do_export ;;
     import) do_import ;;
+    hide-standard) do_hide_standard ;;
+    show-standard) do_show_standard ;;
     *)
-        echo "Usage: $(basename "$0") [export|import]"
+        echo "Usage: $(basename "$0") [export|import|hide-standard|show-standard]"
         echo ""
-        echo "  export   Copy $PREFS_KEY from Preferences to clipboard"
-        echo "  import   Read $PREFS_KEY from clipboard and update Preferences"
+        echo "  export         Copy $PREFS_KEY from Preferences to file + clipboard"
+        echo "  import         Read $PREFS_KEY from file and update Preferences"
+        echo "  hide-standard  Hide all built-in (standard) devices from the device dropdown"
+        echo "  show-standard  Restore built-in (standard) devices in the device dropdown"
         exit 1
         ;;
 esac
