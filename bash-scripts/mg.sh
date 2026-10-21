@@ -1,6 +1,8 @@
 #! /bin/bash
 # Image manager: optimize, resize, crop, rotate, flip images with fzf multi-select
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/libs/fzf-multiselect.sh"
+
 function removeSpaces(){
   perl-rename 's/ /-/g' *
   perl-rename 's/----/-/g' *
@@ -311,7 +313,7 @@ select which in "select" "all" "info" "size" "exit";
 do
   case $which in
     select)
-      mapfile -t selected_files < <(fzf --multi)
+      mapfile -t selected_files < <(find . -maxdepth 1 -type f -printf '%P\n' | sort | fzf_multiselect)
       [[ ${#selected_files[@]} -eq 0 ]] && echo "No files selected." && break
       echo "${tgreen}Selected: ${selected_files[*]}${treset}"
       changeImage "${selected_files[@]}"
