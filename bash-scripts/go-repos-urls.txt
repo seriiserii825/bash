@@ -7,3 +7,4 @@ git@github.com:seriiserii825/go-private.git
 git@github.com:seriiserii825/go-wp.git
 git@github.com:seriiserii825/go-lf.git
 git@github.com:seriiserii825/go-vue.git
+git@github.com:seriiserii825/go-angular.git
