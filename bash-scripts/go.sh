@@ -7,65 +7,91 @@ root=~/Documents/go
 urls_file="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/go-repos-urls.txt"
 mod=github.com/seriiserii825/go-libs
 
+# обновляет один проект; вывод идёт в лог, строка итога — в $tmp/$name.sum, ошибка — в $tmp/$name.fail
+function updateRepo() {
+  local dir=$1 latest=$2 tmp=$3
+  local name current now
+  name=$(basename "$dir")
+  cd "$dir" || return
+
+  {
+    if ! current=$(GOWORK=off go list -m -f '{{.Version}}' "$mod"); then
+      echo "$name|-|ОШИБКА" > "$tmp/$name.sum"
+      touch "$tmp/$name.fail"
+      return
+    fi
+
+    if [ "$current" = "$latest" ]; then
+      echo "уже последней версии ($current)"
+      echo "$name|$current|без изменений" > "$tmp/$name.sum"
+      return
+    fi
+
+    echo "Обновляю $current -> $latest..."
+    if GOWORK=off GOPROXY=direct go get "$mod@$latest" &&
+      GOWORK=off go mod tidy &&
+      GOWORK=off go install .; then
+      now=$(GOWORK=off go list -m -f '{{.Version}}' "$mod")
+      git add go.mod go.sum
+      if git diff --cached --quiet; then
+        echo "$name|$current -> $now|обновлён (без изменений в git)" > "$tmp/$name.sum"
+      elif git commit -m "go-libs was updated to $now" &&
+        git push; then
+        echo "$name|$current -> $now|обновлён, закоммичен и запушен" > "$tmp/$name.sum"
+      else
+        echo "$name|$current -> $now|ОШИБКА commit/push" > "$tmp/$name.sum"
+        touch "$tmp/$name.fail"
+      fi
+    else
+      echo "$name|-|ОШИБКА" > "$tmp/$name.sum"
+      touch "$tmp/$name.fail"
+    fi
+  } > "$tmp/$name.log" 2>&1
+}
+
 function updateRepos() {
-  local summary=()
-  local failed=()
+  local latest tmp dirs=() failed=()
+
+  # последнюю версию go-libs узнаём один раз, а не в каждом проекте
+  echo "Получаю последнюю версию $mod..."
+  if ! latest=$(cd /tmp && GOWORK=off GOPROXY=direct go list -m -f '{{.Version}}' "$mod@latest"); then
+    echo "${tred}Не удалось получить последнюю версию $mod${treset}"
+    return 1
+  fi
+  echo "Последняя версия: $latest"
+  echo
+
+  tmp=$(mktemp -d)
 
   for gomod in "$root"/*/go.mod; do
     # только проекты, где go-libs в require (сам go-libs пропускается)
     grep -qE "^[[:space:]]*(require[[:space:]]+)?$mod[[:space:]]+v" "$gomod" || continue
-
-    local dir name current latest now
+    local dir
     dir=$(dirname "$gomod")
+    dirs+=("$dir")
+    (updateRepo "$dir" "$latest" "$tmp") &
+  done
+  wait
+
+  local name
+  for dir in "${dirs[@]}"; do
     name=$(basename "$dir")
     echo "=== $name ==="
-    cd "$dir" || continue
-
-    read -r current latest < <(GOWORK=off GOPROXY=direct go list -m -u \
-      -f '{{.Version}} {{if .Update}}{{.Update.Version}}{{end}}' "$mod")
-    if [ $? -ne 0 ]; then
-      failed+=("$name")
-      summary+=("$name|-|ОШИБКА")
-      cd - >/dev/null
-      echo
-      continue
-    fi
-
-    if [ -z "$latest" ]; then
-      echo "уже последней версии ($current)"
-      summary+=("$name|$current|без изменений")
-    else
-      echo "Обновляю $current -> $latest..."
-      if GOWORK=off GOPROXY=direct go get "$mod@$latest" &&
-        GOWORK=off go mod tidy &&
-        GOWORK=off go install .; then
-        now=$(GOWORK=off go list -m -f '{{.Version}}' "$mod")
-        git add go.mod go.sum
-        if git diff --cached --quiet; then
-          summary+=("$name|$current -> $now|обновлён (без изменений в git)")
-        elif git commit -m "go-libs was updated to $now" &&
-          git push; then
-          summary+=("$name|$current -> $now|обновлён, закоммичен и запушен")
-        else
-          failed+=("$name")
-          summary+=("$name|$current -> $now|ОШИБКА commit/push")
-        fi
-      else
-        failed+=("$name")
-        summary+=("$name|-|ОШИБКА")
-      fi
-    fi
-
-    cd - >/dev/null
+    cat "$tmp/$name.log"
     echo
+    [ -f "$tmp/$name.fail" ] && failed+=("$name")
   done
 
   echo "=== Итог ==="
-  printf '%s\n' "${summary[@]}" | column -t -s '|'
+  for dir in "${dirs[@]}"; do
+    cat "$tmp/$(basename "$dir").sum"
+  done | column -t -s '|'
 
   if [ ${#failed[@]} -gt 0 ]; then
     echo "${tred}Ошибки в: ${failed[*]}${treset}"
   fi
+
+  rm -rf "$tmp"
 }
 
 function reposToFile() {
