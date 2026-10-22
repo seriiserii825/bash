@@ -24,45 +24,6 @@ function showImageSize(){
   identify -format "%f | %wx%h\n" "$1"
 }
 
-function showBySize(){
-  read -p "Show files larger than (e.g., 500k, 2M): " size_limit
-  find . -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" \) -size +$size_limit -exec du -h {} + | sort -rh
-
-  read -p "Find by width? (y/n): " find_width_choice
-  if [[ "$find_width_choice" == "y" ]]; then
-    read -p "Enter minimum width (in px): " find_width
-    find . -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" \) \
-      -exec sh -c '
-    w=$(identify -format "%w" "$1")
-    if [ "$w" -gt '"$find_width"' ]; then
-      h=$(identify -format "%h" "$1")
-      echo "$1 | ${w}x${h}"
-  fi
-  ' _ {} \; | sort | column -t -s'|'
-  fi
-
-  read -p "Do you want to see dimensions of these files? (y/n): " show_dims
-  if [[ "$show_dims" == "y" ]]; then
-    find . -maxdepth 1 -type f -size +$size_limit \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" \) \
-      -exec identify -format "%f | %wx%h\n" {} \; | sort | column -t -s'|'
-  fi
-
-  read -p "Do you want to resize images wider than 1920px? (y/n): " resize_choice
-  if [[ "$resize_choice" == "y" ]]; then
-    min_width=1920
-
-    find . -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) -print0 |
-      while IFS= read -r -d '' img; do
-        w=$(identify -format "%w" "$img" 2>/dev/null) || continue
-        if [[ "$w" -gt "$min_width" ]]; then
-          mogrify -resize "${min_width}x>" "$img" && echo "Resized: $img (${w}px → ${min_width}px)"
-        fi
-      done
-
-      echo "Resizing completed."
-  fi
-}
-
 function filterImages(){
   local result=()
   for f in "$@"; do
@@ -308,37 +269,7 @@ function changeImage(){
 }
 
 removeSpaces
-COLUMNS=1
-select which in "select" "all" "info" "size" "exit";
-do
-  case $which in
-    select)
-      mapfile -t selected_files < <(find . -maxdepth 1 -type f -printf '%P\n' | sort | fzf_multiselect)
-      [[ ${#selected_files[@]} -eq 0 ]] && echo "No files selected." && break
-      echo "${tgreen}Selected: ${selected_files[*]}${treset}"
-      changeImage "${selected_files[@]}"
-      break
-      ;;
-    all)
-      echo "${tgreen}Select all images${treset}"
-      changeImage *
-      break
-      ;;
-    info)
-      showSizes
-      break
-      ;;
-    size)
-      echo "${tblue}Filter images by size${treset}"
-      showBySize
-      ;;
-    exit)
-      echo "Exiting..."
-      break
-      ;;
-    *)
-      echo "Invalid option"
-      ;;
-  esac
-done
-
+mapfile -t selected_files < <(find . -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) -printf '%P\n' | sort | fzf_multiselect)
+[[ ${#selected_files[@]} -eq 0 ]] && echo "No files selected." && exit 0
+echo "${tgreen}Selected: ${selected_files[*]}${treset}"
+changeImage "${selected_files[@]}"
