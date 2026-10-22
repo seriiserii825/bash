@@ -5,3 +5,4 @@ git@github.com:seriiserii825/go-scripts.git
 git@github.com:seriiserii825/go-scss.git
 git@github.com:seriiserii825/go-private.git
 git@github.com:seriiserii825/go-wp.git
+git@github.com:seriiserii825/go-lf.git
