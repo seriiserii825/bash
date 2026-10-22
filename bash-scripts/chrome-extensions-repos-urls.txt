@@ -1,0 +1,9 @@
+git@github.com:seriiserii825/chrome-autocopy.git
+git@github.com:seriiserii825/chrome-autofill.git
+git@github.com:seriiserii825/chrome-figma-copy.git
+git@github.com:seriiserii825/chrome-fill-form.git
+git@github.com:seriiserii825/chrome-generate-image-on-new-tab.git
+git@github.com:seriiserii825/chrome-graphql-export.git
+git@github.com:seriiserii825/chrome-tabs-copy.git
+git@github.com:seriiserii825/chrome-vimium-c.git
+git@github.com:seriiserii825/quick-tabs-project.git
