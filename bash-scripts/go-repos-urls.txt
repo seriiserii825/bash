@@ -10,3 +10,4 @@ git@github.com:seriiserii825/go-vue.git
 git@github.com:seriiserii825/go-angular.git
 git@github.com:seriiserii825/go-nest.git
 git@github.com:seriiserii825/go-files.git
+git@github.com:seriiserii825/go-arch.git
