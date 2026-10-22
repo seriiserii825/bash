@@ -3,3 +3,5 @@ git@github.com:seriiserii825/go-course.git
 git@github.com:seriiserii825/go-libs.git
 git@github.com:seriiserii825/go-scripts.git
 git@github.com:seriiserii825/go-scss.git
+git@github.com:seriiserii825/go-private.git
+git@github.com:seriiserii825/go-wp.git
