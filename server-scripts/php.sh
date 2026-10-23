@@ -17,15 +17,24 @@ function checkPhpForAllSites() {
   local default
   default=$("$bin/v-list-default-php" plain)
 
+  {
   printf 'USER\tDOMAIN\tBACKEND\tPHP\n'
-
+  printf -- '----\t------\t-------\t---\n'
   {
   for user in $("$bin/v-list-users" list); do
     "$bin/v-list-web-domains" "$user" json |
       jq -r 'to_entries[] | [.key, (.value.BACKEND // "default")] | @tsv' |
       while IFS=$'\t' read -r domain backend; do
+        # v-list-default-php may print several versions, so take the one whose FPM pool serves the domain
         if [[ "$backend" == default ]]; then
-          minor=$default
+          pool=$(compgen -G "/etc/php/*/fpm/pool.d/$domain.conf" | head -n1)
+          if [[ -n "$pool" ]]; then
+            minor=$(basename "$(dirname "$(dirname "$(dirname "$pool")")")")
+          elif [[ "$default" != *$'\n'* ]]; then
+            minor=$default
+          else
+            minor=
+          fi
         elif [[ "$backend" =~ (^|-)PHP-([0-9]+)_([0-9]+)$ ]]; then
           minor="${BASH_REMATCH[2]}.${BASH_REMATCH[3]}"
         else
@@ -42,6 +51,7 @@ function checkPhpForAllSites() {
       done
   done
   } | LC_ALL=C sort -t $'\t' -k4,4V -k2,2
+  } | column -t -s $'\t'
 }
 
 # Pass log files as arguments for testing, or read the current and rotated dpkg logs.
