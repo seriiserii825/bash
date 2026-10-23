@@ -108,27 +108,29 @@ function showPhpUpdates() {
   printf '\nРезультат сохранён в %s\n' "$(realpath -- "$report")"
 }
 
-echo "${tgreen}1) Check PHP for updates${treset}"
-echo "${tblue}2) Check PHP for all sites${treset}"
-echo "${tmagenta}3) Show PHP after update${treset}"
-echo "4) Exit"
-read -rp "Select an option: " option
+while true; do
+  echo
+  echo "${tgreen}1) Check PHP for updates${treset}"
+  echo "${tblue}2) Check PHP for all sites${treset}"
+  echo "${tmagenta}3) Show PHP after update${treset}"
+  echo "4) Exit"
+  read -rp "Select an option: " option || exit 0
 
-case $option in
-  1)
-    checkPhpUpdates
-    ;;
-  2)
-    checkPhpForAllSites
-    ;;
-  3)
-    showPhpUpdates
-    ;;
-  4)
-    exit 0
-    ;;
-  *)
-    echo "Invalid option"
-    exit 1
-    ;;
-esac
+  case $option in
+    1)
+      checkPhpUpdates
+      ;;
+    2)
+      checkPhpForAllSites
+      ;;
+    3)
+      showPhpUpdates
+      ;;
+    4)
+      exit 0
+      ;;
+    *)
+      echo "Invalid option"
+      ;;
+  esac
+done
