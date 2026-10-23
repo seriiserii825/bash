@@ -1,6 +1,5 @@
 #!/bin/bash
 # GPG manager: encrypt/decrypt one file, multiple files, project dist folder, or .env file
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/libs/fzf-multiselect.sh"
 user=$(whoami)
 
 function toggleProject(){
@@ -134,9 +133,9 @@ function oneFolder(){
 }
 
 function checkKey(){
-  files=$(find . -maxdepth 1 -name "*.gpg" -type f | fzf_multiselect)
+  files=$(find . -maxdepth 1 -name "*.gpg" -type f | sort)
   if [ -z "$files" ]; then
-    echo "${tmagenta}Error: no file selected.${treset}"
+    echo "${tmagenta}Error: no .gpg files found.${treset}"
     exit 1
   fi
 
