@@ -1,6 +1,7 @@
 #!/bin/bash
 # WordPress helpers: open wp-config.php in nvim, add FluentSMTP credentials to wp-config.php,
-# toggle WP_HTTP_BLOCK_EXTERNAL / debug mode in wp-config.php, toggle display:none in src/scss/partials/base.scss.
+# toggle WP_HTTP_BLOCK_EXTERNAL / debug mode in wp-config.php, toggle display:none in src/scss/partials/base.scss,
+# open / watch / reset debug.log, copy it to ~/Downloads.
 # wp-config.php ищется вверх по родительским директориям от $PWD.
 # SMTP credentials come from the repo-root .env (gpg-encrypted at rest, see .gpgrc).
 
@@ -265,12 +266,61 @@ function toggleBodyAfter() {
   fi
 }
 
+# печатает путь к wp-content/debug.log рядом с найденным wp-config.php
+function findDebugLog() {
+  local wp_config debug_log
+  wp_config=$(findWpConfig) || return 1
+  debug_log="$(dirname "$wp_config")/wp-content/debug.log"
+
+  if [[ ! -f "$debug_log" ]]; then
+    echo "${tmagenta}⚠️ ${debug_log} not found.${treset}" >&2
+    return 1
+  fi
+
+  echo "$debug_log"
+}
+
+function openDebugLog() {
+  local debug_log
+  debug_log=$(findDebugLog) || return 1
+  nvim "$debug_log"
+}
+
+function watchDebugLog() {
+  local debug_log
+  debug_log=$(findDebugLog) || return 1
+  echo "Watching ${debug_log} with bat (Ctrl+C to stop)..."
+  tail -F "$debug_log" | bat --paging=never -l log
+}
+
+function resetDebugLog() {
+  local debug_log
+  debug_log=$(findDebugLog) || return 1
+  echo "Found: ${debug_log} ($(du -h "$debug_log" | cut -f1))"
+  : > "$debug_log"
+  echo "${tgreen}🟢 debug.log cleared${treset}"
+}
+
+# копирует в ~/Downloads/debug.log, если такой уже есть — добавляет дату к имени
+function copyDebugLog() {
+  local debug_log target="$HOME/Downloads/debug.log"
+  debug_log=$(findDebugLog) || return 1
+  mkdir -p "$HOME/Downloads"
+  [[ -e "$target" ]] && target="$HOME/Downloads/debug-$(date +%Y-%m-%d_%H-%M-%S).log"
+  cp "$debug_log" "$target"
+  echo "${tgreen}🟢 Copied ${debug_log} -> ${target}${treset}"
+}
+
 echo "${tgreen}1) Open wp-config in neovim${treset}"
 echo "${tblue}2) Set FluentSMTP in wp-config${treset}"
 echo "${tmagenta}3) Toggle WP_HTTP_BLOCK_EXTERNAL${treset}"
 echo "${tcyan}4) Toggle body after (display: none)${treset}"
 echo "${tyellow}5) Toggle debug mode${treset}"
-echo "6) Exit"
+echo "${tgreen}6) Open debug.log in neovim${treset}"
+echo "${tblue}7) Watch debug.log (bat live)${treset}"
+echo "${tmagenta}8) Reset debug.log${treset}"
+echo "${tcyan}9) Copy debug.log to Downloads${treset}"
+echo "10) Exit"
 read -rp "Select an option: " option
 
 case $option in
@@ -290,6 +340,18 @@ case $option in
     toggleDebug
     ;;
   6)
+    openDebugLog
+    ;;
+  7)
+    watchDebugLog
+    ;;
+  8)
+    resetDebugLog
+    ;;
+  9)
+    copyDebugLog
+    ;;
+  10)
     exit 0
     ;;
   *)
