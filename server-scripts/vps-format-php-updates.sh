@@ -40,7 +40,13 @@ if [[ -z "$rows" ]]; then
   exit 0
 fi
 
-printf '%-19s  %-5s  %-17s  %s\n' 'DATE AND TIME' 'PHP' 'BEFORE' 'AFTER'
-while IFS=$'\t' read -r timestamp branch before after; do
-  printf '%-19s  %-5s  %-17s  %s\n' "$timestamp" "$branch" "$before" "$after"
-done <<< "$rows"
+report="php-fpm-updates-$(date +%Y-%m-%d_%H%M%S).txt"
+
+{
+  printf '%-19s  %-5s  %-17s  %s\n' 'DATE AND TIME' 'PHP' 'BEFORE' 'AFTER'
+  while IFS=$'\t' read -r timestamp branch before after; do
+    printf '%-19s  %-5s  %-17s  %s\n' "$timestamp" "$branch" "$before" "$after"
+  done <<< "$rows"
+} | tee -- "$report"
+
+printf '\nРезультат сохранён в %s\n' "$(realpath -- "$report")"
