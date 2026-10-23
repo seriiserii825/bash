@@ -9,8 +9,47 @@ treset=$'\e[0m'
 
 bin=/usr/local/hestia/bin
 
+# One row per PHP branch (taken from its fpm/cli package), then the apt command that upgrades only those.
 function checkPhpUpdates() {
-  apt list --upgradable 2>/dev/null | grep -E '^php[0-9]+\.[0-9]+-' || echo 'Доступных обновлений PHP нет'
+  local rows branch before after packages=()
+
+  rows=$(
+    apt list --upgradable 2>/dev/null |
+      awk '
+        $1 ~ /^php[0-9]+\.[0-9]+-(fpm|cli)\// {
+          branch = $1
+          sub(/^php/, "", branch)
+          sub(/-.*/, "", branch)
+          if (seen[branch]++) next
+
+          after = $2
+          before = $NF
+          sub(/\]$/, "", before)
+          sub(/^[0-9]+:/, "", before)
+          sub(/^[0-9]+:/, "", after)
+          sub(/\+.*/, "", before)
+          sub(/\+.*/, "", after)
+
+          printf "%s\t%s\t%s\n", branch, before, after
+        }
+      ' |
+      sort -t $'\t' -k1,1Vr
+  )
+
+  if [[ -z "$rows" ]]; then
+    printf 'Доступных обновлений PHP нет\n'
+    return 0
+  fi
+
+  printf '%-5s  %-10s     %s\n' 'PHP' 'CURRENT' 'NEW'
+  while IFS=$'\t' read -r branch before after; do
+    printf '%-5s  %-10s  →  %s\n' "$branch" "$before" "$after"
+    packages+=("php$branch-fpm php$branch-cli")
+  done <<< "$rows"
+
+  printf '\napt install --only-upgrade'
+  printf ' \\\n    %s' "${packages[@]}"
+  printf '\n'
 }
 
 function checkPhpForAllSites() {
