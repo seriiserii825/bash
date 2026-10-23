@@ -17,21 +17,22 @@ log_info()    { echo -e "---- ${BLUE}ℹ $1${NC} ----"; }
 
 command -v fzf >/dev/null 2>&1 || { log_error "fzf not found."; exit 1; }
 
-ENV_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/export-xml-env.sh"
+ENV_FILE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/.env"
 if [ ! -f "$ENV_FILE" ]; then
-  log_error "Missing ${ENV_FILE}. Decrypt export-xml-env.sh.gpg first (see .gpgrc)."
+  log_error "Missing ${ENV_FILE}. Decrypt .env.gpg first (see .gpgrc)."
   exit 1
 fi
 source "$ENV_FILE"
+IFS=';' read -ra IMPORT_CRONE_DOMAINS <<<"$GI_IMPORT_CRONE_DOMAINS"
 
 IMPORT_PATH="/wp-content/themes/bs-gardalive/import/import-xml-crone.php"
 BROWSER="${BROWSER:-google-chrome-stable}"
 
-CHOICE=$(printf '%s\n' "${GI_IMPORT_CRONE_DOMAINS[@]}" | cut -d'|' -f1 | fzf --height=20% --reverse --prompt='🌐 domain> ') || exit 0
+CHOICE=$(printf '%s\n' "${IMPORT_CRONE_DOMAINS[@]}" | cut -d'|' -f1 | fzf --height=20% --reverse --prompt='🌐 domain> ') || exit 0
 [ -z "$CHOICE" ] && exit 0
 
 DOMAIN=""
-for ENTRY in "${GI_IMPORT_CRONE_DOMAINS[@]}"; do
+for ENTRY in "${IMPORT_CRONE_DOMAINS[@]}"; do
   LABEL="${ENTRY%%|*}"
   if [ "$LABEL" = "$CHOICE" ]; then
     DOMAIN="${ENTRY#*|}"
