@@ -12,3 +12,4 @@ git@github.com:seriiserii825/go-nest.git
 git@github.com:seriiserii825/go-files.git
 git@github.com:seriiserii825/go-arch.git
 git@github.com:seriiserii825/go-parser.git
+git@github.com:seriiserii825/go-php.git
