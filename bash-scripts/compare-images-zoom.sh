@@ -1,5 +1,5 @@
 #!/bin/bash
-# Compares zoomed 3x3 grid sections of 2 fzf-selected images (jpg/png) in sxiv, crops are saved to test-<n>/ folder
+# Compares zoomed 3x3 grid sections of 2 fzf-selected images (jpg/png) in nsxiv, crops are saved to test-<n>/ folder
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/libs/fzf-multiselect.sh"
 
@@ -54,7 +54,7 @@ showSection() {
     magick "$image1[0]" -crop "$geometry" +repage -scale "${scale}%" "$crop1"
     magick "$image2[0]" "${resize2[@]}" -crop "$geometry" +repage -scale "${scale}%" "$crop2"
 
-    sxiv "$crop1" "$crop2"
+    nsxiv "$crop1" "$crop2"
 }
 
 while true; do
@@ -75,9 +75,9 @@ while true; do
     echo "  + / - change zoom"
     echo "  Enter - exit"
     echo
-    echo "In sxiv: n/p - flip images, q - close sxiv and back to this menu"
+    echo "In nsxiv: n/p - flip images, q - close nsxiv and back to this menu"
 
-    # Drop keys typed in the terminal while sxiv was open
+    # Drop keys typed in the terminal while nsxiv was open
     while read -rsn1 -t 0.01; do :; done
     read -rsn1 key
 
@@ -91,7 +91,7 @@ while true; do
         z) showSection bottom-left 0 2 ;;
         x) showSection bottom-center 1 2 ;;
         c) showSection bottom-right 2 2 ;;
-        f) sxiv -z 100 "$image1" "$image2" ;;
+        f) nsxiv -z 100 "$image1" "$image2" ;;
         +) scale=$((scale + 100)) ;;
         -) ((scale > 100)) && scale=$((scale - 100)) ;;
         "") exit 0 ;;
