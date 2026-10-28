@@ -58,7 +58,7 @@ function cropImage() {
   read -p "Are you sure you want to crop these images? (y/n): " confirm
   if [[ "$confirm" != "y" ]]; then
     echo "Crop operation cancelled."
-    continue
+    return
   fi
 
   for img in "$@"; do
@@ -91,6 +91,80 @@ function cropImage() {
 
   done
   echo "Cropping completed."
+}
+
+# Keep N pixels starting from one side, cut the rest
+function cropKeepImage() {
+  local imgs
+  read -ra imgs <<< "$(filterImages "$@")"
+  set -- "${imgs[@]}"
+  local before_sizes
+  before_sizes=$(showSizes $*)
+  echo "${tblue}Before:${treset}"
+  echo "$before_sizes"
+  echo "${tgreen}1. Top -> down (keep top)${treset}"
+  echo "${tblue}2. Bottom -> up (keep bottom)${treset}"
+  echo "${tgreen}3. Left -> right (keep left)${treset}"
+  echo "${tblue}4. Right -> left (keep right)${treset}"
+  echo "${tgreen}5. Center vertical (keep middle height)${treset}"
+  echo "${tblue}6. Center horizontal (keep middle width)${treset}"
+  read -p "Direction: " direction
+  case $direction in
+    1) side="top" ;;
+    2) side="bottom" ;;
+    3) side="left" ;;
+    4) side="right" ;;
+    5) side="vcenter" ;;
+    6) side="hcenter" ;;
+    *) echo "Invalid direction"; return ;;
+  esac
+  read -p "Pixels to keep from ${side}: " keep
+  if ! [[ "$keep" =~ ^[0-9]+$ ]] || (( keep <= 0 )); then
+    echo "Invalid pixels value"
+    return
+  fi
+
+  read -p "Are you sure you want to keep ${keep}px from ${side}? (y/n): " confirm
+  if [[ "$confirm" != "y" ]]; then
+    echo "Crop operation cancelled."
+    return
+  fi
+
+  new_files=()
+  for img in "$@"; do
+    if [[ ! -f "$img" ]]; then
+      echo "File not found: $img"
+      continue
+    fi
+
+    width=$(identify -format "%w" "$img")
+    height=$(identify -format "%h" "$img")
+
+    case $side in
+      top)    limit=$height; geometry="${width}x${keep}+0+0" ;;
+      bottom) limit=$height; geometry="${width}x${keep}+0+$((height - keep))" ;;
+      left)   limit=$width;  geometry="${keep}x${height}+0+0" ;;
+      right)  limit=$width;  geometry="${keep}x${height}+$((width - keep))+0" ;;
+      vcenter) limit=$height; geometry="${width}x${keep}+0+$(((height - keep) / 2))" ;;
+      hcenter) limit=$width;  geometry="${keep}x${height}+$(((width - keep) / 2))+0" ;;
+    esac
+
+    if (( keep >= limit )); then
+      echo "Skip $img: ${keep}px >= image size (${width}x${height})"
+      continue
+    fi
+
+    base="${img%.*}"
+    ext="${img##*.}"
+    new_name="${base}-keep-${side}-${keep}.${ext}"
+    cp "$img" "$new_name"
+    mogrify -crop "$geometry" +repage "$new_name"
+    new_files+=("$new_name")
+  done
+
+  [[ ${#new_files[@]} -eq 0 ]] && return
+  echo "${tgreen}After:${treset}"
+  showSizes "${new_files[@]}"
 }
 
 function trimPngWhiteSpace() {
@@ -140,6 +214,7 @@ function changeImage(){
   echo "${tgreen}5. Flop${treset}"
   echo "${tblue}6. Rotate${treset}"
   echo "${tblue}7. Crop${treset}"
+  echo "${tblue}7.1 Crop keep (N px from top/bottom/left/right/center)${treset}"
   echo "${tgreen}8. Trim png white space and convert to jpg${treset}"
   echo "${tmagenta}9. Exit${treset}"
   read -p "${tgreen}Enter your choice: ${treset}" choice
@@ -253,6 +328,11 @@ function changeImage(){
     7)
       echo "${tblue}Crop the image${treset}"
       cropImage $*
+      changeImage $*
+      ;;
+    7.1)
+      echo "${tblue}Crop keep${treset}"
+      cropKeepImage $*
       changeImage $*
       ;;
     8)
