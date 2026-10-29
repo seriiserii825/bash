@@ -1,6 +1,7 @@
 #!/bin/bash
 # GPG manager: encrypt/decrypt one file, multiple files, project dist folder, or .env file
 user=$(whoami)
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/libs/fzf-multiselect.sh"
 
 function toggleProject(){
   # check if exists .git
@@ -158,6 +159,67 @@ function checkKey(){
   done <<< "$files"
 }
 
+function exportKey(){
+  local export_dir="$HOME/Downloads"
+
+  key=$(gpg --list-secret-keys --with-colons 2>/dev/null | awk -F: '
+    /^sec/ { fpr_next=1; next }
+    /^fpr/ && fpr_next { fpr=$10; fpr_next=0; next }
+    /^uid/ && fpr { print fpr " " $10; fpr="" }
+  ' | fzf --prompt "Key to export: ")
+  if [ -z "$key" ]; then
+    echo "${tmagenta}Error: no key selected.${treset}"
+    exit 1
+  fi
+
+  fingerprint=$(echo "$key" | awk '{print $1}')
+  name=$(echo "$key" | cut -d' ' -f2- | sed -E 's/ *<.*//; s/[^A-Za-z0-9._-]+/_/g')
+  public_file="$export_dir/${name}_${fingerprint: -8}_public.asc"
+  private_file="$export_dir/${name}_${fingerprint: -8}_private.asc"
+
+  gpg --armor --export "$fingerprint" > "$public_file"
+  echo "${tgreen}Public key exported: $public_file${treset}"
+
+  if gpg --armor --export-secret-keys "$fingerprint" > "$private_file"; then
+    chmod 600 "$private_file"
+    echo "${tgreen}Private key exported: $private_file${treset}"
+  else
+    rm -f "$private_file"
+    echo "${tmagenta}Error: private key export failed.${treset}"
+    exit 1
+  fi
+}
+
+function importKey(){
+  local import_dir="$HOME/Downloads"
+
+  files=$(find "$import_dir" -maxdepth 1 -type f \( -name "*.asc" -o -name "*.gpg" -o -name "*.key" -o -name "*.pgp" \) | fzf_multiselect --prompt "Keys to import: ")
+  if [ -z "$files" ]; then
+    echo "${tmagenta}Error: no key files selected.${treset}"
+    exit 1
+  fi
+
+  while IFS= read -r file; do
+    if gpg --import "$file"; then
+      echo "${tgreen}Imported: $file${treset}"
+    else
+      echo "${tmagenta}Error: failed to import $file${treset}"
+    fi
+  done <<< "$files"
+
+  read -p "Set ultimate trust for imported keys? (y/n): " trust
+  if [ "$trust" == "y" ]; then
+    while IFS= read -r file; do
+      gpg --with-colons --import-options show-only --import "$file" 2>/dev/null \
+        | awk -F: '/^fpr/ {print $10; exit}' \
+        | while read -r fpr; do
+            echo "$fpr:6:" | gpg --import-ownertrust
+            echo "${tgreen}Trusted: $fpr${treset}"
+          done
+    done <<< "$files"
+  fi
+}
+
 function envFile(){
   local action=$1
   local env_file=".env"
@@ -190,7 +252,9 @@ function menu(){
   echo "${tyellow}3. Project${treset}"
   echo "${tcyan}4. Folder${treset}"
   echo "${tyellow}5. Check key${treset}"
-  echo "${tmagenta}6. Exit${treset}"
+  echo "${tgreen}6. Export key${treset}"
+  echo "${tblue}7. Import key${treset}"
+  echo "${tmagenta}8. Exit${treset}"
 
   read -p "Choose option: " option
 
@@ -205,6 +269,10 @@ function menu(){
   elif [ $option == 5 ]; then
     checkKey
   elif [ $option == 6 ]; then
+    exportKey
+  elif [ $option == 7 ]; then
+    importKey
+  elif [ $option == 8 ]; then
     exit 0
   else
     echo "${tmagenta}Error: option not found.${treset}"
