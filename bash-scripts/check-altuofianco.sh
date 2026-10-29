@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Проверяет сайты из site-updates/total-sites.txt (по домену на строку): в футере ссылка на https://altuofianco.it
+# Проверяет сайты из go-wp/list.csv + site-updates/total-sites.txt (объединённо, без дублей): в футере ссылка на https://altuofianco.it
 # текстом (TEXT) или картинкой (IMAGE). Выводит сайты, где ссылка — текст.
 # Результат также сохраняется в ./altuofianco.md (markdown-чеклист)
 # Usage: check-altuofianco.sh [-a]   (-a — показать статус всех сайтов)
@@ -7,6 +7,7 @@
 
 set -uo pipefail
 
+csv_file="/home/serii/Documents/go/go-wp/list.csv"
 sites_file="/home/serii/Documents/site-updates/total-sites.txt"
 out_file="altuofianco.md"
 jobs=10
@@ -20,7 +21,9 @@ NC='\033[0m'
 show_all=0
 [ "${1:-}" = "-a" ] && show_all=1
 
-[ -f "$sites_file" ] || { echo "Файл не найден: $sites_file" >&2; exit 1; }
+for f in "$csv_file" "$sites_file"; do
+  [ -f "$f" ] || { echo "Файл не найден: $f" >&2; exit 1; }
+done
 
 # Печатает: STATUS<TAB>url<TAB>текст ссылки
 # STATUS: TEXT | IMAGE | NONE (ссылки нет) | ERR (сайт не открылся)
@@ -49,9 +52,16 @@ check_site() {
 }
 export -f check_site
 
-# ---- Домены без схемы дополняем https://, пустые строки и # пропускаем
-mapfile -t urls < <(sed -E 's/\r$//; s/^[[:space:]]+|[[:space:]]+$//g' "$sites_file" |
-  grep -vE '^(#|$)' | sed -E '/^https?:\/\//! s|^|https://|' | sort -u)
+# ---- URL из list.csv (4-я колонка) + домены из total-sites.txt (дополняем https://).
+# Дубли убираем по домену без www.; при совпадении приоритет у URL из csv (точная схема/www)
+mapfile -t urls < <(
+  {
+    cut -d',' -f4 "$csv_file"
+    sed -E '/^https?:\/\//! s|^|https://|' "$sites_file"
+  } | sed -E 's/\r$//; s/^[[:space:]]+|[[:space:]]+$//g; s|/+$||' | grep -E '^https?://[^[:space:]]+$' |
+    awk '{ host = tolower($0); sub(/^https?:\/\//, "", host); sub(/^www\./, "", host)
+           if (!(host in seen)) { seen[host] = 1; print } }' | sort
+)
 total=${#urls[@]}
 
 # ---- Прогресс в stderr: [готово/всего] прошло секунд, последний проверенный сайт
