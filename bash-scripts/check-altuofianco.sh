@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Проверяет сайты из go-wp/list.csv: в футере ссылка на https://altuofianco.it
+# Проверяет сайты из site-updates/total-sites.txt (по домену на строку): в футере ссылка на https://altuofianco.it
 # текстом (TEXT) или картинкой (IMAGE). Выводит сайты, где ссылка — текст.
-# Результат также сохраняется в ./altuofianco.txt (без цветов)
+# Результат также сохраняется в ./altuofianco.md (markdown-чеклист)
 # Usage: check-altuofianco.sh [-a]   (-a — показать статус всех сайтов)
 # Deps: curl, perl
 
 set -uo pipefail
 
-csv_file="/home/serii/Documents/go/go-wp/list.csv"
-out_file="altuofianco.txt"
+sites_file="/home/serii/Documents/site-updates/total-sites.txt"
+out_file="altuofianco.md"
 jobs=10
 
 RED='\033[0;31m'
@@ -20,7 +20,7 @@ NC='\033[0m'
 show_all=0
 [ "${1:-}" = "-a" ] && show_all=1
 
-[ -f "$csv_file" ] || { echo "Файл не найден: $csv_file" >&2; exit 1; }
+[ -f "$sites_file" ] || { echo "Файл не найден: $sites_file" >&2; exit 1; }
 
 # Печатает: STATUS<TAB>url<TAB>текст ссылки
 # STATUS: TEXT | IMAGE | NONE (ссылки нет) | ERR (сайт не открылся)
@@ -49,7 +49,9 @@ check_site() {
 }
 export -f check_site
 
-mapfile -t urls < <(cut -d',' -f4 "$csv_file" | grep -E '^https?://' | sort -u)
+# ---- Домены без схемы дополняем https://, пустые строки и # пропускаем
+mapfile -t urls < <(sed -E 's/\r$//; s/^[[:space:]]+|[[:space:]]+$//g' "$sites_file" |
+  grep -vE '^(#|$)' | sed -E '/^https?:\/\//! s|^|https://|' | sort -u)
 total=${#urls[@]}
 
 # ---- Прогресс в stderr: [готово/всего] прошло секунд, последний проверенный сайт
@@ -66,18 +68,34 @@ done < <(printf '%s\n' "${urls[@]}" |
 printf '\r\033[KПроверено %d сайтов за %ds\n\n' "$total" "$((SECONDS - start))" >&2
 
 text_count=0
-: > "$out_file"
+declare -A md_lines=([TEXT]="" [IMAGE]="" [NONE]="" [ERR]="")
 while IFS=$'\t' read -r status url label; do
   case "$status" in
-    TEXT)  ((text_count++)); echo -e "${RED}TEXT${NC}   $url  ${GRAY}\"$label\"${NC}"
-           printf 'TEXT   %s  "%s"\n' "$url" "$label" >> "$out_file" ;;
-    IMAGE) ((show_all)) && { echo -e "${GREEN}IMAGE${NC}  $url"; printf 'IMAGE  %s\n' "$url" >> "$out_file"; } ;;
-    NONE)  ((show_all)) && { echo -e "${YELLOW}NONE${NC}   $url"; printf 'NONE   %s\n' "$url" >> "$out_file"; } ;;
-    ERR)   ((show_all)) && { echo -e "${GRAY}ERR${NC}    $url"; printf 'ERR    %s\n' "$url" >> "$out_file"; } ;;
+    TEXT)  ((text_count++)); echo -e "${RED}TEXT${NC}   $url  ${GRAY}\"$label\"${NC}" ;;
+    IMAGE) ((show_all)) && echo -e "${GREEN}IMAGE${NC}  $url" ;;
+    NONE)  ((show_all)) && echo -e "${YELLOW}NONE${NC}   $url" ;;
+    ERR)   ((show_all)) && echo -e "${GRAY}ERR${NC}    $url" ;;
+    *)     continue ;;
   esac
+  md_lines[$status]+="- [ ] [$url]($url)"$'\n'
 done < <(printf '%s\n' "$results" | sort -t$'\t' -k1,1 -k2,2)
+
+# ---- Markdown-чеклист: сайты с текстовой ссылкой; с -a — ещё секции IMAGE/NONE/ERR
+{
+  echo "# Altuofianco — проверка сайтов"
+  echo
+  printf '%s' "${md_lines[TEXT]}"
+  if ((show_all)); then
+    for st in IMAGE NONE ERR; do
+      [ -n "${md_lines[$st]}" ] || continue
+      echo
+      echo "## $st"
+      echo
+      printf '%s' "${md_lines[$st]}"
+    done
+  fi
+} > "$out_file"
 
 echo
 echo "Сайтов с текстовой ссылкой: $text_count"
-echo "Сайтов с текстовой ссылкой: $text_count" >> "$out_file"
 echo "Сохранено в $(realpath "$out_file")"
