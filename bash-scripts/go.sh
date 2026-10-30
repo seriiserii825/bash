@@ -1,5 +1,5 @@
 #!/bin/bash
-# Go repos manager: update go-libs across projects, dump repo urls to file, clone repos from file
+# Go repos manager: update go-libs across projects, dump repo urls to file, clone repos from file, go install all projects
 
 source /home/serii/dotfiles/zsh_modules/zsh_colors
 
@@ -139,10 +139,34 @@ function cloneRepos() {
   done < "$urls_file"
 }
 
+function installRepos() {
+  local failed=()
+
+  for gomod in "$root"/*/go.mod; do
+    local dir name
+    dir=$(dirname "$gomod")
+    name=$(basename "$dir")
+    # только CLI-проекты: package main в корне модуля (библиотеки вроде go-libs пропускаются)
+    [ "$(cd "$dir" && GOWORK=off go list -f '{{.Name}}' . 2>/dev/null)" = "main" ] || continue
+
+    echo "=== $name ==="
+    if (cd "$dir" && GOWORK=off go install .); then
+      echo "${tgreen}установлен${treset}"
+    else
+      failed+=("$name")
+    fi
+  done
+
+  if [ ${#failed[@]} -gt 0 ]; then
+    echo "${tred}Ошибки в: ${failed[*]}${treset}"
+  fi
+}
+
 echo "${tgreen}1) Go update repos${treset}"
 echo "${tblue}2) Go repos to file${treset}"
 echo "${tmagenta}3) Clone go repos${treset}"
-echo "4) Exit"
+echo "${tyellow}4) Go install all repos${treset}"
+echo "5) Exit"
 read -rp "Select an option: " option
 
 case $option in
@@ -156,6 +180,9 @@ case $option in
     cloneRepos
     ;;
   4)
+    installRepos
+    ;;
+  5)
     exit 0
     ;;
   *)
