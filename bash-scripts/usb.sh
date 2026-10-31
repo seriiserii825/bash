@@ -3,6 +3,7 @@
 # write ISO with dd, format as FAT32/exFAT
 
 source /home/serii/dotfiles/zsh_modules/zsh_colors
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/libs/fzf-multiselect.sh"
 
 get_usb_disks() {
   lsblk -dn -o NAME,TRAN | awk '$2=="usb"{print $1}'
@@ -45,6 +46,30 @@ isMounted() {
   else
     echo -e "${tyellow}$part is not mounted${treset}"
   fi
+}
+
+unmountUsb() {
+  local disks parts selected part mp
+
+  disks=$(get_usb_disks)
+  if [ -z "$disks" ]; then
+    echo -e "${tred}No USB devices found${treset}"
+    return
+  fi
+
+  parts=$(while read -r d; do lsblk -lnpo NAME,MOUNTPOINTS "/dev/$d" | awk 'NF>1'; done <<<"$disks")
+  if [ -z "$parts" ]; then
+    echo -e "${tyellow}No mounted USB partitions found${treset}"
+    return
+  fi
+
+  selected=$(echo "$parts" | fzf_multiselect --prompt="Unmount> ")
+  [ -z "$selected" ] && echo -e "${tred}No partition selected${treset}" && return
+
+  while read -r part mp; do
+    [ -z "$part" ] && continue
+    sudo umount "$part" && echo -e "${tgreen}Unmounted $part ($mp)${treset}" || echo -e "${tred}Failed to unmount $part${treset}"
+  done <<<"$selected"
 }
 
 usbToWindows() {
@@ -213,21 +238,23 @@ while true; do
   echo "${tcyan}--- USB ---${treset}"
   echo "${tgreen}1) List USB devices${treset}"
   echo "${tgreen}2) Is mounted (check a USB partition)${treset}"
-  echo "${tblue}3) Prepare USB for Windows (repartition + format)${treset}"
-  echo "${tblue}4) Write ISO to USB (dd)${treset}"
-  echo "${tyellow}5) Format USB partition as FAT32${treset}"
-  echo "${tyellow}6) Format USB partition as exFAT${treset}"
-  echo "7) Exit"
+  echo "${tgreen}3) Unmount USB partition(s)${treset}"
+  echo "${tblue}4) Prepare USB for Windows (repartition + format)${treset}"
+  echo "${tblue}5) Write ISO to USB (dd)${treset}"
+  echo "${tyellow}6) Format USB partition as FAT32${treset}"
+  echo "${tyellow}7) Format USB partition as exFAT${treset}"
+  echo "8) Exit"
 
   read -rp "Select an option: " option
   case $option in
     1) listUsbDevices ;;
     2) isMounted ;;
-    3) usbToWindows ;;
-    4) writeIso ;;
-    5) formatUsbPartition fat32 ;;
-    6) formatUsbPartition exfat ;;
-    7) exit 0 ;;
+    3) unmountUsb ;;
+    4) usbToWindows ;;
+    5) writeIso ;;
+    6) formatUsbPartition fat32 ;;
+    7) formatUsbPartition exfat ;;
+    8) exit 0 ;;
     *) echo "Invalid option. Please try again." ;;
   esac
 done
