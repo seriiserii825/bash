@@ -220,6 +220,10 @@ function importKey(){
   fi
 }
 
+function showAllKeys(){
+  gpg --list-secret-keys --with-colons | awk -F: '/^uid/ {print $10}' | awk '{print $1}'
+}
+
 function envFile(){
   local action=$1
   local env_file=".env"
@@ -254,7 +258,8 @@ function menu(){
   echo "${tyellow}5. Check key${treset}"
   echo "${tgreen}6. Export key${treset}"
   echo "${tblue}7. Import key${treset}"
-  echo "${tmagenta}8. Exit${treset}"
+  echo "${tcyan}8. Show all keys${treset}"
+  echo "${tmagenta}9. Exit${treset}"
 
   read -p "Choose option: " option
 
@@ -273,6 +278,8 @@ function menu(){
   elif [ $option == 7 ]; then
     importKey
   elif [ $option == 8 ]; then
+    showAllKeys
+  elif [ $option == 9 ]; then
     exit 0
   else
     echo "${tmagenta}Error: option not found.${treset}"
