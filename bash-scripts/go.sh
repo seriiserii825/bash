@@ -1,5 +1,5 @@
 #!/bin/bash
-# Go repos manager: update go-libs across projects, dump repo urls to file, clone repos from file, go install all projects
+# Go repos manager: update go-libs across projects, dump repo urls to file, clone repos from file, go install all projects, recreate project binaries
 
 source /home/serii/dotfiles/zsh_modules/zsh_colors
 
@@ -162,11 +162,31 @@ function installRepos() {
   fi
 }
 
+# удаляет бинарники проектов из $root и ставит их заново; чужие (gopls и т.п.) не трогает
+function recreateBinaries() {
+  for gomod in "$root"/*/go.mod; do
+    local dir target
+    dir=$(dirname "$gomod")
+    # только CLI-проекты: у библиотек вроде go-libs Target пустой, и они пропускаются
+    target=$(cd "$dir" && GOWORK=off go list -f '{{if eq .Name "main"}}{{.Target}}{{end}}' . 2>/dev/null)
+    [ -n "$target" ] || continue
+
+    if [ -f "$target" ]; then
+      echo "Удаляю: $target"
+      rm -f "$target"
+    fi
+  done
+  echo
+
+  installRepos
+}
+
 echo "${tgreen}1) Go update repos${treset}"
 echo "${tblue}2) Go repos to file${treset}"
 echo "${tmagenta}3) Clone go repos${treset}"
 echo "${tyellow}4) Go install all repos${treset}"
-echo "5) Exit"
+echo "${tcyan}5) Recreate binaries${treset}"
+echo "6) Exit"
 read -rp "Select an option: " option
 
 case $option in
@@ -183,6 +203,9 @@ case $option in
     installRepos
     ;;
   5)
+    recreateBinaries
+    ;;
+  6)
     exit 0
     ;;
   *)
